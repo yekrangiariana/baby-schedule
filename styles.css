@@ -1,0 +1,290 @@
+:root {
+  --bg: #0b1220;
+  --panel: #111827;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --accent: #60a5fa;
+  --yellow: #fbbf24;
+  --red: #f87171;
+  --border: #1f2937;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+.action {
+  body {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    font-family:
+      ui-sans-serif,
+      -apple-system,
+      system-ui,
+      Segoe UI,
+      Roboto,
+      Helvetica,
+      Arial,
+      "Apple Color Emoji",
+      "Segoe UI Emoji";
+    color: var(--text);
+    background: linear-gradient(180deg, #0b1220 0%, #0b1220 60%, #0b1220 100%);
+  }
+  .app-header {
+    padding: 16px 16px 4px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: linear-gradient(
+      180deg,
+      rgba(11, 18, 32, 0.95),
+      rgba(11, 18, 32, 0.8)
+    );
+    backdrop-filter: saturate(140%) blur(6px);
+    border-bottom: 1px solid var(--border);
+  }
+  .app-header h1 {
+    margin: 0;
+    font-size: 20px;
+  }
+  .app-header .now {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 16px;
+  }
+  .quick-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 12px 0;
+  }
+  .action {
+    font-size: 18px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 12px;
+    background: var(--panel);
+    color: var(--text);
+    cursor: pointer;
+  }
+  .action:active {
+    transform: scale(0.99);
+  }
+  .action-feed {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent) inset;
+  }
+  .action-pee {
+    border-color: var(--yellow);
+    box-shadow: 0 0 0 1px var(--yellow) inset;
+  }
+  .action-poop {
+    border-color: var(--red);
+    box-shadow: 0 0 0 1px var(--red) inset;
+  }
+  .status {
+    margin: 12px 0;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    background: var(--panel);
+  }
+  .last-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 6px 0;
+  }
+  .today-totals {
+    margin-top: 8px;
+    color: var(--muted);
+  }
+  .actions-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  .primary,
+  .secondary,
+  .link,
+  .icon {
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    padding: 10px 12px;
+    cursor: pointer;
+  }
+  .primary {
+    background: var(--accent);
+    border-color: transparent;
+    color: #0b1220;
+    font-weight: 600;
+  }
+  .secondary {
+    background: #0f1629;
+  }
+  .link {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    padding: 8px;
+  }
+  .icon {
+    padding: 6px 10px;
+  }
+  .panel {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--panel);
+    margin: 16px 0;
+  }
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .summary {
+    padding: 12px;
+    color: var(--muted);
+  }
+  .table-wrap {
+    overflow: auto;
+  }
+  #logTable {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  #logTable th,
+  #logTable td {
+    border-bottom: 1px solid var(--border);
+    padding: 10px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  #logTable tbody tr:hover {
+    background: #0f1629;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 10px 0;
+  }
+  .field-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 0;
+  }
+  .settings {
+    padding: 12px;
+  }
+  .settings-actions {
+    display: flex;
+    gap: 8px;
+    margin: 8px 0;
+  }
+  .app-footer {
+    padding: 20px;
+    text-align: center;
+    color: var(--muted);
+  }
+  #toast {
+    position: fixed;
+    left: 50%;
+    bottom: 20px;
+    transform: translateX(-50%);
+    background: #0f1629;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 10px 14px;
+    color: var(--text);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  #toast.show {
+    opacity: 1;
+  }
+
+  @media (max-width: 640px) {
+    .quick-actions {
+      grid-template-columns: 1fr;
+    }
+    .action {
+      font-size: 18px;
+      padding: 16px 14px;
+    }
+    #logTable th,
+    #logTable td {
+      padding: 8px;
+      font-size: 13px;
+    }
+  }
+
+  /* Sticky table header and smoother mobile scrolling */
+  .table-wrap {
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  #logTable thead th {
+    position: sticky;
+    top: 0;
+    background: var(--panel);
+  }
+
+  /* Color-code type cells */
+  tr[data-type="feed"] .type {
+    color: var(--accent);
+  }
+  tr[data-type="pee"] .type {
+    color: var(--yellow);
+  }
+  tr[data-type="poop"] .type {
+    color: var(--red);
+  }
+
+  /* Responsive quick-actions for foldables/tablets */
+  @media (min-width: 641px) and (max-width: 980px) {
+    .quick-actions {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 981px) {
+    .quick-actions {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  /* Print styles */
+  @media print {
+    .app-header,
+    .quick-actions,
+    .status .actions-row,
+    .no-print,
+    .app-footer,
+    #settingsPanel {
+      display: none !important;
+    }
+    body {
+      background: #fff;
+      color: #111;
+    }
+    .panel {
+      border: none;
+    }
+    #logTable th,
+    #logTable td {
+      border: 1px solid #999;
+    }
+  }
+}

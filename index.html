@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>👶🏼 Baby bowel tracker</title>
+    <link rel="stylesheet" href="styles.css" />
+    <meta name="theme-color" content="#111827" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>👶🏼 Baby bowel tracker</h1>
+      <div class="now" id="nowText"></div>
+    </header>
+
+    <main class="container">
+      <section class="quick-actions">
+        <button
+          class="action action-feed"
+          data-type="feed"
+          aria-label="Log feed"
+        >
+          🍼 Feed
+        </button>
+        <button class="action action-pee" data-type="pee" aria-label="Log pee">
+          💧 Pee
+        </button>
+        <button
+          class="action action-poop"
+          data-type="poop"
+          aria-label="Log poop"
+        >
+          💩 Poop
+        </button>
+      </section>
+
+      <section class="status">
+        <div class="last-row">
+          <span>Last feed:</span> <strong id="lastFeed">—</strong>
+        </div>
+        <div class="last-row">
+          <span>Last pee:</span> <strong id="lastPee">—</strong>
+        </div>
+        <div class="last-row">
+          <span>Last poop:</span> <strong id="lastPoop">—</strong>
+        </div>
+        <div class="today-totals" id="todayTotals">Today: —</div>
+        <div class="actions-row">
+          <button id="undoBtn" class="secondary" aria-label="Undo last">
+            ↩️ Undo
+          </button>
+          <button id="viewLogBtn" class="secondary" aria-label="View log">
+            📋 Log
+          </button>
+          <button id="printBtn" class="secondary" aria-label="Print">
+            🖨️ Print
+          </button>
+        </div>
+      </section>
+
+      <section class="panel" id="logPanel" hidden>
+        <div class="panel-header">
+          <h2>Log</h2>
+          <div class="panel-actions">
+            <input type="date" id="dateFilter" />
+            <button id="clearFilterBtn" class="secondary">Clear</button>
+            <button id="exportCsvBtn" class="secondary">Export CSV</button>
+            <button id="closeLogBtn" class="icon" aria-label="Close">✕</button>
+          </div>
+        </div>
+        <div class="summary" id="summary"></div>
+        <div class="table-wrap">
+          <table id="logTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Type</th>
+                <th>Note</th>
+                <th class="no-print">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="logTbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" id="settingsPanel">
+        <div class="panel-header">
+          <h2>Settings</h2>
+        </div>
+        <div class="settings">
+          <label class="field">
+            <span>Google Apps Script Web App URL (optional)</span>
+            <input
+              type="url"
+              id="appsScriptUrl"
+              placeholder="https://script.google.com/macros/s/.../exec"
+            />
+          </label>
+          <label class="field-inline">
+            <input type="checkbox" id="syncToggle" />
+            <span>Enable sync to Google Sheets when online</span>
+          </label>
+          <div class="settings-actions">
+            <button id="saveSettingsBtn" class="primary">Save Settings</button>
+            <button id="syncNowBtn" class="secondary">Sync Now</button>
+          </div>
+          <small class="hint"
+            >Leave blank to keep everything local. See README for setup
+            instructions.</small
+          >
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <button id="openSettingsBtn" class="link">Settings</button>
+    </footer>
+
+    <div id="toast" role="status" aria-live="polite"></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
