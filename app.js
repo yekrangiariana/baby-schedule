@@ -357,7 +357,7 @@
     const ctx = canvas.getContext("2d");
     const w = canvas.width,
       h = canvas.height;
-    
+
     // White background
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, w, h);
@@ -388,7 +388,7 @@
     const ctx = canvas.getContext("2d");
     const w = canvas.width,
       h = canvas.height;
-    
+
     // White background
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, w, h);
@@ -425,7 +425,7 @@
     const ctx = canvas.getContext("2d");
     const w = canvas.width,
       h = canvas.height;
-    
+
     // White background
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, w, h);
@@ -470,7 +470,7 @@
     const ctx = canvas.getContext("2d");
     const w = canvas.width,
       h = canvas.height;
-    
+
     // White background
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, w, h);
