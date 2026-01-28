@@ -154,7 +154,7 @@
   }, 1000);
 
   // Add entry
-  function addEntry(type, note) {
+  async function addEntry(type, note) {
     const entry = {
       id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       type,
@@ -164,8 +164,10 @@
     };
     entries.push(entry);
     saveEntries(entries);
+    // Push to Sheets then refresh remote view
+    await maybeSync([entry]);
+    await maybeLoadRemoteEntries();
     updateStatus();
-    maybeSync([entry]);
     haptics(15);
     toast(`${capitalize(type)} logged`);
   }
@@ -190,10 +192,9 @@
   }
 
   function updateStatus() {
+    const src = remoteEntries || [];
     const lastOf = (t) => {
-      const e = [...entries]
-        .filter((e) => e.type === t)
-        .sort((a, b) => b.timestamp - a.timestamp)[0];
+      const e = src.filter((e) => e.type === t).sort((a, b) => b.timestamp - a.timestamp)[0];
       return e ? `${formatDate(e.timestamp)} ${formatTime(e.timestamp)}` : "—";
     };
     lastFeed.textContent = lastOf("feed");
@@ -201,9 +202,11 @@
     lastPoop.textContent = lastOf("poop");
 
     const today = new Date();
-    const todayEntries = entries.filter((e) => isSameDay(e.timestamp, today));
+    const todayEntries = src.filter((e) => isSameDay(e.timestamp, today));
     const counts = countByType(todayEntries);
-    todayTotals.textContent = `Today: Feed ${counts.feed || 0} • Pee ${counts.pee || 0} • Poop ${counts.poop || 0}`;
+    todayTotals.textContent = src.length
+      ? `Today: Feed ${counts.feed || 0} • Pee ${counts.pee || 0} • Poop ${counts.poop || 0}`
+      : "Today: —";
   }
 
   function countByType(list) {
@@ -218,17 +221,23 @@
     setLoading(true);
     await maybeLoadRemoteEntries();
     renderLog();
+    updateStatus();
+    startRemoteAutoRefresh();
   }
   function closeLog() {
     logPanel.hidden = true;
+    stopRemoteAutoRefresh();
   }
 
   function renderLog() {
-    const source = remoteEntries || entries;
+    if (!remoteEntries) {
+      summaryEl.textContent = "Loading remote log…";
+      logTbody.innerHTML = "";
+      return;
+    }
+    const source = remoteEntries;
     const filterVal = dateFilter.value ? new Date(dateFilter.value) : null;
-    const list = filterVal
-      ? source.filter((e) => isSameDay(e.timestamp, filterVal))
-      : source;
+    const list = filterVal ? source.filter((e) => isSameDay(e.timestamp, filterVal)) : source;
     const counts = countByType(list);
 
     summaryEl.textContent = list.length
@@ -262,38 +271,16 @@
   }
 
   async function deleteEntry(id) {
-    const idx = entries.findIndex((e) => e.id === id);
-    if (idx >= 0) {
-      const removed = entries.splice(idx, 1)[0];
-      saveEntries(entries);
-      updateStatus();
-      renderLog();
-      toast("Entry deleted");
-      if (settings.syncEnabled && settings.webAppUrl && removed?.synced) {
-        deleteQueue.push(id);
-        saveDeletes(deleteQueue);
-        await maybeDelete([id]);
-        // If we are viewing remote, refresh after deletion
-        if (remoteEntries) {
-          await maybeLoadRemoteEntries();
-          renderLog();
-        }
-      }
-      return;
-    }
-    // If not found locally but visible remotely, request remote delete
-    if (remoteEntries && remoteEntries.some((e) => e.id === id)) {
-      if (settings.syncEnabled && settings.webAppUrl) {
-        await maybeDelete([id]);
-        await maybeLoadRemoteEntries();
-        renderLog();
-        toast("Entry deleted from Sheets");
-      }
-    }
+    if (!settings.syncEnabled || !settings.webAppUrl) return;
+    await maybeDelete([id]);
+    await maybeLoadRemoteEntries();
+    renderLog();
+    updateStatus();
+    toast("Entry deleted from Sheets");
   }
 
   function exportCsv() {
-    const source = remoteEntries || entries;
+    const source = remoteEntries || [];
     const rows = [["Date", "Time", "Type", "Note", "ID"]];
     source.forEach((e) => {
       rows.push([
@@ -341,6 +328,7 @@
     try {
       const url = new URL(cfg.webAppUrl);
       url.searchParams.set("action", "list");
+      url.searchParams.set("t", String(Date.now()));
       const res = await fetch(url.toString(), { method: "GET", mode: "cors" });
       if (!res.ok) throw new Error("non-ok");
       const data = await res.json();
@@ -362,8 +350,8 @@
       } catch {
         remoteEntries = null;
         setLoading(false);
-        // Hint only once per open
-        toast("Showing local log (couldn't load from Sheets)");
+        // Remote-only mode: inform user about failure
+        toast("Couldn't load from Sheets");
       }
     }
   }
@@ -389,6 +377,7 @@
       const url = new URL(baseUrl);
       url.searchParams.set("action", "list");
       url.searchParams.set("callback", cb);
+      url.searchParams.set("t", String(Date.now()));
       const script = document.createElement("script");
       const timeout = setTimeout(() => {
         cleanup();
@@ -524,7 +513,9 @@
 
   // Wire events
   $$(".action").forEach((btn) => {
-    btn.addEventListener("click", () => addEntry(btn.dataset.type));
+    btn.addEventListener("click", async () => {
+      await addEntry(btn.dataset.type);
+    });
   });
   undoBtn.addEventListener("click", undoLast);
   viewLogBtn.addEventListener("click", openLog);
@@ -576,6 +567,24 @@
 
   // Init
   updateStatus();
+  // Prime remote snapshot on load and when refocusing
+  if (settings.syncEnabled && settings.webAppUrl) {
+    maybeLoadRemoteEntries().then(() => updateStatus());
+    window.addEventListener("focus", () => {
+      maybeLoadRemoteEntries().then(() => {
+        renderLog();
+        updateStatus();
+      });
+    });
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        maybeLoadRemoteEntries().then(() => {
+          renderLog();
+          updateStatus();
+        });
+      }
+    });
+  }
   initSettingsUI();
 
   // Auto-sync any pending entries on load and when going back online (if sync is enabled)
@@ -592,6 +601,28 @@
       const unsynced = entries.filter((e) => !e.synced);
       if (unsynced.length) maybeSync(unsynced);
       if (deleteQueue.length) maybeDelete(deleteQueue.slice());
+      maybeLoadRemoteEntries().then(() => {
+        renderLog();
+        updateStatus();
+      });
     });
   }
+
+  // Auto-refresh remote log every 20s while the panel is open
+  let remoteRefreshTimer = null;
+  function startRemoteAutoRefresh() {
+    if (remoteRefreshTimer) clearInterval(remoteRefreshTimer);
+    remoteRefreshTimer = setInterval(async () => {
+      await maybeLoadRemoteEntries();
+      renderLog();
+      updateStatus();
+    }, 20000);
+  }
+  function stopRemoteAutoRefresh() {
+    if (remoteRefreshTimer) {
+      clearInterval(remoteRefreshTimer);
+      remoteRefreshTimer = null;
+    }
+  }
+  // (auto-refresh hooks are called from openLog/closeLog above)
 })();
