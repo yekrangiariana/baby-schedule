@@ -281,60 +281,78 @@
     if (!remoteEntries || !remoteEntries.length) return;
 
     const today = new Date();
-    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+    const todayStart = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+    ).getTime();
     const last24h = Date.now() - 24 * 60 * 60 * 1000;
     const last7days = Date.now() - 7 * 24 * 60 * 60 * 1000;
 
     // Today's totals
-    const todayEntries = remoteEntries.filter(e => e.timestamp >= todayStart);
+    const todayEntries = remoteEntries.filter((e) => e.timestamp >= todayStart);
     const todayCounts = { feed: 0, pee: 0, poop: 0 };
-    todayEntries.forEach(e => { if (todayCounts[e.type] !== undefined) todayCounts[e.type]++; });
-    drawBarChart('todayChart', [
-      { label: 'Feed', value: todayCounts.feed, color: 'var(--accent)' },
-      { label: 'Pee', value: todayCounts.pee, color: 'var(--yellow)' },
-      { label: 'Poop', value: todayCounts.poop, color: 'var(--red)' }
+    todayEntries.forEach((e) => {
+      if (todayCounts[e.type] !== undefined) todayCounts[e.type]++;
+    });
+    drawBarChart("todayChart", [
+      { label: "Feed", value: todayCounts.feed, color: "var(--accent)" },
+      { label: "Pee", value: todayCounts.pee, color: "var(--yellow)" },
+      { label: "Poop", value: todayCounts.poop, color: "var(--red)" },
     ]);
 
     // Last 24 hours by hour
-    const hourlyData = Array(24).fill(0).map((_, i) => ({ hour: i, count: 0 }));
-    remoteEntries.filter(e => e.timestamp >= last24h).forEach(e => {
-      const h = new Date(e.timestamp).getHours();
-      hourlyData[h].count++;
-    });
-    drawLineChart('hourlyChart', hourlyData);
+    const hourlyData = Array(24)
+      .fill(0)
+      .map((_, i) => ({ hour: i, count: 0 }));
+    remoteEntries
+      .filter((e) => e.timestamp >= last24h)
+      .forEach((e) => {
+        const h = new Date(e.timestamp).getHours();
+        hourlyData[h].count++;
+      });
+    drawLineChart("hourlyChart", hourlyData);
 
     // 7-day trend
     const dailyData = [];
     for (let i = 6; i >= 0; i--) {
       const dayStart = todayStart - i * 24 * 60 * 60 * 1000;
       const dayEnd = dayStart + 24 * 60 * 60 * 1000;
-      const dayEntries = remoteEntries.filter(e => e.timestamp >= dayStart && e.timestamp < dayEnd);
+      const dayEntries = remoteEntries.filter(
+        (e) => e.timestamp >= dayStart && e.timestamp < dayEnd,
+      );
       const counts = { feed: 0, pee: 0, poop: 0 };
-      dayEntries.forEach(e => { if (counts[e.type] !== undefined) counts[e.type]++; });
-      dailyData.push({ day: new Date(dayStart).toLocaleDateString('en', { weekday: 'short' }), ...counts });
+      dayEntries.forEach((e) => {
+        if (counts[e.type] !== undefined) counts[e.type]++;
+      });
+      dailyData.push({
+        day: new Date(dayStart).toLocaleDateString("en", { weekday: "short" }),
+        ...counts,
+      });
     }
-    drawStackedBarChart('weekChart', dailyData);
+    drawStackedBarChart("weekChart", dailyData);
 
     // Feed-to-Diaper Ratio (pediatric standard: ~1-2 diapers per feed is healthy)
     const feedCount = todayCounts.feed;
     const diaperCount = todayCounts.pee + todayCounts.poop;
     const ratio = feedCount > 0 ? (diaperCount / feedCount).toFixed(1) : 0;
-    drawRatioChart('ratioChart', {
+    drawRatioChart("ratioChart", {
       feeds: feedCount,
       diapers: diaperCount,
       ratio: ratio,
-      target: 1.5 // healthy target: ~1-2 diapers per feed
+      target: 1.5, // healthy target: ~1-2 diapers per feed
     });
   }
 
   function drawBarChart(canvasId, data) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const w = canvas.width, h = canvas.height;
+    const ctx = canvas.getContext("2d");
+    const w = canvas.width,
+      h = canvas.height;
     ctx.clearRect(0, 0, w, h);
 
-    const max = Math.max(...data.map(d => d.value), 1);
+    const max = Math.max(...data.map((d) => d.value), 1);
     const barWidth = w / data.length - 20;
     const spacing = 20;
 
@@ -346,9 +364,9 @@
       ctx.fillStyle = d.color;
       ctx.fillRect(x, y, barWidth, barHeight);
 
-      ctx.fillStyle = 'var(--text)';
-      ctx.font = '12px sans-serif';
-      ctx.textAlign = 'center';
+      ctx.fillStyle = "var(--text)";
+      ctx.font = "12px sans-serif";
+      ctx.textAlign = "center";
       ctx.fillText(d.label, x + barWidth / 2, h - 12);
       ctx.fillText(d.value, x + barWidth / 2, y - 6);
     });
@@ -357,14 +375,15 @@
   function drawLineChart(canvasId, data) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const w = canvas.width, h = canvas.height;
+    const ctx = canvas.getContext("2d");
+    const w = canvas.width,
+      h = canvas.height;
     ctx.clearRect(0, 0, w, h);
 
-    const max = Math.max(...data.map(d => d.count), 1);
+    const max = Math.max(...data.map((d) => d.count), 1);
     const step = w / (data.length - 1 || 1);
 
-    ctx.strokeStyle = 'var(--accent)';
+    ctx.strokeStyle = "var(--accent)";
     ctx.lineWidth = 2;
     ctx.beginPath();
     data.forEach((d, i) => {
@@ -375,14 +394,14 @@
     });
     ctx.stroke();
 
-    ctx.fillStyle = 'var(--muted)';
-    ctx.font = '10px sans-serif';
-    ctx.textAlign = 'center';
+    ctx.fillStyle = "var(--muted)";
+    ctx.font = "10px sans-serif";
+    ctx.textAlign = "center";
     const showEvery = Math.ceil(data.length / 6);
     data.forEach((d, i) => {
       if (i % showEvery === 0) {
         const x = i * step;
-        ctx.fillText(d.hour + 'h', x, h - 10);
+        ctx.fillText(d.hour + "h", x, h - 10);
       }
     });
   }
@@ -390,11 +409,12 @@
   function drawStackedBarChart(canvasId, data) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const w = canvas.width, h = canvas.height;
+    const ctx = canvas.getContext("2d");
+    const w = canvas.width,
+      h = canvas.height;
     ctx.clearRect(0, 0, w, h);
 
-    const maxTotal = Math.max(...data.map(d => d.feed + d.pee + d.poop), 1);
+    const maxTotal = Math.max(...data.map((d) => d.feed + d.pee + d.poop), 1);
     const barWidth = w / data.length - 16;
     const spacing = 16;
 
@@ -406,33 +426,34 @@
 
       // Poop (bottom)
       const poopH = d.poop * scale;
-      ctx.fillStyle = 'var(--red)';
+      ctx.fillStyle = "var(--red)";
       ctx.fillRect(x, y - poopH, barWidth, poopH);
       y -= poopH;
 
       // Pee (middle)
       const peeH = d.pee * scale;
-      ctx.fillStyle = 'var(--yellow)';
+      ctx.fillStyle = "var(--yellow)";
       ctx.fillRect(x, y - peeH, barWidth, peeH);
       y -= peeH;
 
       // Feed (top)
       const feedH = d.feed * scale;
-      ctx.fillStyle = 'var(--accent)';
+      ctx.fillStyle = "var(--accent)";
       ctx.fillRect(x, y - feedH, barWidth, feedH);
 
       // Label
-      ctx.fillStyle = 'var(--muted)';
-      ctx.font = '10px sans-serif';
-      ctx.textAlign = 'center';
+      ctx.fillStyle = "var(--muted)";
+      ctx.font = "10px sans-serif";
+      ctx.textAlign = "center";
       ctx.fillText(d.day, x + barWidth / 2, h - 10);
     });
   }
   function drawRatioChart(canvasId, data) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const w = canvas.width, h = canvas.height;
+    const ctx = canvas.getContext("2d");
+    const w = canvas.width,
+      h = canvas.height;
     ctx.clearRect(0, 0, w, h);
 
     // Draw comparison bars
@@ -443,35 +464,40 @@
     const maxVal = Math.max(data.feeds, data.diapers, 1);
     const feedHeight = (data.feeds / maxVal) * (h - 100);
     const x1 = spacing;
-    ctx.fillStyle = 'var(--accent)';
+    ctx.fillStyle = "var(--accent)";
     ctx.fillRect(x1, h - feedHeight - 50, barWidth, feedHeight);
-    ctx.fillStyle = 'var(--text)';
-    ctx.font = '14px sans-serif';
-    ctx.textAlign = 'center';
+    ctx.fillStyle = "var(--text)";
+    ctx.font = "14px sans-serif";
+    ctx.textAlign = "center";
     ctx.fillText(data.feeds, x1 + barWidth / 2, h - feedHeight - 60);
-    ctx.font = '12px sans-serif';
-    ctx.fillText('Feeds', x1 + barWidth / 2, h - 30);
+    ctx.font = "12px sans-serif";
+    ctx.fillText("Feeds", x1 + barWidth / 2, h - 30);
 
     // Diapers bar
     const diaperHeight = (data.diapers / maxVal) * (h - 100);
     const x2 = spacing * 2 + barWidth;
-    ctx.fillStyle = 'var(--yellow)';
+    ctx.fillStyle = "var(--yellow)";
     ctx.fillRect(x2, h - diaperHeight - 50, barWidth, diaperHeight);
-    ctx.fillStyle = 'var(--text)';
-    ctx.font = '14px sans-serif';
+    ctx.fillStyle = "var(--text)";
+    ctx.font = "14px sans-serif";
     ctx.fillText(data.diapers, x2 + barWidth / 2, h - diaperHeight - 60);
-    ctx.font = '12px sans-serif';
-    ctx.fillText('Diapers', x2 + barWidth / 2, h - 30);
+    ctx.font = "12px sans-serif";
+    ctx.fillText("Diapers", x2 + barWidth / 2, h - 30);
 
     // Ratio display
-    ctx.fillStyle = 'var(--text)';
-    ctx.font = 'bold 24px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(data.ratio + ':1', w / 2, 40);
-    ctx.font = '11px sans-serif';
-    ctx.fillStyle = 'var(--muted)';
-    const status = data.ratio >= 1 && data.ratio <= 2 ? 'Healthy range' : data.ratio > 2 ? 'Great hydration' : 'Monitor intake';
-    ctx.fillText(status + ' (target: 1-2:1)', w / 2, 58);
+    ctx.fillStyle = "var(--text)";
+    ctx.font = "bold 24px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(data.ratio + ":1", w / 2, 40);
+    ctx.font = "11px sans-serif";
+    ctx.fillStyle = "var(--muted)";
+    const status =
+      data.ratio >= 1 && data.ratio <= 2
+        ? "Healthy range"
+        : data.ratio > 2
+          ? "Great hydration"
+          : "Monitor intake";
+    ctx.fillText(status + " (target: 1-2:1)", w / 2, 58);
   }
   function renderLog() {
     if (!remoteEntries) {
