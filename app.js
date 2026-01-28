@@ -274,8 +274,8 @@
       }
       renderGraphs();
     } catch (err) {
-      console.error('Failed to render graphs:', err);
-      toast('Graphs unavailable — add some logs first');
+      console.error("Failed to render graphs:", err);
+      toast("Graphs unavailable — add some logs first");
     }
   }
 
@@ -811,7 +811,7 @@
     try {
       await openGraphs();
     } catch (err) {
-      console.error('Graph button error:', err);
+      console.error("Graph button error:", err);
     }
   });
   closeGraphsBtn.addEventListener("click", closeGraphs);
