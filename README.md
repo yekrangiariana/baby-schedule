@@ -18,7 +18,7 @@ An ultra-simple, offline-first web app to log your baby's feed, pee, and poop wi
 Tip: On iPhone, open in Safari and use "Add to Home Screen" for a native-like shortcut.
 
 ## Optional: Sync to Google Sheets (no server)
-You can keep everything local. If you want cloud backup, set up a simple Google Apps Script that appends entries to a Google Sheet.
+You can keep everything local. If you want cloud backup and cross-device logs, set up a simple Google Apps Script that appends entries to a Google Sheet and serves them back for the Log view.
 
 ### 1) Create the Sheet
 - Create a new Google Sheet, add a sheet named `Log` (or use the default).
@@ -73,6 +73,50 @@ function doPost(e) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 }
+
+// List all entries as JSON (supports JSONP via `?callback=fn`)
+function doGet(e) {
+  try {
+    var ss = SpreadsheetApp.getActive();
+    var sh = ss.getSheetByName('Log') || ss.getActiveSheet();
+    var values = sh.getDataRange().getValues();
+    // Expect columns: Timestamp, ISO, Type, Note, ID, Source
+    var rows = [];
+    for (var r = 2; r <= values.length; r++) { // skip header
+      var row = values[r-1];
+      var ts = row[0];
+      var iso = row[1];
+      var type = row[2];
+      var note = row[3];
+      var id = row[4];
+      rows.push({
+        id: String(id || ''),
+        type: String(type || ''),
+        note: String(note || ''),
+        timestamp: ts instanceof Date ? ts.getTime() : (iso ? Date.parse(iso) : 0),
+        iso: String(iso || ''),
+      });
+    }
+    // Sort newest first
+    rows.sort(function(a,b){ return b.timestamp - a.timestamp; });
+
+    var payload = JSON.stringify(rows);
+    var cb = e && e.parameter && e.parameter.callback;
+    if (cb) {
+      // JSONP
+      return ContentService
+        .createTextOutput(cb + '(' + payload + ')')
+        .setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+    return ContentService
+      .createTextOutput(payload)
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({status: 'error', message: String(err)}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
 ```
 
 ### 3) Deploy as a Web App
@@ -81,7 +125,7 @@ function doPost(e) {
 - Who has access: Anyone.
 - Click Deploy and copy the Web App URL (ends with `/exec`).
 
-Note: Web Apps generally work fine for cross-origin `fetch`. If you hit CORS issues in your environment, you can still submit in `no-cors` mode, but the app already assumes normal CORS works.
+Note: The app reads the log with a normal JSON GET first, then falls back to JSONP automatically. This avoids CORS issues across different environments.
 
 ### 4) Paste URL in the app
 - Option A — Settings UI: Open the app → Settings → paste the Web App URL → enable sync → Save. New entries sync automatically; use "Sync Now" to push unsynced ones.
@@ -94,7 +138,7 @@ const FIXED_WEB_APP_URL = 'https://script.google.com/macros/s/XXXXXXXXXXXX/exec'
 
 Auto-sync behavior: the app will try to sync immediately after you log an entry, and will also attempt to push any unsynced entries on startup and when your browser comes back online.
 
-Deletions: when you delete or undo an entry in the app, it queues a delete by entry ID and attempts to delete the matching row in the `Log` sheet. If offline, deletes are retried on startup/when online.
+Deletions: when you delete or undo an entry in the app, it queues a delete by entry ID and attempts to delete the matching row in the `Log` sheet. If offline, deletes are retried on startup/when online. If the Log view is showing the remote Sheet, deleting an item will remove it from the Sheet directly.
 
 ## Data & Privacy
 - Local: All events are stored in your browser's `localStorage` under `babylog.entries.v1`.
@@ -111,8 +155,8 @@ Deletions: when you delete or undo an entry in the app, it queues a delete by en
 - Want the Settings hidden? Use the hardcoded URL option above. You won’t need to touch any in-app settings afterward.
 
 ### Local testing tips (CORS)
-- If you open the app directly as a file (path starts with `file:///`), some browsers preflight CORS requests and can block them.
-- The app now attempts a normal CORS POST first, then falls back to an opaque `no-cors` POST with `text/plain`, which usually succeeds for Apps Script.
+- If you open the app directly as a file (path starts with `file:///`), some browsers preflight CORS requests.
+- The app writes with CORS and falls back to `no-cors` POST; it reads the log via CORS GET and falls back to JSONP automatically.
 - For reliable CORS behavior, run a tiny local server and open the site via `http://localhost:`:
 
 ```bash

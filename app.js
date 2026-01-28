@@ -2,7 +2,7 @@
   // Optional: hardcode your Google Apps Script Web App URL here to avoid using the Settings UI.
   // If non-empty, syncing will be enabled automatically and the Settings section will be hidden.
   const FIXED_WEB_APP_URL =
-    "https://script.google.com/macros/s/AKfycbyE1-2SJ3cn17xdKLk6s7jU96Pw_t5DQlS_CjH8JMtL08yrYoNxQC3wo1JTfUcQuuAi/exec";
+    "https://script.google.com/macros/s/AKfycbydUtJ4Am__X8HayB8hiothcJzCp-kUTffRBap9mjMZ6XyKfx8lBkFbJJvyeWQuzExe/exec";
 
   const STORE_KEY = "babylog.entries.v1";
   const SETTINGS_KEY = "babylog.settings.v1";
@@ -28,6 +28,9 @@
   const summaryEl = $("#summary");
   const logTbody = $("#logTbody");
   const exportCsvBtn = $("#exportCsvBtn");
+  const progressWrap = document.getElementById("progressWrap");
+  const progressBar = document.getElementById("progressBar");
+  const progressLabel = document.getElementById("progressLabel");
 
   const openSettingsBtn = $("#openSettingsBtn");
   const settingsPanel = $("#settingsPanel");
@@ -44,6 +47,44 @@
     toastEl.classList.add("show");
     setTimeout(() => toastEl.classList.remove("show"), 1400);
   };
+
+  // Loading indicator for remote log fetch
+  let loadingTimer = null;
+  let loadingPercent = 0;
+  function setLoading(isLoading, label) {
+    const base = label || "Loading from Sheets";
+    if (isLoading) {
+      loadingPercent = 0;
+      if (progressWrap) progressWrap.hidden = false;
+      if (summaryEl) summaryEl.classList.add("loading");
+      if (logTbody) logTbody.innerHTML = "";
+      if (progressBar) progressBar.style.width = "0%";
+      if (progressLabel) progressLabel.textContent = `${base}… 0%`;
+      if (loadingTimer) clearInterval(loadingTimer);
+      loadingTimer = setInterval(() => {
+        // Smoothly advance toward 85% while waiting; complete to 100% on finish
+        const target = 85;
+        const step = 3; // ~3% per tick
+        loadingPercent = Math.min(target, loadingPercent + step);
+        if (progressBar) progressBar.style.width = `${loadingPercent}%`;
+        if (progressLabel) progressLabel.textContent = `${base}… ${Math.floor(loadingPercent)}%`;
+      }, 250);
+    } else {
+      // Finish the bar
+      loadingPercent = 100;
+      if (progressBar) progressBar.style.width = "100%";
+      if (progressLabel) progressLabel.textContent = `${base}… 100%`;
+      if (loadingTimer) {
+        clearInterval(loadingTimer);
+        loadingTimer = null;
+      }
+      if (summaryEl) summaryEl.classList.remove("loading");
+      // Hide after a short delay so users can see completion
+      setTimeout(() => {
+        if (progressWrap) progressWrap.hidden = true;
+      }, 600);
+    }
+  }
 
   function loadEntries() {
     try {
@@ -95,6 +136,7 @@
   }
 
   let entries = loadEntries();
+  let remoteEntries = null; // when loaded from Sheets, used for rendering
   let settings = loadSettings();
   let deleteQueue = loadDeletes();
 
@@ -170,8 +212,10 @@
     }, {});
   }
 
-  function openLog() {
+  async function openLog() {
     logPanel.hidden = false;
+    setLoading(true);
+    await maybeLoadRemoteEntries();
     renderLog();
   }
   function closeLog() {
@@ -179,10 +223,11 @@
   }
 
   function renderLog() {
+    const source = remoteEntries || entries;
     const filterVal = dateFilter.value ? new Date(dateFilter.value) : null;
     const list = filterVal
-      ? entries.filter((e) => isSameDay(e.timestamp, filterVal))
-      : entries;
+      ? source.filter((e) => isSameDay(e.timestamp, filterVal))
+      : source;
     const counts = countByType(list);
 
     summaryEl.textContent = list.length
@@ -195,11 +240,10 @@
       .sort((a, b) => b.timestamp - a.timestamp)
       .forEach((e) => {
         const tr = document.createElement("tr");
-        tr.dataset.type = e.type;
         tr.innerHTML = `
           <td>${formatDate(e.timestamp)}</td>
           <td>${formatTime(e.timestamp)}</td>
-          <td class="type">${emojiFor(e.type)} ${capitalize(e.type)}</td>
+          <td>${capitalize(e.type)}</td>
           <td>${escapeHtml(e.note || "")}</td>
           <td class="no-print">
             <button class="secondary" data-del="${e.id}">Delete</button>
@@ -209,13 +253,6 @@
       });
   }
 
-  function emojiFor(t) {
-    if (t === "feed") return "🍼";
-    if (t === "pee") return "💧";
-    if (t === "poop") return "💩";
-    return "";
-  }
-
   function escapeHtml(s) {
     return s.replace(
       /[&<>"]/g,
@@ -223,7 +260,7 @@
     );
   }
 
-  function deleteEntry(id) {
+  async function deleteEntry(id) {
     const idx = entries.findIndex((e) => e.id === id);
     if (idx >= 0) {
       const removed = entries.splice(idx, 1)[0];
@@ -234,14 +271,30 @@
       if (settings.syncEnabled && settings.webAppUrl && removed?.synced) {
         deleteQueue.push(id);
         saveDeletes(deleteQueue);
-        maybeDelete([id]);
+        await maybeDelete([id]);
+        // If we are viewing remote, refresh after deletion
+        if (remoteEntries) {
+          await maybeLoadRemoteEntries();
+          renderLog();
+        }
+      }
+      return;
+    }
+    // If not found locally but visible remotely, request remote delete
+    if (remoteEntries && remoteEntries.some((e) => e.id === id)) {
+      if (settings.syncEnabled && settings.webAppUrl) {
+        await maybeDelete([id]);
+        await maybeLoadRemoteEntries();
+        renderLog();
+        toast("Entry deleted from Sheets");
       }
     }
   }
 
   function exportCsv() {
+    const source = remoteEntries || entries;
     const rows = [["Date", "Time", "Type", "Note", "ID"]];
-    entries.forEach((e) => {
+    source.forEach((e) => {
       rows.push([
         formatDate(e.timestamp),
         formatTime(e.timestamp),
@@ -272,7 +325,90 @@
 
   function printView() {
     openLog();
-    setTimeout(() => window.print(), 50);
+    setTimeout(() => window.print(), 200);
+  }
+
+  // Load entries from Google Sheets (if sync enabled). Fallback to local on failure.
+  async function maybeLoadRemoteEntries() {
+    const cfg = loadSettings();
+    if (!cfg.syncEnabled || !cfg.webAppUrl) {
+      remoteEntries = null;
+      setLoading(false);
+      return;
+    }
+    // Try JSON over CORS first
+    try {
+      const url = new URL(cfg.webAppUrl);
+      url.searchParams.set("action", "list");
+      const res = await fetch(url.toString(), { method: "GET", mode: "cors" });
+      if (!res.ok) throw new Error("non-ok");
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        remoteEntries = normalizeRemote(data);
+        setLoading(false);
+        toast(`Loaded ${remoteEntries.length} from Sheets`);
+        return;
+      }
+      throw new Error("bad-json");
+    } catch {
+      // Fallback to JSONP
+      try {
+        const data = await jsonpList(loadSettings().webAppUrl);
+        remoteEntries = normalizeRemote(data || []);
+        setLoading(false);
+        toast(`Loaded ${remoteEntries.length} from Sheets`);
+        return;
+      } catch {
+        remoteEntries = null;
+        setLoading(false);
+        // Hint only once per open
+        toast("Showing local log (couldn't load from Sheets)");
+      }
+    }
+  }
+
+  function normalizeRemote(arr) {
+    return arr
+      .map((r) => ({
+        id: String(r.id || ""),
+        type: String(r.type || ""),
+        note: String(r.note || ""),
+        timestamp: Number(r.timestamp || (r.iso ? Date.parse(r.iso) : 0)) || 0,
+        synced: true,
+      }))
+      .filter((e) => e.id && e.timestamp)
+      .sort((a, b) => b.timestamp - a.timestamp);
+  }
+
+  function jsonpList(baseUrl) {
+    return new Promise((resolve, reject) => {
+      const cb = `__babylog_cb_${Date.now()}_${Math.random()
+        .toString(36)
+        .slice(2)}`;
+      const url = new URL(baseUrl);
+      url.searchParams.set("action", "list");
+      url.searchParams.set("callback", cb);
+      const script = document.createElement("script");
+      const timeout = setTimeout(() => {
+        cleanup();
+        reject(new Error("jsonp-timeout"));
+      }, 8000);
+      function cleanup() {
+        clearTimeout(timeout);
+        delete window[cb];
+        if (script.parentNode) script.parentNode.removeChild(script);
+      }
+      window[cb] = (data) => {
+        cleanup();
+        resolve(data);
+      };
+      script.onerror = () => {
+        cleanup();
+        reject(new Error("jsonp-error"));
+      };
+      script.src = url.toString();
+      document.head.appendChild(script);
+    });
   }
 
   // Sync to Google Apps Script (Sheets)
