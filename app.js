@@ -2,7 +2,7 @@
   // Optional: hardcode your Google Apps Script Web App URL here to avoid using the Settings UI.
   // If non-empty, syncing will be enabled automatically and the Settings section will be hidden.
   const FIXED_WEB_APP_URL =
-    "https://script.google.com/macros/s/AKfycbydUtJ4Am__X8HayB8hiothcJzCp-kUTffRBap9mjMZ6XyKfx8lBkFbJJvyeWQuzExe/exec";
+    "https://script.google.com/macros/s/AKfycbx3ZBVvxpKSSpCHbEAwdWiKi1O_bwatIT8McEgsb0iJw785UQelb85smJSRp5QRiG4s/exec";
 
   const STORE_KEY = "babylog.entries.v1";
   const SETTINGS_KEY = "babylog.settings.v1";
@@ -164,12 +164,34 @@
     };
     entries.push(entry);
     saveEntries(entries);
-    // Push to Sheets then refresh remote view
+    // Push to Sheets then verify by reloading remote until the row appears
+    setLoading(true, "Saving to Sheets");
     await maybeSync([entry]);
+    const appeared = await waitForEntryOnSheet(entry.id, 9000, 700);
+    setLoading(false, "Saving to Sheets");
+    if (!appeared) {
+      toast("Couldn't verify save — check connection and try again");
+    }
     await maybeLoadRemoteEntries();
     updateStatus();
     haptics(15);
     toast(`${capitalize(type)} logged`);
+  }
+
+  async function waitForEntryOnSheet(id, timeoutMs, intervalMs) {
+    const deadline = Date.now() + (timeoutMs || 6000);
+    const step = intervalMs || 600;
+    while (Date.now() < deadline) {
+      await maybeLoadRemoteEntries();
+      if (
+        Array.isArray(remoteEntries) &&
+        remoteEntries.some((e) => e.id === id)
+      ) {
+        return true;
+      }
+      await new Promise((r) => setTimeout(r, step));
+    }
+    return false;
   }
 
   function capitalize(s) {
@@ -419,30 +441,20 @@
         iso: new Date(e.timestamp).toISOString(),
         source: "babylog-web",
       };
-      // Try a CORS-friendly request first (may preflight)
+      // Use a simple request that avoids CORS preflight (no-cors + text/plain)
       try {
-        const res = await fetch(cfg.webAppUrl, {
+        await fetch(cfg.webAppUrl, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          mode: "cors",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain" },
           body: JSON.stringify(payload),
+          keepalive: true,
+          credentials: "omit",
         });
-        if (res && res.ok) return "ok";
-        // If we get a non-ok, fall through to no-cors
-        throw new Error("non-ok");
+        // We can't read the response (opaque), assume delivery and verify via read-back
+        return "opaque";
       } catch {
-        // Fallback: opaque request that usually succeeds to Apps Script from file:// origins
-        try {
-          await fetch(cfg.webAppUrl, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "text/plain" },
-            body: JSON.stringify(payload),
-          });
-          return "opaque";
-        } catch {
-          return "fail";
-        }
+        return "fail";
       }
     }
 
@@ -471,26 +483,17 @@
     async function deleteOne(id) {
       const payload = { action: "delete", id };
       try {
-        const res = await fetch(cfg.webAppUrl, {
+        await fetch(cfg.webAppUrl, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          mode: "cors",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain" },
           body: JSON.stringify(payload),
+          keepalive: true,
+          credentials: "omit",
         });
-        if (res && res.ok) return "ok";
-        throw new Error("non-ok");
+        return "opaque";
       } catch {
-        try {
-          await fetch(cfg.webAppUrl, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "text/plain" },
-            body: JSON.stringify(payload),
-          });
-          return "opaque";
-        } catch {
-          return "fail";
-        }
+        return "fail";
       }
     }
 
