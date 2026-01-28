@@ -194,7 +194,9 @@
   function updateStatus() {
     const src = remoteEntries || [];
     const lastOf = (t) => {
-      const e = src.filter((e) => e.type === t).sort((a, b) => b.timestamp - a.timestamp)[0];
+      const e = src
+        .filter((e) => e.type === t)
+        .sort((a, b) => b.timestamp - a.timestamp)[0];
       return e ? `${formatDate(e.timestamp)} ${formatTime(e.timestamp)}` : "—";
     };
     lastFeed.textContent = lastOf("feed");
@@ -237,7 +239,9 @@
     }
     const source = remoteEntries;
     const filterVal = dateFilter.value ? new Date(dateFilter.value) : null;
-    const list = filterVal ? source.filter((e) => isSameDay(e.timestamp, filterVal)) : source;
+    const list = filterVal
+      ? source.filter((e) => isSameDay(e.timestamp, filterVal))
+      : source;
     const counts = countByType(list);
 
     summaryEl.textContent = list.length
