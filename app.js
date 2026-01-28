@@ -67,7 +67,8 @@
         const step = 3; // ~3% per tick
         loadingPercent = Math.min(target, loadingPercent + step);
         if (progressBar) progressBar.style.width = `${loadingPercent}%`;
-        if (progressLabel) progressLabel.textContent = `${base}… ${Math.floor(loadingPercent)}%`;
+        if (progressLabel)
+          progressLabel.textContent = `${base}… ${Math.floor(loadingPercent)}%`;
       }, 250);
     } else {
       // Finish the bar
