@@ -18,9 +18,12 @@
   const lastPoop = $("#lastPoop");
   const todayTotals = $("#todayTotals");
   const undoBtn = $("#undoBtn");
+  const viewGraphsBtn = $("#viewGraphsBtn");
   const viewLogBtn = $("#viewLogBtn");
   const printBtn = $("#printBtn");
 
+  const graphsPanel = $("#graphsPanel");
+  const closeGraphsBtn = $("#closeGraphsBtn");
   const logPanel = $("#logPanel");
   const closeLogBtn = $("#closeLogBtn");
   const dateFilter = $("#dateFilter");
@@ -164,18 +167,26 @@
     };
     entries.push(entry);
     saveEntries(entries);
-    // Push to Sheets then verify by reloading remote until the row appears
-    setLoading(true, "Saving to Sheets");
-    await maybeSync([entry]);
-    const appeared = await waitForEntryOnSheet(entry.id, 9000, 700);
-    setLoading(false, "Saving to Sheets");
-    if (!appeared) {
-      toast("Couldn't verify save — check connection and try again");
-    }
-    await maybeLoadRemoteEntries();
-    updateStatus();
+    // Immediate tactile + toast feedback
     haptics(15);
     toast(`${capitalize(type)} logged`);
+
+    // Background push to Sheets and refresh when confirmed
+    setLoading(true, "Saving to Sheets");
+    maybeSync([entry])
+      .then(async () => {
+        const appeared = await waitForEntryOnSheet(entry.id, 9000, 600);
+        setLoading(false, "Saving to Sheets");
+        if (!appeared) {
+          toast("Couldn't verify save — check connection and try again");
+        }
+        await maybeLoadRemoteEntries();
+        updateStatus();
+      })
+      .catch(() => {
+        setLoading(false, "Saving to Sheets");
+        toast("Save failed — check connection");
+      });
   }
 
   async function waitForEntryOnSheet(id, timeoutMs, intervalMs) {
@@ -203,6 +214,7 @@
     if (!entries.length) return;
     const last = entries.pop();
     saveEntries(entries);
+    haptics(10);
     updateStatus();
     // If the entry was synced to Sheets, enqueue a delete and attempt sync
     if (settings.syncEnabled && settings.webAppUrl && last.synced) {
@@ -253,6 +265,214 @@
     stopRemoteAutoRefresh();
   }
 
+  async function openGraphs() {
+    graphsPanel.hidden = false;
+    if (!remoteEntries) {
+      await maybeLoadRemoteEntries();
+    }
+    renderGraphs();
+  }
+
+  function closeGraphs() {
+    graphsPanel.hidden = true;
+  }
+
+  function renderGraphs() {
+    if (!remoteEntries || !remoteEntries.length) return;
+
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+    const last24h = Date.now() - 24 * 60 * 60 * 1000;
+    const last7days = Date.now() - 7 * 24 * 60 * 60 * 1000;
+
+    // Today's totals
+    const todayEntries = remoteEntries.filter(e => e.timestamp >= todayStart);
+    const todayCounts = { feed: 0, pee: 0, poop: 0 };
+    todayEntries.forEach(e => { if (todayCounts[e.type] !== undefined) todayCounts[e.type]++; });
+    drawBarChart('todayChart', [
+      { label: 'Feed', value: todayCounts.feed, color: 'var(--accent)' },
+      { label: 'Pee', value: todayCounts.pee, color: 'var(--yellow)' },
+      { label: 'Poop', value: todayCounts.poop, color: 'var(--red)' }
+    ]);
+
+    // Last 24 hours by hour
+    const hourlyData = Array(24).fill(0).map((_, i) => ({ hour: i, count: 0 }));
+    remoteEntries.filter(e => e.timestamp >= last24h).forEach(e => {
+      const h = new Date(e.timestamp).getHours();
+      hourlyData[h].count++;
+    });
+    drawLineChart('hourlyChart', hourlyData);
+
+    // 7-day trend
+    const dailyData = [];
+    for (let i = 6; i >= 0; i--) {
+      const dayStart = todayStart - i * 24 * 60 * 60 * 1000;
+      const dayEnd = dayStart + 24 * 60 * 60 * 1000;
+      const dayEntries = remoteEntries.filter(e => e.timestamp >= dayStart && e.timestamp < dayEnd);
+      const counts = { feed: 0, pee: 0, poop: 0 };
+      dayEntries.forEach(e => { if (counts[e.type] !== undefined) counts[e.type]++; });
+      dailyData.push({ day: new Date(dayStart).toLocaleDateString('en', { weekday: 'short' }), ...counts });
+    }
+    drawStackedBarChart('weekChart', dailyData);
+
+    // Feed-to-Diaper Ratio (pediatric standard: ~1-2 diapers per feed is healthy)
+    const feedCount = todayCounts.feed;
+    const diaperCount = todayCounts.pee + todayCounts.poop;
+    const ratio = feedCount > 0 ? (diaperCount / feedCount).toFixed(1) : 0;
+    drawRatioChart('ratioChart', {
+      feeds: feedCount,
+      diapers: diaperCount,
+      ratio: ratio,
+      target: 1.5 // healthy target: ~1-2 diapers per feed
+    });
+  }
+
+  function drawBarChart(canvasId, data) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    const max = Math.max(...data.map(d => d.value), 1);
+    const barWidth = w / data.length - 20;
+    const spacing = 20;
+
+    data.forEach((d, i) => {
+      const barHeight = (d.value / max) * (h - 60);
+      const x = i * (barWidth + spacing) + spacing;
+      const y = h - barHeight - 30;
+
+      ctx.fillStyle = d.color;
+      ctx.fillRect(x, y, barWidth, barHeight);
+
+      ctx.fillStyle = 'var(--text)';
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(d.label, x + barWidth / 2, h - 12);
+      ctx.fillText(d.value, x + barWidth / 2, y - 6);
+    });
+  }
+
+  function drawLineChart(canvasId, data) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    const max = Math.max(...data.map(d => d.count), 1);
+    const step = w / (data.length - 1 || 1);
+
+    ctx.strokeStyle = 'var(--accent)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    data.forEach((d, i) => {
+      const x = i * step;
+      const y = h - 30 - (d.count / max) * (h - 60);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    ctx.fillStyle = 'var(--muted)';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'center';
+    const showEvery = Math.ceil(data.length / 6);
+    data.forEach((d, i) => {
+      if (i % showEvery === 0) {
+        const x = i * step;
+        ctx.fillText(d.hour + 'h', x, h - 10);
+      }
+    });
+  }
+
+  function drawStackedBarChart(canvasId, data) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    const maxTotal = Math.max(...data.map(d => d.feed + d.pee + d.poop), 1);
+    const barWidth = w / data.length - 16;
+    const spacing = 16;
+
+    data.forEach((d, i) => {
+      const total = d.feed + d.pee + d.poop;
+      const scale = (h - 60) / maxTotal;
+      const x = i * (barWidth + spacing) + spacing / 2;
+      let y = h - 30;
+
+      // Poop (bottom)
+      const poopH = d.poop * scale;
+      ctx.fillStyle = 'var(--red)';
+      ctx.fillRect(x, y - poopH, barWidth, poopH);
+      y -= poopH;
+
+      // Pee (middle)
+      const peeH = d.pee * scale;
+      ctx.fillStyle = 'var(--yellow)';
+      ctx.fillRect(x, y - peeH, barWidth, peeH);
+      y -= peeH;
+
+      // Feed (top)
+      const feedH = d.feed * scale;
+      ctx.fillStyle = 'var(--accent)';
+      ctx.fillRect(x, y - feedH, barWidth, feedH);
+
+      // Label
+      ctx.fillStyle = 'var(--muted)';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(d.day, x + barWidth / 2, h - 10);
+    });
+  }
+  function drawRatioChart(canvasId, data) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    // Draw comparison bars
+    const barWidth = 60;
+    const spacing = (w - barWidth * 2) / 3;
+
+    // Feeds bar
+    const maxVal = Math.max(data.feeds, data.diapers, 1);
+    const feedHeight = (data.feeds / maxVal) * (h - 100);
+    const x1 = spacing;
+    ctx.fillStyle = 'var(--accent)';
+    ctx.fillRect(x1, h - feedHeight - 50, barWidth, feedHeight);
+    ctx.fillStyle = 'var(--text)';
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(data.feeds, x1 + barWidth / 2, h - feedHeight - 60);
+    ctx.font = '12px sans-serif';
+    ctx.fillText('Feeds', x1 + barWidth / 2, h - 30);
+
+    // Diapers bar
+    const diaperHeight = (data.diapers / maxVal) * (h - 100);
+    const x2 = spacing * 2 + barWidth;
+    ctx.fillStyle = 'var(--yellow)';
+    ctx.fillRect(x2, h - diaperHeight - 50, barWidth, diaperHeight);
+    ctx.fillStyle = 'var(--text)';
+    ctx.font = '14px sans-serif';
+    ctx.fillText(data.diapers, x2 + barWidth / 2, h - diaperHeight - 60);
+    ctx.font = '12px sans-serif';
+    ctx.fillText('Diapers', x2 + barWidth / 2, h - 30);
+
+    // Ratio display
+    ctx.fillStyle = 'var(--text)';
+    ctx.font = 'bold 24px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(data.ratio + ':1', w / 2, 40);
+    ctx.font = '11px sans-serif';
+    ctx.fillStyle = 'var(--muted)';
+    const status = data.ratio >= 1 && data.ratio <= 2 ? 'Healthy range' : data.ratio > 2 ? 'Great hydration' : 'Monitor intake';
+    ctx.fillText(status + ' (target: 1-2:1)', w / 2, 58);
+  }
   function renderLog() {
     if (!remoteEntries) {
       summaryEl.textContent = "Loading remote log…";
@@ -298,12 +518,41 @@
 
   async function deleteEntry(id) {
     if (!settings.syncEnabled || !settings.webAppUrl) return;
+    haptics(8);
+    toast("Deleting…");
     await maybeDelete([id]);
     await maybeLoadRemoteEntries();
     renderLog();
     updateStatus();
     toast("Entry deleted from Sheets");
   }
+
+  // Button press feedback (visual + haptics on pointer)
+  function attachPressFeedback(el) {
+    if (!el) return;
+    el.addEventListener("pointerdown", () => {
+      el.classList.add("pressed");
+      haptics(6);
+    });
+    const clear = () => el.classList.remove("pressed");
+    el.addEventListener("pointerup", clear);
+    el.addEventListener("pointerleave", clear);
+    el.addEventListener("pointercancel", clear);
+  }
+  [
+    ...$$(".action"),
+    undoBtn,
+    viewGraphsBtn,
+    viewLogBtn,
+    printBtn,
+    saveSettingsBtn,
+    syncNowBtn,
+    clearFilterBtn,
+    closeGraphsBtn,
+    closeLogBtn,
+    exportCsvBtn,
+    openSettingsBtn,
+  ].forEach(attachPressFeedback);
 
   function exportCsv() {
     const source = remoteEntries || [];
@@ -525,6 +774,8 @@
     });
   });
   undoBtn.addEventListener("click", undoLast);
+  viewGraphsBtn.addEventListener("click", openGraphs);
+  closeGraphsBtn.addEventListener("click", closeGraphs);
   viewLogBtn.addEventListener("click", openLog);
   closeLogBtn.addEventListener("click", closeLog);
   exportCsvBtn.addEventListener("click", exportCsv);

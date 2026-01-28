@@ -36,8 +36,38 @@
         <div class="today-totals" id="todayTotals">Today: —</div>
         <div class="actions-row">
           <button id="undoBtn" class="secondary">Undo last</button>
+          <button id="viewGraphsBtn" class="secondary">Graphs</button>
           <button id="viewLogBtn" class="secondary">View log</button>
           <button id="printBtn" class="secondary">Print</button>
+        </div>
+      </section>
+
+      <section class="panel" id="graphsPanel" hidden>
+        <div class="panel-header">
+          <h2>Graphs</h2>
+          <button id="closeGraphsBtn" class="icon" aria-label="Close">✕</button>
+        </div>
+        <div class="graphs-container">
+          <div class="graph-card">
+            <h3>Today's Activity</h3>
+            <canvas id="todayChart" width="300" height="200"></canvas>
+          </div>
+          <div class="graph-card">
+            <h3>Last 24 Hours</h3>
+            <canvas id="hourlyChart" width="300" height="200"></canvas>
+          </div>
+          <div class="graph-card">
+            <h3>7-Day Trend</h3>
+            <canvas id="weekChart" width="300" height="200"></canvas>
+          </div>
+          <div class="graph-card">
+            <h3>Feed to Diaper Ratio (Today)</h3>
+            <canvas id="ratioChart" width="300" height="200"></canvas>
+            <div class="graph-guide">
+              <strong>Healthy: 1-2 diapers per feed</strong><br>
+              &lt;1:1 = Monitor intake • 1-2:1 = Good • &gt;2:1 = Great hydration
+            </div>
+          </div>
         </div>
       </section>
 
