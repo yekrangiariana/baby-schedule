@@ -266,14 +266,21 @@
   }
 
   async function openGraphs() {
+    haptics(8);
     graphsPanel.hidden = false;
-    if (!remoteEntries) {
-      await maybeLoadRemoteEntries();
+    try {
+      if (!remoteEntries) {
+        await maybeLoadRemoteEntries();
+      }
+      renderGraphs();
+    } catch (err) {
+      console.error('Failed to render graphs:', err);
+      toast('Graphs unavailable — add some logs first');
     }
-    renderGraphs();
   }
 
   function closeGraphs() {
+    haptics(6);
     graphsPanel.hidden = true;
   }
 
@@ -800,7 +807,13 @@
     });
   });
   undoBtn.addEventListener("click", undoLast);
-  viewGraphsBtn.addEventListener("click", openGraphs);
+  viewGraphsBtn.addEventListener("click", async () => {
+    try {
+      await openGraphs();
+    } catch (err) {
+      console.error('Graph button error:', err);
+    }
+  });
   closeGraphsBtn.addEventListener("click", closeGraphs);
   viewLogBtn.addEventListener("click", openLog);
   closeLogBtn.addEventListener("click", closeLog);
