@@ -357,7 +357,10 @@
     const ctx = canvas.getContext("2d");
     const w = canvas.width,
       h = canvas.height;
-    ctx.clearRect(0, 0, w, h);
+    
+    // White background
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, w, h);
 
     const max = Math.max(...data.map((d) => d.value), 1);
     const barWidth = w / data.length - 20;
@@ -371,7 +374,7 @@
       ctx.fillStyle = d.color;
       ctx.fillRect(x, y, barWidth, barHeight);
 
-      ctx.fillStyle = "var(--text)";
+      ctx.fillStyle = "#1f2937";
       ctx.font = "12px sans-serif";
       ctx.textAlign = "center";
       ctx.fillText(d.label, x + barWidth / 2, h - 12);
@@ -385,12 +388,15 @@
     const ctx = canvas.getContext("2d");
     const w = canvas.width,
       h = canvas.height;
-    ctx.clearRect(0, 0, w, h);
+    
+    // White background
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, w, h);
 
     const max = Math.max(...data.map((d) => d.count), 1);
     const step = w / (data.length - 1 || 1);
 
-    ctx.strokeStyle = "var(--accent)";
+    ctx.strokeStyle = "#60a5fa";
     ctx.lineWidth = 2;
     ctx.beginPath();
     data.forEach((d, i) => {
@@ -401,7 +407,7 @@
     });
     ctx.stroke();
 
-    ctx.fillStyle = "var(--muted)";
+    ctx.fillStyle = "#6b7280";
     ctx.font = "10px sans-serif";
     ctx.textAlign = "center";
     const showEvery = Math.ceil(data.length / 6);
@@ -419,7 +425,10 @@
     const ctx = canvas.getContext("2d");
     const w = canvas.width,
       h = canvas.height;
-    ctx.clearRect(0, 0, w, h);
+    
+    // White background
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, w, h);
 
     const maxTotal = Math.max(...data.map((d) => d.feed + d.pee + d.poop), 1);
     const barWidth = w / data.length - 16;
@@ -433,23 +442,23 @@
 
       // Poop (bottom)
       const poopH = d.poop * scale;
-      ctx.fillStyle = "var(--red)";
+      ctx.fillStyle = "#f87171";
       ctx.fillRect(x, y - poopH, barWidth, poopH);
       y -= poopH;
 
       // Pee (middle)
       const peeH = d.pee * scale;
-      ctx.fillStyle = "var(--yellow)";
+      ctx.fillStyle = "#fbbf24";
       ctx.fillRect(x, y - peeH, barWidth, peeH);
       y -= peeH;
 
       // Feed (top)
       const feedH = d.feed * scale;
-      ctx.fillStyle = "var(--accent)";
+      ctx.fillStyle = "#60a5fa";
       ctx.fillRect(x, y - feedH, barWidth, feedH);
 
       // Label
-      ctx.fillStyle = "var(--muted)";
+      ctx.fillStyle = "#6b7280";
       ctx.font = "10px sans-serif";
       ctx.textAlign = "center";
       ctx.fillText(d.day, x + barWidth / 2, h - 10);
@@ -461,7 +470,10 @@
     const ctx = canvas.getContext("2d");
     const w = canvas.width,
       h = canvas.height;
-    ctx.clearRect(0, 0, w, h);
+    
+    // White background
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, w, h);
 
     // Draw comparison bars
     const barWidth = 60;
@@ -471,9 +483,9 @@
     const maxVal = Math.max(data.feeds, data.diapers, 1);
     const feedHeight = (data.feeds / maxVal) * (h - 100);
     const x1 = spacing;
-    ctx.fillStyle = "var(--accent)";
+    ctx.fillStyle = "#60a5fa";
     ctx.fillRect(x1, h - feedHeight - 50, barWidth, feedHeight);
-    ctx.fillStyle = "var(--text)";
+    ctx.fillStyle = "#1f2937";
     ctx.font = "14px sans-serif";
     ctx.textAlign = "center";
     ctx.fillText(data.feeds, x1 + barWidth / 2, h - feedHeight - 60);
@@ -483,21 +495,21 @@
     // Diapers bar
     const diaperHeight = (data.diapers / maxVal) * (h - 100);
     const x2 = spacing * 2 + barWidth;
-    ctx.fillStyle = "var(--yellow)";
+    ctx.fillStyle = "#fbbf24";
     ctx.fillRect(x2, h - diaperHeight - 50, barWidth, diaperHeight);
-    ctx.fillStyle = "var(--text)";
+    ctx.fillStyle = "#1f2937";
     ctx.font = "14px sans-serif";
     ctx.fillText(data.diapers, x2 + barWidth / 2, h - diaperHeight - 60);
     ctx.font = "12px sans-serif";
     ctx.fillText("Diapers", x2 + barWidth / 2, h - 30);
 
     // Ratio display
-    ctx.fillStyle = "var(--text)";
+    ctx.fillStyle = "#1f2937";
     ctx.font = "bold 24px sans-serif";
     ctx.textAlign = "center";
     ctx.fillText(data.ratio + ":1", w / 2, 40);
     ctx.font = "11px sans-serif";
-    ctx.fillStyle = "var(--muted)";
+    ctx.fillStyle = "#6b7280";
     const status =
       data.ratio >= 1 && data.ratio <= 2
         ? "Healthy range"
