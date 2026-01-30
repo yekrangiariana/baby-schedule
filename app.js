@@ -1,14 +1,21 @@
 (function () {
   // Optional: hardcode your Google Apps Script Web App URL here to avoid using the Settings UI.
   // If non-empty, syncing will be enabled automatically and the Settings section will be hidden.
-  const FIXED_WEB_APP_URL =
-    "https://script.google.com/macros/s/AKfycbx3ZBVvxpKSSpCHbEAwdWiKi1O_bwatIT8McEgsb0iJw785UQelb85smJSRp5QRiG4s/exec";
+  const FIXED_WEB_APP_URL = "";
 
   const STORE_KEY = "babylog.entries.v1";
   const SETTINGS_KEY = "babylog.settings.v1";
   const DELETE_QUEUE_KEY = "babylog.deletes.v1";
   const SYNC_QUEUE_KEY = "babylog.syncqueue.v1";
   const LAST_SYNC_KEY = "babylog.lastsync.v1";
+  const ACTION_TYPES_KEY = "babylog.actiontypes.v1";
+
+  // Default action types
+  const DEFAULT_ACTION_TYPES = [
+    { id: 'feed', name: 'Feed', emoji: '🍼', color: '#a8d5ff' },
+    { id: 'pee', name: 'Pee', emoji: '💧', color: '#ffe4a8' },
+    { id: 'poop', name: 'Poop', emoji: '💩', color: '#ffb3ba' }
+  ];
 
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => Array.from(document.querySelectorAll(s));
@@ -21,10 +28,12 @@
 
   const toastEl = $("#toast");
   const nowText = $("#nowText");
-  const lastFeed = $("#lastFeed");
-  const lastPee = $("#lastPee");
-  const lastPoop = $("#lastPoop");
+  const actionButtons = $("#actionButtons");
+  const logStats = $("#logStats");
   const todayTotals = $("#todayTotals");
+  const syncNoticeWarning = $("#syncNoticeWarning");
+  const syncNoticeSuccess = $("#syncNoticeSuccess");
+  const syncNoticeLink = $("#syncNoticeLink");
   const recentList = $("#recentList");
   const logEntries = $("#logEntries");
   const undoBtn = $("#undoBtn");
@@ -41,9 +50,24 @@
 
   const openSettingsBtn = $("#openSettingsBtn");
   const appsScriptUrl = $("#appsScriptUrl");
-  const syncToggle = $("#syncToggle");
   const saveSettingsBtn = $("#saveSettingsBtn");
-  const syncNowBtn = $("#syncNowBtn");
+  const viewHelpBtn = $("#viewHelpBtn");
+
+  // Action Types Manager
+  const actionTypesList = $("#actionTypesList");
+  const addActionTypeBtn = $("#addActionTypeBtn");
+  const actionTypeModal = $("#actionTypeModal");
+  const actionTypeModalTitle = $("#actionTypeModalTitle");
+  const actionTypeName = $("#actionTypeName");
+  const actionTypeEmoji = $("#actionTypeEmoji");
+  const actionTypeColor = $("#actionTypeColor");
+  const saveActionTypeBtn = $("#saveActionTypeBtn");
+  const cancelActionTypeBtn = $("#cancelActionTypeBtn");
+  let editingActionTypeId = null;
+
+  // Screens
+  const helpScreen = $("#helpScreen");
+  const helpContent = $("#helpContent");
 
   // Legacy elements for compatibility
   const logPanel = { hidden: true };
@@ -147,6 +171,21 @@
   function setLastSyncTime(ts) {
     localStorage.setItem(LAST_SYNC_KEY, String(ts || Date.now()));
   }
+  function loadActionTypes() {
+    try {
+      const stored = localStorage.getItem(ACTION_TYPES_KEY);
+      if (!stored) return DEFAULT_ACTION_TYPES;
+      return JSON.parse(stored);
+    } catch {
+      return DEFAULT_ACTION_TYPES;
+    }
+  }
+  function saveActionTypes(types) {
+    localStorage.setItem(ACTION_TYPES_KEY, JSON.stringify(types));
+  }
+  function getActionTypeById(id) {
+    return actionTypes.find(t => t.id === id) || { id, name: id, emoji: '📝', color: '#cbd5e1' };
+  }
 
   function formatDate(ts) {
     const d = new Date(ts);
@@ -170,7 +209,24 @@
   let settings = loadSettings();
   let deleteQueue = loadDeletes();
   let syncQueue = loadSyncQueue();
+  let actionTypes = loadActionTypes();
   let isSyncing = false;
+
+  // Apply saved theme or default to blossom
+  function applyTheme(theme) {
+    const validThemes = ['blossom', 'comet', 'meadow'];
+    const selectedTheme = validThemes.includes(theme) ? theme : 'blossom';
+    document.body.setAttribute('data-theme', selectedTheme);
+    
+    // Update radio buttons
+    const themeRadios = document.querySelectorAll('input[name="theme"]');
+    themeRadios.forEach(radio => {
+      radio.checked = radio.value === selectedTheme;
+    });
+  }
+
+  // Load and apply theme on startup
+  applyTheme(settings.theme || 'blossom');
 
   // If a fixed URL is provided, force-enable sync
   if (FIXED_WEB_APP_URL) {
@@ -212,8 +268,9 @@
     saveSyncQueue(syncQueue);
 
     // Immediate UI update
+    const typeInfo = getActionTypeById(type);
     haptics(15);
-    toast(`${capitalize(type)} logged`);
+    toast(`${typeInfo.name} logged`);
     updateStatus();
     showUndoButton();
 
@@ -239,12 +296,15 @@
       logScreen.hidden = true;
       insightsScreen.hidden = true;
       settingsScreen.hidden = true;
+      if (helpScreen) helpScreen.hidden = true;
       $$(`.nav-item[data-screen="home"]`)[0]?.classList.add("active");
+      updateStatus(); // Refresh sync notice when returning to home
     } else if (screen === "log") {
       homeScreen.hidden = true;
       logScreen.hidden = false;
       insightsScreen.hidden = true;
       settingsScreen.hidden = true;
+      if (helpScreen) helpScreen.hidden = true;
       $$(`.nav-item[data-screen="log"]`)[0]?.classList.add("active");
       renderLog();
       backgroundSync();
@@ -254,6 +314,7 @@
       logScreen.hidden = true;
       insightsScreen.hidden = false;
       settingsScreen.hidden = true;
+      if (helpScreen) helpScreen.hidden = true;
       $$(`.nav-item[data-screen="insights"]`)[0]?.classList.add("active");
       renderGraphs();
       backgroundSync();
@@ -262,7 +323,17 @@
       logScreen.hidden = true;
       insightsScreen.hidden = true;
       settingsScreen.hidden = false;
+      if (helpScreen) helpScreen.hidden = true;
       $$(`.nav-item[data-screen="settings"]`)[0]?.classList.add("active");
+    } else if (screen === "help") {
+      homeScreen.hidden = true;
+      logScreen.hidden = true;
+      insightsScreen.hidden = true;
+      settingsScreen.hidden = true;
+      if (helpScreen) {
+        helpScreen.hidden = false;
+        loadHelpContent();
+      }
     }
   }
 
@@ -277,7 +348,7 @@
     const recent = entries
       .slice()
       .sort((a, b) => b.timestamp - a.timestamp)
-      .slice(0, 4);
+      .slice(0, 3);
 
     if (recent.length === 0) {
       recentList.innerHTML =
@@ -287,21 +358,57 @@
 
     recentList.innerHTML = recent
       .map(
-        (e, index) => `
+        (e, index) => {
+          const typeInfo = getActionTypeById(e.type);
+          return `
       <div class="recent-item" style="animation-delay: ${index * 0.05}s">
-        <div class="recent-icon ${e.type}">${getTypeEmoji(e.type)}</div>
+        <div class="recent-icon" style="background: ${typeInfo.color}30; color: ${typeInfo.color};">${typeInfo.emoji}</div>
         <div class="recent-info">
-          <div class="recent-type">${capitalize(e.type)}</div>
+          <div class="recent-type">${typeInfo.name}</div>
           <div class="recent-time">${formatDate(e.timestamp)} ${formatTime(e.timestamp)}</div>
         </div>
       </div>
-    `,
+    `;
+        },
       )
       .join("");
   }
 
+  // Render action buttons on home screen
+  function renderHomeScreen() {
+    if (!actionButtons) return;
+    
+    actionButtons.innerHTML = actionTypes.map(type => `
+      <button class="action" data-type="${type.id}" style="border-color: ${type.color};">
+        <div class="action-glow" style="background: linear-gradient(135deg, ${type.color}30, ${type.color});"></div>
+        <span class="action-emoji">${type.emoji}</span>
+        <span class="action-label">${type.name}</span>
+      </button>
+    `).join('');
+    
+    // Re-attach event listeners and press feedback
+    actionButtons.querySelectorAll('.action').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const type = btn.dataset.type;
+        addEntry(type);
+      });
+      attachPressFeedback(btn);
+    });
+  }
+
   function getTypeEmoji(type) {
-    return { feed: "🍼", pee: "💧", poop: "💩" }[type] || "📝";
+    const actionType = getActionTypeById(type);
+    return actionType.emoji;
+  }
+  
+  function getTypeColor(type) {
+    const actionType = getActionTypeById(type);
+    return actionType.color;
+  }
+  
+  function getTypeName(type) {
+    const actionType = getActionTypeById(type);
+    return actionType.name;
   }
 
   // Undo last - instant local delete with background sync
@@ -336,22 +443,54 @@
 
   function updateStatus() {
     const src = entries;
-    const lastOf = (t) => {
-      const e = src
-        .filter((e) => e.type === t)
-        .sort((a, b) => b.timestamp - a.timestamp)[0];
-      return e ? `${formatDate(e.timestamp)} ${formatTime(e.timestamp)}` : "—";
-    };
-    lastFeed.textContent = lastOf("feed");
-    lastPee.textContent = lastOf("pee");
-    lastPoop.textContent = lastOf("poop");
+    
+    // Render dynamic mini stats
+    if (logStats) {
+      logStats.innerHTML = actionTypes.slice(0, 3).map(type => {
+        const e = src
+          .filter((e) => e.type === type.id)
+          .sort((a, b) => b.timestamp - a.timestamp)[0];
+        const lastTime = e ? `${formatDate(e.timestamp)} ${formatTime(e.timestamp)}` : "—";
+        
+        return `
+          <div class="stat-mini" style="background: ${type.color}20; border-color: ${type.color};">
+            <div class="stat-mini-icon">${type.emoji}</div>
+            <div class="stat-mini-content">
+              <div class="stat-mini-label">Last ${type.name}</div>
+              <div class="stat-mini-value">${lastTime}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
 
     const today = new Date();
     const todayEntries = src.filter((e) => isSameDay(e.timestamp, today));
     const counts = countByType(todayEntries);
+    
+    // Build dynamic summary text
+    const summaryParts = actionTypes.map(type => 
+      `${type.name} ${counts[type.id] || 0}`
+    );
     todayTotals.textContent = src.length
-      ? `Today: Feed ${counts.feed || 0} • Pee ${counts.pee || 0} • Poop ${counts.poop || 0}`
+      ? `Today: ${summaryParts.join(' • ')}`
       : "Today: —";
+
+    // Show sync warning on home screen if not connected
+    // Reload settings to ensure we have latest state
+    const currentSettings = loadSettings();
+    const hasUrl = !!(currentSettings.webAppUrl || FIXED_WEB_APP_URL);
+    const isSyncConfigured = hasUrl && currentSettings.syncEnabled;
+    
+    // Only show warning on home screen when NOT connected
+    if (syncNoticeWarning) {
+      syncNoticeWarning.hidden = isSyncConfigured;
+    }
+    
+    // Update success notice in settings (handled separately when settings screen is shown)
+    if (syncNoticeSuccess) {
+      syncNoticeSuccess.hidden = !isSyncConfigured;
+    }
 
     renderRecentActivity();
   }
@@ -414,27 +553,62 @@
     const last24h = Date.now() - 24 * 60 * 60 * 1000;
     const last7days = Date.now() - 7 * 24 * 60 * 60 * 1000;
 
+    // Build dynamic counts object
+    const createCountsObj = () => {
+      const obj = {};
+      actionTypes.forEach(type => {
+        obj[type.id] = 0;
+      });
+      return obj;
+    };
+
+    // Render legends
+    const renderLegend = (elementId) => {
+      const legendEl = document.getElementById(elementId);
+      if (legendEl) {
+        legendEl.innerHTML = actionTypes.map(type => `
+          <div class="legend-item">
+            <span class="legend-color" style="background: ${type.color};"></span>
+            <span class="legend-label">${type.name}</span>
+          </div>
+        `).join('');
+      }
+    };
+    renderLegend('weekLegend');
+    renderLegend('hourlyLegend');
+
     // Today's totals
     const todayEntries = entries.filter((e) => e.timestamp >= todayStart);
-    const todayCounts = { feed: 0, pee: 0, poop: 0 };
+    const todayCounts = createCountsObj();
     todayEntries.forEach((e) => {
       if (todayCounts[e.type] !== undefined) todayCounts[e.type]++;
     });
-    drawBarChart("todayChart", [
-      { label: "Feed", value: todayCounts.feed, color: "var(--accent)" },
-      { label: "Pee", value: todayCounts.pee, color: "var(--yellow)" },
-      { label: "Poop", value: todayCounts.poop, color: "var(--red)" },
-    ]);
+    
+    // Build chart data from action types
+    const todayChartData = actionTypes.map(type => ({
+      label: type.name,
+      value: todayCounts[type.id] || 0,
+      color: type.color
+    }));
+    drawBarChart("todayChart", todayChartData);
 
     // Last 24 hours by hour
     const hourlyData = Array(24)
       .fill(0)
-      .map((_, i) => ({ hour: i, count: 0 }));
+      .map((_, i) => {
+        const obj = { hour: i };
+        actionTypes.forEach(type => {
+          obj[type.id] = 0;
+        });
+        return obj;
+      });
     entries
       .filter((e) => e.timestamp >= last24h)
       .forEach((e) => {
         const h = new Date(e.timestamp).getHours();
-        hourlyData[h].count++;
+        if (hourlyData[h][e.type] !== undefined) {
+          hourlyData[h][e.type]++;
+        }
       });
     drawLineChart("hourlyChart", hourlyData);
 
@@ -446,7 +620,7 @@
       const dayEntries = entries.filter(
         (e) => e.timestamp >= dayStart && e.timestamp < dayEnd,
       );
-      const counts = { feed: 0, pee: 0, poop: 0 };
+      const counts = createCountsObj();
       dayEntries.forEach((e) => {
         if (counts[e.type] !== undefined) counts[e.type]++;
       });
@@ -457,16 +631,22 @@
     }
     drawStackedBarChart("weekChart", dailyData);
 
-    // Feed-to-Diaper Ratio (pediatric standard: ~1-2 diapers per feed is healthy)
-    const feedCount = todayCounts.feed;
-    const diaperCount = todayCounts.pee + todayCounts.poop;
-    const ratio = feedCount > 0 ? (diaperCount / feedCount).toFixed(1) : 0;
-    drawRatioChart("ratioChart", {
-      feeds: feedCount,
-      diapers: diaperCount,
-      ratio: ratio,
-      target: 1.5, // healthy target: ~1-2 diapers per feed
-    });
+    // Only show ratio chart if we have feed and diaper types
+    const hasFeed = actionTypes.some(t => t.id === 'feed');
+    const hasPee = actionTypes.some(t => t.id === 'pee');
+    const hasPoop = actionTypes.some(t => t.id === 'poop');
+    
+    if (hasFeed && (hasPee || hasPoop)) {
+      const feedCount = todayCounts.feed || 0;
+      const diaperCount = (todayCounts.pee || 0) + (todayCounts.poop || 0);
+      const ratio = feedCount > 0 ? (diaperCount / feedCount).toFixed(1) : 0;
+      drawRatioChart("ratioChart", {
+        feeds: feedCount,
+        diapers: diaperCount,
+        ratio: ratio,
+        target: 1.5,
+      });
+    }
   }
 
   function drawBarChart(canvasId, data) {
@@ -527,45 +707,53 @@
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, w, h);
 
-    const max = Math.max(...data.map((d) => d.count), 1);
+    // Find max value across all types dynamically
+    const max = Math.max(
+      ...data.map((d) => Math.max(...actionTypes.map(type => d[type.id] || 0))),
+      1,
+    );
     const step = w / (data.length - 1 || 1);
 
-    // Draw smooth curve with gradient
-    const gradient = ctx.createLinearGradient(0, 0, 0, h);
-    gradient.addColorStop(0, "#60a5fa");
-    gradient.addColorStop(1, "#93c5fd");
+    // Helper function to draw a smooth line
+    const drawLine = (typeId, color) => {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
 
-    ctx.strokeStyle = gradient;
-    ctx.lineWidth = 3;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.beginPath();
+      data.forEach((d, i) => {
+        const x = i * step;
+        const y = h - 40 - ((d[typeId] || 0) / max) * (h - 70);
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          // Use quadratic curves for smooth lines
+          const prevX = (i - 1) * step;
+          const prevY = h - 40 - ((data[i - 1][typeId] || 0) / max) * (h - 70);
+          const cpX = (prevX + x) / 2;
+          const cpY = (prevY + y) / 2;
+          ctx.quadraticCurveTo(prevX, prevY, cpX, cpY);
+        }
+      });
 
-    data.forEach((d, i) => {
-      const x = i * step;
-      const y = h - 30 - (d.count / max) * (h - 60);
-      if (i === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        // Use quadratic curves for smooth lines
-        const prevX = (i - 1) * step;
-        const prevY = h - 30 - (data[i - 1].count / max) * (h - 60);
-        const cpX = (prevX + x) / 2;
-        const cpY = (prevY + y) / 2;
-        ctx.quadraticCurveTo(prevX, prevY, cpX, cpY);
+      // Draw final segment
+      if (data.length > 1) {
+        const lastIdx = data.length - 1;
+        const x = lastIdx * step;
+        const y = h - 40 - ((data[lastIdx][typeId] || 0) / max) * (h - 70);
+        ctx.lineTo(x, y);
       }
+
+      ctx.stroke();
+    };
+
+    // Draw lines for each action type
+    actionTypes.forEach(type => {
+      drawLine(type.id, type.color);
     });
 
-    // Draw final segment
-    if (data.length > 1) {
-      const lastIdx = data.length - 1;
-      const x = lastIdx * step;
-      const y = h - 30 - (data[lastIdx].count / max) * (h - 60);
-      ctx.lineTo(x, y);
-    }
-
-    ctx.stroke();
-
+    // Draw time labels
     ctx.fillStyle = "#6b7280";
     ctx.font = "10px sans-serif";
     ctx.textAlign = "center";
@@ -573,7 +761,16 @@
     data.forEach((d, i) => {
       if (i % showEvery === 0) {
         const x = i * step;
-        ctx.fillText(d.hour + "h", x, h - 10);
+        const hour = d.hour;
+        const timeLabel =
+          hour === 0
+            ? "12am"
+            : hour < 12
+              ? hour + "am"
+              : hour === 12
+                ? "12pm"
+                : hour - 12 + "pm";
+        ctx.fillText(timeLabel, x, h - 10);
       }
     });
   }
@@ -597,32 +794,26 @@
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, w, h);
 
-    const maxTotal = Math.max(...data.map((d) => d.feed + d.pee + d.poop), 1);
+    // Calculate max total dynamically
+    const maxTotal = Math.max(
+      ...data.map((d) => actionTypes.reduce((sum, type) => sum + (d[type.id] || 0), 0)),
+      1
+    );
     const barWidth = w / data.length - 16;
     const spacing = 16;
 
     data.forEach((d, i) => {
-      const total = d.feed + d.pee + d.poop;
       const scale = (h - 60) / maxTotal;
       const x = i * (barWidth + spacing) + spacing / 2;
       let y = h - 30;
 
-      // Poop (bottom)
-      const poopH = d.poop * scale;
-      ctx.fillStyle = "#f87171";
-      ctx.fillRect(x, y - poopH, barWidth, poopH);
-      y -= poopH;
-
-      // Pee (middle)
-      const peeH = d.pee * scale;
-      ctx.fillStyle = "#fbbf24";
-      ctx.fillRect(x, y - peeH, barWidth, peeH);
-      y -= peeH;
-
-      // Feed (top)
-      const feedH = d.feed * scale;
-      ctx.fillStyle = "#60a5fa";
-      ctx.fillRect(x, y - feedH, barWidth, feedH);
+      // Draw stacked segments in reverse order (bottom to top)
+      [...actionTypes].reverse().forEach(type => {
+        const segmentH = (d[type.id] || 0) * scale;
+        ctx.fillStyle = type.color;
+        ctx.fillRect(x, y - segmentH, barWidth, segmentH);
+        y -= segmentH;
+      });
 
       // Label
       ctx.fillStyle = "#6b7280";
@@ -701,9 +892,12 @@
       : source;
     const counts = countByType(list);
 
-    // Update summary text
+    // Build dynamic summary text
+    const summaryParts = actionTypes.map(type => 
+      `${type.name} ${counts[type.id] || 0}`
+    );
     summaryEl.textContent = list.length
-      ? `Showing ${list.length} entries — Feed ${counts.feed || 0}, Pee ${counts.pee || 0}, Poop ${counts.poop || 0}`
+      ? `Showing ${list.length} entries — ${summaryParts.join(', ')}`
       : "No entries yet";
 
     // Render log entries as cards
@@ -716,12 +910,13 @@
       .slice()
       .sort((a, b) => b.timestamp - a.timestamp)
       .forEach((e) => {
+        const typeInfo = getActionTypeById(e.type);
         const card = document.createElement("div");
         card.className = "log-entry";
         card.innerHTML = `
-          <div class="log-entry-icon ${e.type}">${getTypeEmoji(e.type)}</div>
+          <div class="log-entry-icon" style="background: ${typeInfo.color}30; color: ${typeInfo.color};">${typeInfo.emoji}</div>
           <div class="log-entry-content">
-            <div class="log-entry-type">${capitalize(e.type)}</div>
+            <div class="log-entry-type">${typeInfo.name}</div>
             <div class="log-entry-time">${formatDate(e.timestamp)} ${formatTime(e.timestamp)}</div>
             ${e.note ? `<div class="log-entry-note">${escapeHtml(e.note)}</div>` : ""}
           </div>
@@ -778,13 +973,11 @@
     el.addEventListener("pointercancel", clear);
   }
   [
-    ...$$(".action"),
     undoBtn,
     viewGraphsBtn,
     viewLogBtn,
     printBtn,
     saveSettingsBtn,
-    syncNowBtn,
     clearFilterBtn,
     closeGraphsBtn,
     closeLogBtn,
@@ -1086,11 +1279,6 @@
   }
 
   // Wire events
-  $$(".action").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      await addEntry(btn.dataset.type);
-    });
-  });
   undoBtn.addEventListener("click", undoLast);
   viewGraphsBtn.addEventListener("click", async () => {
     try {
@@ -1131,23 +1319,205 @@
   if (openSettingsBtn && settingsPanel) {
     openSettingsBtn.addEventListener("click", openSettings);
   }
-  if (saveSettingsBtn && appsScriptUrl && syncToggle) {
-    saveSettingsBtn.addEventListener("click", () => {
+  if (saveSettingsBtn && appsScriptUrl) {
+    saveSettingsBtn.addEventListener("click", async () => {
+      const url = appsScriptUrl.value.trim();
+      
+      // Get selected theme
+      const selectedTheme = document.querySelector('input[name="theme"]:checked')?.value || 'blossom';
+      
+      // Automatically enable sync if URL is provided
       settings = {
-        webAppUrl: appsScriptUrl.value.trim(),
-        syncEnabled: !!syncToggle.checked,
+        webAppUrl: url,
+        syncEnabled: !!url, // Auto-enable if URL exists
+        theme: selectedTheme,
       };
       saveSettings(settings);
-      toast("Settings saved");
+      
+      // Apply theme immediately
+      applyTheme(selectedTheme);
+      
+      if (url) {
+        // Show loading state
+        const btnText = saveSettingsBtn.querySelector('.btn-text');
+        const btnLoading = saveSettingsBtn.querySelector('.btn-loading');
+        if (btnText) btnText.hidden = true;
+        if (btnLoading) btnLoading.hidden = false;
+        saveSettingsBtn.disabled = true;
+        
+        try {
+          // Sync with Google Sheets
+          await backgroundSync(); // Use backgroundSync instead of syncAll for first connection
+          await updateStatus(); // Update status after sync completes
+          toast("✓ Connected & synced successfully");
+        } catch (error) {
+          toast("⚠️ Connected but sync failed. Check your URL.");
+          await updateStatus(); // Still update status even if sync fails
+        } finally {
+          // Reset button state
+          if (btnText) btnText.hidden = false;
+          if (btnLoading) btnLoading.hidden = true;
+          saveSettingsBtn.disabled = false;
+        }
+      } else {
+        toast("Settings saved (local only)");
+        await updateStatus(); // Update status for local-only mode too
+      }
     });
   }
-  if (syncNowBtn) {
-    syncNowBtn.addEventListener("click", syncAll);
+
+  // Help/Documentation
+  if (viewHelpBtn) {
+    viewHelpBtn.addEventListener("click", () => {
+      showScreen("help");
+    });
+  }
+
+  // Sync notice link
+  if (syncNoticeLink) {
+    syncNoticeLink.addEventListener("click", () => {
+      showScreen("settings");
+    });
+  }
+
+  // Theme switching - instant preview
+  document.querySelectorAll('input[name="theme"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      applyTheme(e.target.value);
+    });
+  });
+
+  // Back button handlers
+  $$(".back-btn[data-back]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const backTo = btn.getAttribute("data-back");
+      showScreen(backTo);
+    });
+  });
+
+  // Simple markdown-to-HTML converter
+  function simpleMarkdownToHTML(markdown) {
+    let html = markdown;
+
+    // Code blocks (must come before inline code)
+    html = html.replace(
+      /```(\w+)?\n([\s\S]*?)```/g,
+      "<pre><code>$2</code></pre>",
+    );
+
+    // Headers
+    html = html.replace(/^#### (.*$)/gim, "<h4>$1</h4>");
+    html = html.replace(/^### (.*$)/gim, "<h3>$1</h3>");
+    html = html.replace(/^## (.*$)/gim, "<h2>$1</h2>");
+    html = html.replace(/^# (.*$)/gim, "<h1>$1</h1>");
+
+    // Bold
+    html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+
+    // Italic
+    html = html.replace(/\*(.*?)\*/g, "<em>$1</em>");
+
+    // Inline code
+    html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
+
+    // Links
+    html = html.replace(
+      /\[([^\]]+)\]\(([^)]+)\)/g,
+      '<a href="$2" target="_blank">$1</a>',
+    );
+
+    // Blockquotes
+    html = html.replace(/^&gt; (.*$)/gim, "<blockquote><p>$1</p></blockquote>");
+    html = html.replace(/^> (.*$)/gim, "<blockquote><p>$1</p></blockquote>");
+
+    // Horizontal rules
+    html = html.replace(/^---$/gim, "<hr>");
+
+    // Lists
+    const lines = html.split("\n");
+    let inList = false;
+    let listType = "";
+    const processedLines = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const ulMatch = line.match(/^[\-\*] (.+)$/);
+      const olMatch = line.match(/^\d+\. (.+)$/);
+
+      if (ulMatch) {
+        if (!inList || listType !== "ul") {
+          if (inList) processedLines.push(`</${listType}>`);
+          processedLines.push("<ul>");
+          listType = "ul";
+          inList = true;
+        }
+        processedLines.push(`<li>${ulMatch[1]}</li>`);
+      } else if (olMatch) {
+        if (!inList || listType !== "ol") {
+          if (inList) processedLines.push(`</${listType}>`);
+          processedLines.push("<ol>");
+          listType = "ol";
+          inList = true;
+        }
+        processedLines.push(`<li>${olMatch[1]}</li>`);
+      } else {
+        if (inList) {
+          processedLines.push(`</${listType}>`);
+          inList = false;
+          listType = "";
+        }
+        // Paragraphs (skip empty lines and lines that are already HTML)
+        if (line.trim() && !line.match(/^<[^>]+>/)) {
+          processedLines.push(`<p>${line}</p>`);
+        } else {
+          processedLines.push(line);
+        }
+      }
+    }
+
+    if (inList) {
+      processedLines.push(`</${listType}>`);
+    }
+
+    return processedLines.join("\n");
+  }
+
+  async function loadHelpContent() {
+    if (!helpContent) return;
+
+    try {
+      helpContent.innerHTML =
+        '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading guide...</p>';
+
+      const response = await fetch("USER_GUIDE.md");
+      if (!response.ok) throw new Error("Failed to load user guide");
+
+      const markdown = await response.text();
+      const html = simpleMarkdownToHTML(markdown);
+
+      helpContent.innerHTML = html;
+    } catch (error) {
+      console.error("Error loading help:", error);
+      helpContent.innerHTML = `
+        <div style="text-align: center; padding: 2rem;">
+          <p style="color: var(--text-secondary);">📖 User Guide</p>
+          <p style="color: var(--text-muted); margin-top: 1rem;">
+            Unable to load user guide. Please check USER_GUIDE.md file.
+          </p>
+          <p style="color: var(--text-muted); font-size: var(--text-sm); margin-top: 1rem;">
+            For Google Sheets sync setup:<br>
+            1. Create a Google Sheet with headers<br>
+            2. Add Apps Script (Extensions → Apps Script)<br>
+            3. Deploy as Web App (Anyone access)<br>
+            4. Paste URL in Settings and click Connect & Sync
+          </p>
+        </div>
+      `;
+    }
   }
 
   function initSettingsUI() {
     if (appsScriptUrl) appsScriptUrl.value = settings.webAppUrl || "";
-    if (syncToggle) syncToggle.checked = !!settings.syncEnabled;
     // Note: Settings tab is always visible in bottom nav, even with FIXED_WEB_APP_URL
     // Users can still view the settings screen, just can't edit the URL
     if (FIXED_WEB_APP_URL) {
@@ -1157,9 +1527,152 @@
         appsScriptUrl.placeholder = "URL is configured in code";
       }
     }
+    renderActionTypesList();
+  }
+
+  // Action Types Manager
+  function renderActionTypesList() {
+    if (!actionTypesList) return;
+    
+    actionTypesList.innerHTML = actionTypes.map(type => `
+      <div class="action-type-item">
+        <div class="action-type-preview" style="background: ${type.color}20; border: 2px solid ${type.color};">
+          ${type.emoji}
+        </div>
+        <div class="action-type-info">
+          <div class="action-type-name">${type.name}</div>
+        </div>
+        <div class="action-type-actions">
+          <button class="action-type-btn" data-edit="${type.id}" title="Edit">✏️</button>
+          <button class="action-type-btn" data-delete="${type.id}" title="Delete">🗑️</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  if (addActionTypeBtn) {
+    addActionTypeBtn.addEventListener('click', () => {
+      editingActionTypeId = null;
+      actionTypeModalTitle.textContent = 'Add Activity Type';
+      actionTypeName.value = '';
+      actionTypeEmoji.value = '';
+      actionTypeColor.value = '';
+      actionTypeModal.hidden = false;
+    });
+  }
+
+  if (actionTypeModal) {
+    // Emoji picker
+    $$('.emoji-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        $$('.emoji-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        actionTypeEmoji.value = btn.dataset.emoji;
+      });
+    });
+
+    // Color picker
+    $$('.color-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        $$('.color-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        actionTypeColor.value = btn.dataset.color;
+      });
+    });
+
+    // Save action type
+    if (saveActionTypeBtn) {
+      saveActionTypeBtn.addEventListener('click', () => {
+        const name = actionTypeName.value.trim();
+        const emoji = actionTypeEmoji.value;
+        const color = actionTypeColor.value;
+
+        if (!name || !emoji || !color) {
+          toast('⚠️ Please fill all fields');
+          return;
+        }
+
+        if (editingActionTypeId) {
+          // Edit existing
+          const index = actionTypes.findIndex(t => t.id === editingActionTypeId);
+          if (index !== -1) {
+            actionTypes[index] = { ...actionTypes[index], name, emoji, color };
+          }
+        } else {
+          // Add new
+          const id = name.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_' + Date.now();
+          actionTypes.push({ id, name, emoji, color });
+        }
+
+        saveActionTypes(actionTypes);
+        renderActionTypesList();
+        renderHomeScreen();
+        actionTypeModal.hidden = true;
+        toast(editingActionTypeId ? '✓ Activity updated' : '✓ Activity added');
+      });
+    }
+
+    // Cancel
+    if (cancelActionTypeBtn) {
+      cancelActionTypeBtn.addEventListener('click', () => {
+        actionTypeModal.hidden = true;
+      });
+    }
+
+    // Handle edit and delete clicks
+    if (actionTypesList) {
+      actionTypesList.addEventListener('click', (e) => {
+        const editBtn = e.target.closest('[data-edit]');
+        const deleteBtn = e.target.closest('[data-delete]');
+
+        if (editBtn) {
+          const id = editBtn.dataset.edit;
+          const type = actionTypes.find(t => t.id === id);
+          if (type) {
+            editingActionTypeId = id;
+            actionTypeModalTitle.textContent = 'Edit Activity Type';
+            actionTypeName.value = type.name;
+            actionTypeEmoji.value = type.emoji;
+            actionTypeColor.value = type.color;
+
+            // Select current emoji and color
+            $$('.emoji-btn').forEach(btn => {
+              btn.classList.toggle('selected', btn.dataset.emoji === type.emoji);
+            });
+            $$('.color-btn').forEach(btn => {
+              btn.classList.toggle('selected', btn.dataset.color === type.color);
+            });
+
+            actionTypeModal.hidden = false;
+          }
+        }
+
+        if (deleteBtn) {
+          const id = deleteBtn.dataset.delete;
+          const type = actionTypes.find(t => t.id === id);
+          
+          // Check if there are entries with this type
+          const entriesCount = entries.filter(e => e.type === id).length;
+          
+          let confirmMsg = `Delete "${type.name}"?`;
+          if (entriesCount > 0) {
+            confirmMsg += `\n\n⚠️ ${entriesCount} log entries use this activity. They will still be visible but the activity type won't be available for new entries.`;
+          }
+          
+          if (confirm(confirmMsg)) {
+            actionTypes = actionTypes.filter(t => t.id !== id);
+            saveActionTypes(actionTypes);
+            renderActionTypesList();
+            renderHomeScreen();
+            toast('✓ Activity deleted');
+          }
+        }
+      });
+    }
   }
 
   // Init
+  renderHomeScreen();
   updateStatus();
   // Prime initial sync on load and when refocusing
   if (settings.syncEnabled && settings.webAppUrl) {

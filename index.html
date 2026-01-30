@@ -23,6 +23,10 @@
           <h2>📊 Today's Summary</h2>
           <div class="now" id="nowText"></div>
           <div class="today-stats" id="todayTotals">Loading...</div>
+          <div class="sync-notice sync-notice-warning" id="syncNoticeWarning" hidden>
+            <span>💡 Data stored locally only.</span>
+            <button class="sync-notice-link" id="syncNoticeLink">Connect Google Sheets</button>
+          </div>
         </section>
 
         <!-- Recent Activity -->
@@ -34,20 +38,7 @@
         <!-- Quick Actions -->
         <section class="quick-actions">
           <h3>Log Activity</h3>
-          <div class="action-buttons">
-            <button class="action action-feed" data-type="feed">
-              <span class="action-emoji">🍼</span>
-              <span class="action-label">Feed</span>
-            </button>
-            <button class="action action-pee" data-type="pee">
-              <span class="action-emoji">💧</span>
-              <span class="action-label">Pee</span>
-            </button>
-            <button class="action action-poop" data-type="poop">
-              <span class="action-emoji">💩</span>
-              <span class="action-label">Poop</span>
-            </button>
-          </div>
+          <div class="action-buttons" id="actionButtons"></div>
         </section>
       </main>
     </div>
@@ -66,29 +57,7 @@
 
       <main class="screen-content">
         <!-- Stats Cards -->
-        <div class="log-stats">
-          <div class="stat-mini stat-feed">
-            <div class="stat-mini-icon">🍼</div>
-            <div class="stat-mini-content">
-              <div class="stat-mini-label">Last Feed</div>
-              <div class="stat-mini-value" id="lastFeed">—</div>
-            </div>
-          </div>
-          <div class="stat-mini stat-pee">
-            <div class="stat-mini-icon">💧</div>
-            <div class="stat-mini-content">
-              <div class="stat-mini-label">Last Pee</div>
-              <div class="stat-mini-value" id="lastPee">—</div>
-            </div>
-          </div>
-          <div class="stat-mini stat-poop">
-            <div class="stat-mini-icon">💩</div>
-            <div class="stat-mini-content">
-              <div class="stat-mini-label">Last Poop</div>
-              <div class="stat-mini-value" id="lastPoop">—</div>
-            </div>
-          </div>
-        </div>
+        <div class="log-stats" id="logStats"></div>
 
         <div class="summary" id="summary"></div>
 
@@ -108,14 +77,30 @@
           <div class="graph-card">
             <h3>Today's Activity</h3>
             <canvas id="todayChart" width="300" height="200"></canvas>
-          </div>
-          <div class="graph-card">
-            <h3>Last 24 Hours</h3>
-            <canvas id="hourlyChart" width="300" height="200"></canvas>
+            <div class="graph-legend">
+              <div class="legend-item">
+                <span class="legend-color" style="background: #60a5fa;"></span>
+                <span class="legend-label">Feed</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-color" style="background: #fbbf24;"></span>
+                <span class="legend-label">Pee</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-color" style="background: #f87171;"></span>
+                <span class="legend-label">Poop</span>
+              </div>
+            </div>
           </div>
           <div class="graph-card">
             <h3>7-Day Trend</h3>
             <canvas id="weekChart" width="300" height="200"></canvas>
+            <div class="graph-legend" id="weekLegend"></div>
+          </div>
+          <div class="graph-card">
+            <h3>Last 24 Hours</h3>
+            <canvas id="hourlyChart" width="300" height="200"></canvas>
+            <div class="graph-legend" id="hourlyLegend"></div>
           </div>
           <div class="graph-card">
             <h3>Feed to Diaper Ratio</h3>
@@ -138,30 +123,137 @@
 
       <main class="screen-content">
         <div class="settings">
-          <label class="field">
-            <span class="field-label">Google Sheets Sync URL</span>
-            <input
-              type="url"
-              id="appsScriptUrl"
-              class="input"
-              placeholder="https://script.google.com/macros/s/.../exec"
-            />
-          </label>
-          <label class="field-inline">
-            <input type="checkbox" id="syncToggle" />
-            <span>Enable cloud sync</span>
-          </label>
-          <div class="settings-actions">
-            <button id="saveSettingsBtn" class="btn-rounded btn-primary">
-              💾 Save Settings
+          <!-- Google Sheets Sync Section -->
+          <section class="settings-section">
+            <h2 class="settings-section-title">☁️ Google Sheets Sync</h2>
+            
+            <div class="sync-notice sync-notice-success" id="syncNoticeSuccess" hidden>
+              <span>✓ Connected to Google Sheets</span>
+            </div>
+            
+            <label class="field">
+              <span class="field-label">Sync URL</span>
+              <input
+                type="url"
+                id="appsScriptUrl"
+                class="input"
+                placeholder="https://script.google.com/macros/s/.../exec"
+              />
+            </label>
+            
+            <div class="settings-actions">
+              <button id="saveSettingsBtn" class="btn-rounded btn-primary" style="width: 100%;">
+                <span class="btn-text">💾 Connect & Sync</span>
+                <span class="btn-loading" hidden>🔄 Syncing...</span>
+              </button>
+            </div>
+            
+            <small class="hint">
+              💡 Paste your Google Sheets Web App URL above. Leave blank to keep everything local only.
+            </small>
+            
+            <button id="viewHelpBtn" class="btn-rounded btn-secondary" style="margin-top: 1rem; width: 100%;">
+              📖 View Setup Guide
             </button>
-            <button id="syncNowBtn" class="btn-rounded btn-secondary">
-              🔄 Sync Now
+          </section>
+
+          <!-- Action Types Section -->
+          <section class="settings-section">
+            <h2 class="settings-section-title">📝 Activity Types</h2>
+            <p class="settings-section-description">Customize the activities you want to track</p>
+            
+            <div id="actionTypesList" class="action-types-list"></div>
+            
+            <button id="addActionTypeBtn" class="btn-rounded btn-secondary" style="width: 100%; margin-top: 12px;">
+              ➕ Add Activity Type
             </button>
+          </section>
+
+          <!-- Theme Section -->
+          <section class="settings-section">
+            <h2 class="settings-section-title">🎨 Theme</h2>
+            
+            <div class="theme-options">
+              <label class="theme-option">
+                <input type="radio" name="theme" value="blossom" checked />
+                <span class="theme-name">🌸 Blossom</span>
+              </label>
+              <label class="theme-option">
+                <input type="radio" name="theme" value="comet" />
+                <span class="theme-name">☄️ Comet</span>
+              </label>
+              <label class="theme-option">
+                <input type="radio" name="theme" value="meadow" />
+                <span class="theme-name">🌿 Meadow</span>
+              </label>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <!-- Action Type Editor Modal -->
+    <div class="modal" id="actionTypeModal" hidden>
+      <div class="modal-content">
+        <h3 class="modal-title" id="actionTypeModalTitle">Add Activity Type</h3>
+        
+        <label class="field">
+          <span class="field-label">Name</span>
+          <input type="text" id="actionTypeName" class="input" placeholder="e.g., Sleep, Bath, Medicine" maxlength="15" />
+        </label>
+        
+        <label class="field">
+          <span class="field-label">Emoji</span>
+          <div class="emoji-picker">
+            <button type="button" class="emoji-btn" data-emoji="🍼">🍼</button>
+            <button type="button" class="emoji-btn" data-emoji="💧">💧</button>
+            <button type="button" class="emoji-btn" data-emoji="💩">💩</button>
+            <button type="button" class="emoji-btn" data-emoji="😴">😴</button>
+            <button type="button" class="emoji-btn" data-emoji="🛁">🛁</button>
+            <button type="button" class="emoji-btn" data-emoji="💊">💊</button>
+            <button type="button" class="emoji-btn" data-emoji="🌡️">🌡️</button>
+            <button type="button" class="emoji-btn" data-emoji="🎵">🎵</button>
+            <button type="button" class="emoji-btn" data-emoji="📖">📖</button>
+            <button type="button" class="emoji-btn" data-emoji="🚗">🚗</button>
+            <button type="button" class="emoji-btn" data-emoji="🏃">🏃</button>
+            <button type="button" class="emoji-btn" data-emoji="⏰">⏰</button>
           </div>
-          <small class="hint">
-            💡 Leave blank to keep everything local. See README for setup.
-          </small>
+          <input type="text" id="actionTypeEmoji" class="input" placeholder="Selected emoji" readonly style="margin-top: 8px;" />
+        </label>
+        
+        <label class="field">
+          <span class="field-label">Color</span>
+          <div class="color-picker">
+            <button type="button" class="color-btn" data-color="#a8d5ff" style="background: #a8d5ff;"></button>
+            <button type="button" class="color-btn" data-color="#ffe4a8" style="background: #ffe4a8;"></button>
+            <button type="button" class="color-btn" data-color="#ffb3ba" style="background: #ffb3ba;"></button>
+            <button type="button" class="color-btn" data-color="#bae1ff" style="background: #bae1ff;"></button>
+            <button type="button" class="color-btn" data-color="#ffdfba" style="background: #ffdfba;"></button>
+            <button type="button" class="color-btn" data-color="#baffc9" style="background: #baffc9;"></button>
+            <button type="button" class="color-btn" data-color="#e0bbff" style="background: #e0bbff;"></button>
+            <button type="button" class="color-btn" data-color="#ffd4e5" style="background: #ffd4e5;"></button>
+          </div>
+          <input type="text" id="actionTypeColor" class="input" placeholder="Selected color" readonly style="margin-top: 8px;" />
+        </label>
+        
+        <div class="modal-actions">
+          <button id="cancelActionTypeBtn" class="btn-rounded btn-secondary">Cancel</button>
+          <button id="saveActionTypeBtn" class="btn-rounded btn-primary">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Help/Documentation Screen -->
+    <div class="screen screen-modal" id="helpScreen" hidden>
+      <header class="screen-header">
+        <button class="back-btn" data-back="settings">← Back</button>
+        <h1>📖 Setup Guide</h1>
+        <div></div>
+      </header>
+
+      <main class="screen-content" style="padding: 1rem;">
+        <div id="helpContent" class="help-content">
+          Loading documentation...
         </div>
       </main>
     </div>

@@ -1,32 +1,77 @@
-# Baby Log (No-Server)
+# 👶 Baby Tracker
 
-An ultra-simple, offline-first web app to log your baby's feed, pee, and poop with one tap. Stores data locally in your browser. Optionally syncs to Google Sheets using a tiny Google Apps Script (no separate server needed).
+A beautiful, mobile-first web app to track your baby's feed, pee, and poop activities. Features instant local storage with optional cloud sync to Google Sheets.
 
-## Features
-- One-tap buttons: Feed, Pee, Poop (auto timestamp)
-- Last event times and today's totals at a glance
-- Log view with per-day filter, delete, and CSV export
-- Print-friendly table (File → Print or use the "Print" button)
-- Optional Google Sheets sync using Apps Script Web App URL
+## ✨ Features
 
-## Quick Start
-1. Open `index.html` in your browser (double-click it or use a local web server).
-2. Click the big buttons to log events.
-3. Use "View log" for the table and per-day filter.
-4. Click "Print" for a clean PDF-friendly layout.
+### 🎯 Quick Logging
+- **One-tap buttons**: Feed 🍼, Pee 💧, Poop 💩 with automatic timestamps
+- **Instant response**: All data stored locally first, syncs in background
+- **Undo button**: Appears for 5 seconds after logging to quickly reverse mistakes
 
-Tip: On iPhone, open in Safari and use "Add to Home Screen" for a native-like shortcut.
+### 📊 Smart Insights
+- **Today's Summary**: Real-time stats for current day activity
+- **Recent Activity**: Animated list of your latest entries
+- **Visual Charts**:
+  - Today's Activity (bar chart showing feed, pee, poop counts)
+  - 7-Day Trend (stacked bars showing patterns over the week)
+  - Last 24 Hours (multi-line chart showing hourly activity patterns)
+  - Feed to Diaper Ratio (pie chart)
+- **Color-coded**: Consistent colors across all charts (blue=feed, yellow=pee, red=poop)
 
-## Optional: Sync to Google Sheets (no server)
-You can keep everything local. If you want cloud backup and cross-device logs, set up a simple Google Apps Script that appends entries to a Google Sheet and serves them back for the Log view.
+### 📝 Full Log
+- View all entries organized by date
+- Filter by day using date picker
+- Delete individual entries
+- Export to CSV for backup or sharing
 
-### 1) Create the Sheet
-- Create a new Google Sheet, add a sheet named `Log` (or use the default).
-- In row 1, add headers (optional): `Timestamp`, `ISO`, `Type`, `Note`, `ID`, `Source`.
+### ⚙️ Settings
+- Optional Google Sheets sync configuration
+- Manual sync control
+- Cloud backup for cross-device access
 
-### 2) Create the Apps Script
-- In the Google Sheet, click Extensions → Apps Script.
-- Replace the contents with the script below and press Save.
+### 📱 Mobile-Optimized
+- **Native app feel**: Screen-based navigation with bottom tab bar
+- **Thumb-friendly**: Action buttons placed at bottom for easy reach
+- **Professional design**: Clean pastel colors, emoji icons, Inter font
+- **PWA-ready**: Add to your home screen for app-like experience
+
+## 🚀 Quick Start
+
+1. **Open the app**: Double-click `index.html` or serve with a local web server
+2. **Start logging**: Tap Feed, Pee, or Poop buttons on the home screen
+3. **View insights**: Check the Insights tab for charts and patterns
+4. **Browse history**: Use the Log tab to see all entries
+
+### 💡 Install as App (iPhone/Android)
+
+**iPhone (Safari)**:
+1. Open the app in Safari
+2. Tap the Share button
+3. Select "Add to Home Screen"
+4. Tap "Add"
+
+**Android (Chrome)**:
+1. Open the app in Chrome
+2. Tap the menu (⋮)
+3. Select "Add to Home Screen" or "Install App"
+4. Tap "Add"
+
+## ☁️ Optional: Google Sheets Sync
+
+The app works 100% offline by default. Enable cloud sync to backup data and access across multiple devices.
+
+### Step 1: Create Your Google Sheet
+
+1. Create a new Google Sheet
+2. Rename the first sheet to `Log` (or keep as default)
+3. Add headers in row 1: `Timestamp`, `ISO`, `Type`, `Note`, `ID`, `Source`
+
+### Step 2: Add the Apps Script
+
+1. In your Google Sheet, go to **Extensions → Apps Script**
+2. Delete any existing code
+3. Paste the following script:
 
 ```javascript
 function doPost(e) {
@@ -119,69 +164,263 @@ function doGet(e) {
 }
 ```
 
-### 3) Deploy as a Web App
-- In Apps Script: Deploy → New deployment → Type: Web app.
-- Execute as: Me.
-- Who has access: Anyone.
-- Click Deploy and copy the Web App URL (ends with `/exec`).
+4. Click **Save** (💾 icon)
+5. Name your project (e.g., "Baby Tracker Sync")
 
-Note: The app reads the log with a normal JSON GET first, then falls back to JSONP automatically. This avoids CORS issues across different environments.
+### Step 3: Deploy the Web App
 
-### 4) Paste URL in the app
-- Option A — Settings UI: Open the app → Settings → paste the Web App URL → enable sync → Save. New entries sync automatically; use "Sync Now" to push unsynced ones.
-- Option B — No settings (hardcoded): Edit `app.js` and set `FIXED_WEB_APP_URL` near the top to your Web App URL. The Settings section will be hidden and syncing will auto-enable.
+1. Click **Deploy → New deployment**
+2. Click the gear icon ⚙️ next to "Select type"
+3. Choose **Web app**
+4. Configure:
+   - **Execute as**: Me
+   - **Who has access**: Anyone
+5. Click **Deploy**
+6. **Copy the Web App URL** (it ends with `/exec`)
+7. Click **Done**
 
-```js
-// app.js (top of file)
-const FIXED_WEB_APP_URL = 'https://script.google.com/macros/s/XXXXXXXXXXXX/exec';
-```
+> **Important**: After any script changes, you must create a new deployment or use "Manage deployments" to update the existing one.
 
-Auto-sync behavior: the app will try to sync immediately after you log an entry, and will also attempt to push any unsynced entries on startup and when your browser comes back online.
+### Step 4: Configure the App
 
-Deletions: when you delete or undo an entry in the app, it queues a delete by entry ID and attempts to delete the matching row in the `Log` sheet. If offline, deletes are retried on startup/when online. If the Log view is showing the remote Sheet, deleting an item will remove it from the Sheet directly.
+You have two options:
 
-## Data & Privacy
-- Local: All events are stored in your browser's `localStorage` under `babylog.entries.v1`.
-- Cloud (optional): If you enable the Web App URL, the app POSTs event JSON to your Script URL; only the fields in the request are sent.
+#### Option A: Settings UI (Recommended for beginners)
 
-## Export/Backup
-- Use "Export CSV" in the Log view for a portable backup.
-- You can also print to PDF for simple sharing with a pediatrician.
+1. Open the Baby Tracker app
+2. Tap **Settings** tab at the bottom
+3. Paste your Web App URL
+4. Toggle **Enable Sync** on
+5. Click **Save Settings**
+6. Use **Sync Now** to push any existing local entries
 
-## Troubleshooting
-- Entries not appearing? Ensure you’re opening the same browser/profile you used before (localStorage is per-browser).
-- Sync not working? Re-check the Apps Script deployment URL and that deployment access is set to "Anyone" (and redeploy after script changes).
-- Timezone mismatch in Sheet? Format the first column as Date/Time and ensure your Spreadsheet locale/timezone is correct (File → Settings in Google Sheets).
-- Want the Settings hidden? Use the hardcoded URL option above. You won’t need to touch any in-app settings afterward.
+#### Option B: Hardcoded URL (Set and forget)
 
-### Local testing tips (CORS)
-- If you open the app directly as a file (path starts with `file:///`), some browsers preflight CORS requests.
-- The app writes with CORS and falls back to `no-cors` POST; it reads the log via CORS GET and falls back to JSONP automatically.
-- For reliable CORS behavior, run a tiny local server and open the site via `http://localhost:`:
+1. Open `app.js` in a text editor
+2. Find this line near the top (around line 5):
+   ```js
+   const FIXED_WEB_APP_URL = "";
+   ```
+3. Paste your Web App URL between the quotes:
+   ```js
+   const FIXED_WEB_APP_URL = "https://script.google.com/macros/s/YOUR_ID/exec";
+   ```
+4. Save the file
 
-```bash
-python3 -m http.server 8099 --bind 127.0.0.1
-```
+> When using a hardcoded URL, the Settings tab will still appear but the URL field will be disabled. Sync is automatically enabled.
 
-Then visit http://127.0.0.1:8099
+### How Sync Works
 
-### Verify your webhook independently
-Send a test from Terminal to confirm the Sheet is appending rows:
+- **Instant local**: All actions save to your browser first (instant response)
+- **Background sync**: New entries automatically sync to Google Sheets
+- **Queue system**: If offline, entries queue and sync when connection returns
+- **On startup**: App syncs any pending changes when you open it
+- **Deletions**: Deleting entries also removes them from Google Sheets
+
+## 🔒 Data & Privacy
+
+- **Local Storage**: All entries stored in your browser's `localStorage` under `babylog.entries.v1`
+- **No tracking**: Zero analytics, no external services (except optional Google Sheets)
+- **Your data**: With Google Sheets sync, data lives in YOUR Google Sheet only
+- **No secrets**: The Web App URL is like a webhook - functional but not private
+- **Browser-specific**: Data tied to browser/profile (use sync for multi-device)
+
+## 💾 Export & Backup
+
+### Export CSV
+1. Go to **Log** tab
+2. Click **Export CSV** button
+3. Save the file for backup or sharing with doctors
+
+### Print/PDF
+1. Use your browser's print function (Ctrl/Cmd+P)
+2. Select "Save as PDF" as the destination
+3. Clean, printer-friendly layout automatically applied
+
+## 🔧 Troubleshooting
+
+### Entries Not Showing Up
+- **Check browser/profile**: localStorage is per-browser. Use the same browser where you logged entries.
+- **Clear cache carefully**: Don't clear site data or you'll lose local entries (sync first!)
+
+### Sync Not Working
+1. **Verify URL**: Must end with `/exec` (not `/dev`)
+2. **Check deployment**:
+   - Execute as: **Me** (not "User accessing the web app")
+   - Who has access: **Anyone**
+3. **Redeploy**: After script changes, create new deployment
+4. **Test independently**: Use the curl command below to verify
 
 ```bash
 curl -X POST \
   -H "Content-Type: application/json" \
-  -d '{"id":"test123","type":"pee","note":"test","timestamp":'$(date +%s000)',"iso":"'$(date -u +%Y-%m-%dT%H:%M:%SZ)'","source":"babylog-web"}' \
-  "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec"
+  -d '{"id":"test123","type":"pee","timestamp":'$(date +%s000)'}' \
+  "YOUR_WEB_APP_URL_HERE"
 ```
 
-If this does not create a row, double-check deployment settings (Execute as: Me; Access: Anyone) and that you copied the `/exec` URL (not `/dev`).
+Check your Google Sheet - a test row should appear.
 
-## Security & Privacy Notes
-- The Web App URL is not a secret; it’s similar to a webhook endpoint. Don’t share it publicly.
-- No API keys or OAuth tokens are stored in the app. The script runs under your Google account and appends rows in your sheet.
-- For extra control, you can add a simple shared token check in Apps Script (and include that token in the request body). Keep in mind that the token would still live in your local `app.js` file.
+### Charts Not Displaying
+- **Need data**: Charts require at least one entry to display
+- **Refresh**: Try pulling down to refresh or reload the page
+- **Browser compatibility**: Use a modern browser (Chrome, Safari, Firefox, Edge)
 
-## Dev Notes
-- This app is completely static: HTML + CSS + vanilla JS.
-- No build step, no dependencies.
+### Wrong Timezone in Google Sheets
+1. In Google Sheets: **File → Settings**
+2. Set correct **Locale** and **Time zone**
+3. Format Timestamp column as **Date time**
+
+## 🛠️ Technical Details
+
+### Architecture
+- **Local-first**: All operations write to localStorage first (instant)
+- **Background sync**: Queue-based sync to Google Sheets when online
+- **Screen-based navigation**: iOS/Android-style full-screen views
+- **Progressive Web App**: Can install as standalone app
+
+### Tech Stack
+- **Pure vanilla JavaScript**: No frameworks, no dependencies
+- **Modern CSS**: CSS Grid, Flexbox, CSS variables
+- **Canvas API**: For smooth, animated charts
+- **Inter font**: Professional typography via Google Fonts
+
+### Files
+- `index.html` - App structure and markup (253 lines)
+- `styles.css` - Complete styling and responsive design (847+ lines)  
+- `app.js` - All logic, local storage, sync, charts (1220+ lines)
+- `README.md` - This documentation
+
+### Browser Support
+- Chrome/Edge 90+
+- Safari 14+
+- Firefox 88+
+- Mobile Safari (iOS 14+)
+- Chrome Android
+
+## 🧪 Development
+
+### Running Locally
+
+**Option 1: Direct File** (Quick test)
+```bash
+open index.html
+# or just double-click the file
+```
+
+**Option 2: Local Server** (Best for testing sync)
+```bash
+# Python 3
+python3 -m http.server 8099
+
+# Then visit: http://localhost:8099
+```
+
+### Project Structure
+```
+baby-schedule/
+├── index.html      # App structure
+├── styles.css      # All styling
+├── app.js          # All logic
+└── README.md       # Documentation
+```
+
+No build process, no package.json, no dependencies. Just open and run.
+
+## 🌐 Deployment & Sharing
+
+## 🌐 Deployment & Sharing
+
+### Safe Public Deployment ✅
+
+The app is designed to be safely deployed publicly! The Google Sheets URL is **never hardcoded** in your deployed app - instead, users enter it in Settings. This means:
+
+- ✅ Your data URL is NOT visible in the public source code
+- ✅ Safe to deploy to any free hosting platform
+- ✅ Easy to share with family members
+- ✅ Each family member can access the same shared data
+
+### How It Works
+
+1. **Deploy your app** to any hosting platform (instructions below)
+2. **Create your Google Sheet** and deploy the Apps Script (see above)
+3. **Share the deployed app URL** with family members
+4. **Share the Google Sheets URL privately** (text, email, or password manager) with trusted family only
+5. **Each person** opens Settings → Pastes the Google Sheets URL → Clicks "Connect & Sync"
+6. **Everyone syncs** to the same sheet - perfect for co-parenting!
+
+### Quick Deployment Guide
+
+**Cloudflare Pages** (Recommended)
+```bash
+# 1. Ensure FIXED_WEB_APP_URL is empty in app.js
+const FIXED_WEB_APP_URL = "";
+
+# 2. Sign up at pages.cloudflare.com
+# 3. Upload files or connect Git repo
+# 4. Deploy (no build needed)
+# Live at: https://your-project.pages.dev
+```
+
+**Netlify**
+- Drag folder to [netlify.com/drop](https://app.netlify.com/drop)
+- Optional: Add password protection (Site settings → Access control)
+- Live at: `https://your-site.netlify.app`
+
+**GitHub Pages**
+- Push to GitHub → Settings → Pages → Deploy from `main`
+- Live at: `https://username.github.io/repo-name/`
+
+**Vercel**
+- Import repo at [vercel.com](https://vercel.com)
+- Live at: `https://your-project.vercel.app`
+
+### 🔐 Family Sharing Setup
+
+**Step-by-step for co-parents:**
+
+1. **Deploy the app** (see options above)
+2. **Create ONE Google Sheet** following the setup instructions above
+3. **Share two links privately** with your partner/family:
+   - Your deployed app URL (e.g., `https://our-baby.pages.dev`)
+   - Your Google Sheets Web App URL (via secure text/email)
+4. **Each person**:
+   - Opens the app
+   - Goes to Settings tab
+   - Pastes the Google Sheets URL
+   - Clicks "Connect & Sync"
+   - Sees "✓ Connected to Google Sheets" confirmation
+5. **Done!** Everyone now shares the same baby log
+
+**Security notes:**
+- Only share the Google Sheets URL with people you trust
+- Keep the URL private (don't post it publicly)
+- Anyone with the URL can view/edit your baby's data
+- Consider using your hosting provider's password protection for extra security
+
+### Personal Use (Alternative)
+
+If you prefer to use the app alone without sharing:
+
+1. Keep the app on your device (no deployment needed)
+2. Optionally hardcode your Google Sheets URL in `app.js`:
+   ```js
+   const FIXED_WEB_APP_URL = "https://script.google.com/macros/s/YOUR_ID/exec";
+   ```
+3. Your settings will be locked to this URL automatically
+
+**Optional: Add password to your deployment**
+- Most hosts (Netlify, Vercel) offer password protection
+- Adds extra security layer before accessing the app
+
+## 📝 License
+
+This is a personal project. Feel free to use and modify for your own needs.
+
+## 🤝 Contributing
+
+This is a personal baby tracking app, but suggestions and improvements are welcome!
+
+---
+
+**Made with ❤️ for new parents who need simple, fast baby tracking**
+
