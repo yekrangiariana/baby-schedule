@@ -1,7 +1,8 @@
 (function () {
   // Optional: hardcode your Google Apps Script Web App URL here to avoid using the Settings UI.
   // If non-empty, syncing will be enabled automatically and the Settings section will be hidden.
-  const FIXED_WEB_APP_URL = "";
+  const FIXED_WEB_APP_URL =
+    "https://script.google.com/macros/s/AKfycbzfIn9RBteJw8mAvlZGcPdmx7Rznw91MVw-epmEtou9gS3s8Tmi5xW8D18ncxLRYzym/exec";
 
   const STORE_KEY = "babylog.entries.v1";
   const SETTINGS_KEY = "babylog.settings.v1";
