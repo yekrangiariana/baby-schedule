@@ -18,7 +18,7 @@ Simply tap a button, and it's recorded with a timestamp. You can add notes to an
 ### Viewing Your Data
 - **Home Tab** - See today's summary and recent activity
 - **Log Tab** - Browse all entries with date filtering
-- **Graphs Tab** - Visualize patterns over the last 7 days
+- **Graphs Tab** - Visualise patterns over the last 7 days
 
 ## ☁️ Google Sheets Sync (Optional)
 
@@ -28,7 +28,7 @@ Want to share data with your partner or family? You can optionally sync your dat
 - ✅ Share data with family members in real-time
 - ✅ Access from multiple devices
 - ✅ Automatic backup of your data
-- ✅ View/analyze data in Google Sheets if needed
+- ✅ View/analyse data in Google Sheets if needed
 
 ### Setting Up Sync
 
@@ -196,7 +196,7 @@ function getOrCreateSheet(ss, sheetName) {
    - **Execute as:** Me
    - **Who has access:** Anyone
 8. Click **Deploy**
-9. Click **Authorize access** and follow the prompts
+9. Click **Authorise access** and follow the prompts
 10. **Copy the Web App URL** - you'll need this!
 
 #### Step 3: Connect the App
@@ -227,7 +227,7 @@ To let your partner or family members use the same data:
    - Just send them the link to this app
    - They open it, add the sync URL, and you're connected!
 
-## 🎨 Personalization
+## 🎨 Personalisation
 
 Choose your favorite theme in Settings:
 - 🌸 **Blossom** - Soft pink and purple
