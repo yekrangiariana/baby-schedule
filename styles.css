@@ -145,10 +145,20 @@ body {
 
 /* Quick Actions */
 .quick-actions {
+  margin-bottom: 20px;
+}
+
+.quick-actions h3 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.action-buttons {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  margin-bottom: 20px;
 }
 
 .action {

@@ -1148,12 +1148,14 @@
   function initSettingsUI() {
     if (appsScriptUrl) appsScriptUrl.value = settings.webAppUrl || "";
     if (syncToggle) syncToggle.checked = !!settings.syncEnabled;
-    // Hide the Settings section entirely if fixed URL mode is active
+    // Note: Settings tab is always visible in bottom nav, even with FIXED_WEB_APP_URL
+    // Users can still view the settings screen, just can't edit the URL
     if (FIXED_WEB_APP_URL) {
-      const settingsSection = document.getElementById("settingsPanel");
-      const openBtn = document.getElementById("openSettingsBtn");
-      if (settingsSection) settingsSection.style.display = "none";
-      if (openBtn) openBtn.style.display = "none";
+      // Disable editing of the URL field if it's hardcoded
+      if (appsScriptUrl) {
+        appsScriptUrl.disabled = true;
+        appsScriptUrl.placeholder = "URL is configured in code";
+      }
     }
   }
 
