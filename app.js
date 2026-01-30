@@ -170,7 +170,7 @@
   function setLastSyncTime(ts) {
     localStorage.setItem(LAST_SYNC_KEY, String(ts || Date.now()));
   }
-// Default action types
+  // Default action types
   function getDefaultActionTypes() {
     return [
       { id: "feed", name: "Feed", emoji: "🍼", color: "#a8d5ff" },
@@ -196,7 +196,6 @@
     return actionTypes.find((t) => t.id === id) || null;
   }
 
-  
   function formatDate(ts) {
     const d = new Date(ts);
     return d.toLocaleDateString();
@@ -248,7 +247,7 @@
   async function initializeApp() {
     // First, pull from Google Sheets to get latest data
     await pullAndMergeRemote();
-    
+
     // Then render UI with the synced data
     renderHomeScreen();
     updateStatus();
@@ -452,7 +451,7 @@
           <span class="action-emoji">${type.emoji}</span>
           <span class="action-label">${type.name}</span>
         `;
-        
+
         // Add gradient background
         const gradientBefore = document.createElement("style");
         gradientBefore.textContent = `
@@ -464,10 +463,10 @@
           gradientBefore.setAttribute("data-type", type.id);
           document.head.appendChild(gradientBefore);
         }
-        
+
         actionButtons.appendChild(btn);
       });
-      
+
       // Re-attach event listeners to new buttons
       $$(".action").forEach((btn) => {
         btn.addEventListener("click", async () => {
@@ -499,21 +498,23 @@
   // Render stats for log screen (all activity types)
   function renderLogStats() {
     if (!logStats) return;
-    
+
     logStats.innerHTML = "";
     const src = entries;
-    
+
     // Show all activity types in a grid
     actionTypes.forEach((type) => {
       const stat = document.createElement("div");
       stat.className = `stat-card stat-${type.id}`;
-      
+
       const lastEntry = src
         .filter((e) => e.type === type.id)
         .sort((a, b) => b.timestamp - a.timestamp)[0];
-      
-      const lastTime = lastEntry ? `${formatDate(lastEntry.timestamp)} ${formatTime(lastEntry.timestamp)}` : "—";
-      
+
+      const lastTime = lastEntry
+        ? `${formatDate(lastEntry.timestamp)} ${formatTime(lastEntry.timestamp)}`
+        : "—";
+
       stat.innerHTML = `
         <div class="stat-icon" style="background-color: ${type.color}">${type.emoji}</div>
         <div class="stat-info">
@@ -528,29 +529,34 @@
   // Render summary overview for log screen
   function renderLogSummary() {
     if (!logSummaryCard) return;
-    
+
     const src = entries;
     const today = new Date();
     const todayEntries = src.filter((e) => isSameDay(e.timestamp, today));
     const todayCounts = countByType(todayEntries);
-    
+
     // Find most logged activity (all time)
     const allCounts = countByType(src);
-    const mostLoggedId = Object.keys(allCounts).length > 0 ? Object.keys(allCounts).reduce((a, b) => 
-      allCounts[a] > allCounts[b] ? a : b
-    ) : null;
-    const mostLoggedType = mostLoggedId ? getActionTypeById(mostLoggedId) : null;
-    
+    const mostLoggedId =
+      Object.keys(allCounts).length > 0
+        ? Object.keys(allCounts).reduce((a, b) =>
+            allCounts[a] > allCounts[b] ? a : b,
+          )
+        : null;
+    const mostLoggedType = mostLoggedId
+      ? getActionTypeById(mostLoggedId)
+      : null;
+
     // Calculate streak (consecutive days with at least one entry)
     let streak = 0;
     let checkDate = new Date(today);
     while (true) {
-      const hasEntry = src.some(e => isSameDay(e.timestamp, checkDate));
+      const hasEntry = src.some((e) => isSameDay(e.timestamp, checkDate));
       if (!hasEntry) break;
       streak++;
       checkDate.setDate(checkDate.getDate() - 1);
     }
-    
+
     logSummaryCard.innerHTML = `
       <div class="summary-header">
         <h3>📊 Overview</h3>
@@ -569,13 +575,17 @@
           <div class="quick-stat-value">${streak}</div>
           <div class="quick-stat-label">Day Streak</div>
         </div>
-        ${mostLoggedType ? `
+        ${
+          mostLoggedType
+            ? `
           <div class="quick-stat">
             <div class="quick-stat-icon" style="background-color: ${mostLoggedType.color}33">${mostLoggedType.emoji}</div>
             <div class="quick-stat-value">${allCounts[mostLoggedId]}</div>
             <div class="quick-stat-label">Most: ${mostLoggedType.name}</div>
           </div>
-        ` : ''}
+        `
+            : ""
+        }
       </div>
       
       <div class="summary-divider"></div>
@@ -583,23 +593,27 @@
       <div class="summary-activities">
         <div class="summary-activities-header">Last Activity Times</div>
         <div class="summary-activities-grid">
-          ${actionTypes.map(type => {
-            const lastEntry = src
-              .filter((e) => e.type === type.id)
-              .sort((a, b) => b.timestamp - a.timestamp)[0];
-            const lastTime = lastEntry ? `${formatDate(lastEntry.timestamp)} ${formatTime(lastEntry.timestamp)}` : "—";
-            const todayCount = todayCounts[type.id] || 0;
-            
-            return `
+          ${actionTypes
+            .map((type) => {
+              const lastEntry = src
+                .filter((e) => e.type === type.id)
+                .sort((a, b) => b.timestamp - a.timestamp)[0];
+              const lastTime = lastEntry
+                ? `${formatDate(lastEntry.timestamp)} ${formatTime(lastEntry.timestamp)}`
+                : "—";
+              const todayCount = todayCounts[type.id] || 0;
+
+              return `
               <div class="activity-row">
                 <div class="activity-row-icon" style="background-color: ${type.color}">${type.emoji}</div>
                 <div class="activity-row-info">
-                  <div class="activity-row-name">${type.name}${todayCount > 0 ? ` <span class="activity-today-count">+${todayCount}</span>` : ''}</div>
+                  <div class="activity-row-name">${type.name}${todayCount > 0 ? ` <span class="activity-today-count">+${todayCount}</span>` : ""}</div>
                   <div class="activity-row-time">${lastTime}</div>
                 </div>
               </div>
             `;
-          }).join('')}
+            })
+            .join("")}
         </div>
       </div>
     `;
@@ -607,7 +621,7 @@
 
   function updateStatus() {
     const src = entries;
-    
+
     // Update dynamic mini-stats for home screen (first 3 only)
     actionTypes.slice(0, 3).forEach((type) => {
       const lastEl = document.getElementById(`lastHome${capitalize(type.id)}`);
@@ -615,7 +629,9 @@
         const e = src
           .filter((e) => e.type === type.id)
           .sort((a, b) => b.timestamp - a.timestamp)[0];
-        lastEl.textContent = e ? `${formatDate(e.timestamp)} ${formatTime(e.timestamp)}` : "—";
+        lastEl.textContent = e
+          ? `${formatDate(e.timestamp)} ${formatTime(e.timestamp)}`
+          : "—";
       }
     });
 
@@ -623,12 +639,12 @@
     const today = new Date();
     const todayEntries = src.filter((e) => isSameDay(e.timestamp, today));
     const counts = countByType(todayEntries);
-    
+
     if (todayTotals) {
       if (src.length) {
-        const summaryParts = actionTypes.map((type) => 
-          `${type.name} ${counts[type.id] || 0}`
-        ).join(" • ");
+        const summaryParts = actionTypes
+          .map((type) => `${type.name} ${counts[type.id] || 0}`)
+          .join(" • ");
         todayTotals.textContent = `Today: ${summaryParts}`;
       } else {
         todayTotals.textContent = "Today: —";
@@ -749,7 +765,7 @@
         label: type.name,
         value: todayCounts[type.id],
         color: type.color,
-      }))
+      })),
     );
 
     // Last 24 hours by hour - dynamic
@@ -962,10 +978,8 @@
     // Calculate totals dynamically
     const allTypeIds = actionTypes.map((t) => t.id);
     const maxTotal = Math.max(
-      ...data.map((d) =>
-        allTypeIds.reduce((sum, id) => sum + (d[id] || 0), 0)
-      ),
-      1
+      ...data.map((d) => allTypeIds.reduce((sum, id) => sum + (d[id] || 0), 0)),
+      1,
     );
     const barWidth = w / data.length - 16;
     const spacing = 16;
@@ -1063,9 +1077,9 @@
     // Update summary text with dynamic types
     if (summaryEl) {
       if (list.length) {
-        const countParts = actionTypes.map((type) => 
-          `${type.name} ${counts[type.id] || 0}`
-        ).join(", ");
+        const countParts = actionTypes
+          .map((type) => `${type.name} ${counts[type.id] || 0}`)
+          .join(", ");
         summaryEl.textContent = `Showing ${list.length} entries — ${countParts}`;
       } else {
         summaryEl.textContent = "No entries yet";
@@ -1105,7 +1119,7 @@
   }
 
   // Export entries to CSV
-  window.exportToCSV = function() {
+  window.exportToCSV = function () {
     const src = entries;
     if (src.length === 0) {
       toast("No entries to export");
@@ -1114,7 +1128,7 @@
 
     // CSV header
     let csv = "Date,Time,Activity,Note\n";
-    
+
     // Sort by timestamp (newest first) and add rows
     src
       .slice()
@@ -1124,23 +1138,23 @@
         const time = formatTime(e.timestamp);
         const activity = getTypeName(e.type);
         const note = (e.note || "").replace(/"/g, '""'); // Escape quotes
-        
+
         csv += `"${date}","${time}","${activity}","${note}"\n`;
       });
-    
+
     // Create download
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
-    const filename = `baby-log-${new Date().toISOString().split('T')[0]}.csv`;
-    
+    const filename = `baby-log-${new Date().toISOString().split("T")[0]}.csv`;
+
     link.setAttribute("href", url);
     link.setAttribute("download", filename);
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     toast(`✓ Exported ${src.length} entries`);
   };
 
@@ -1281,7 +1295,11 @@
         if (data.entries && Array.isArray(data.entries)) {
           remoteEntries = normalizeRemote(data.entries);
           // Update action types if provided
-          if (data.actionTypes && Array.isArray(data.actionTypes) && data.actionTypes.length > 0) {
+          if (
+            data.actionTypes &&
+            Array.isArray(data.actionTypes) &&
+            data.actionTypes.length > 0
+          ) {
             actionTypes = data.actionTypes;
             saveActionTypes(actionTypes);
             renderHomeScreen();
@@ -1300,7 +1318,11 @@
           // Check for new format
           if (data.entries) {
             remoteEntries = normalizeRemote(data.entries || []);
-            if (data.actionTypes && Array.isArray(data.actionTypes) && data.actionTypes.length > 0) {
+            if (
+              data.actionTypes &&
+              Array.isArray(data.actionTypes) &&
+              data.actionTypes.length > 0
+            ) {
               actionTypes = data.actionTypes;
               saveActionTypes(actionTypes);
               renderHomeScreen();
@@ -1637,9 +1659,9 @@
   // Action Types Manager
   function renderActionTypes() {
     if (!actionTypesList) return;
-    
+
     actionTypesList.innerHTML = "";
-    
+
     actionTypes.forEach((type, index) => {
       const item = document.createElement("div");
       item.className = "action-type-item";
@@ -1654,8 +1676,8 @@
         <div class="action-type-actions">
           <button class="action-type-btn" data-edit="${type.id}" title="Edit">✏️</button>
           <button class="action-type-btn" data-delete="${type.id}" title="Delete">🗑️</button>
-          ${index > 0 ? `<button class="action-type-btn" data-move-up="${type.id}" title="Move Up">↑</button>` : ''}
-          ${index < actionTypes.length - 1 ? `<button class="action-type-btn" data-move-down="${type.id}" title="Move Down">↓</button>` : ''}
+          ${index > 0 ? `<button class="action-type-btn" data-move-up="${type.id}" title="Move Up">↑</button>` : ""}
+          ${index < actionTypes.length - 1 ? `<button class="action-type-btn" data-move-down="${type.id}" title="Move Down">↓</button>` : ""}
         </div>
       `;
       actionTypesList.appendChild(item);
@@ -1748,7 +1770,7 @@
     } else {
       // Add new
       const id = name.toLowerCase().replace(/[^a-z0-9]/g, "_");
-      
+
       // Check if ID already exists
       if (getActionTypeById(id)) {
         toast("⚠️ An activity with this name already exists");
@@ -1779,10 +1801,10 @@
 
     // Check if any entries use this type
     const usageCount = entries.filter((e) => e.type === id).length;
-    
+
     if (usageCount > 0) {
       const confirmed = confirm(
-        `This activity has ${usageCount} log entries. Are you sure you want to delete it? The entries will remain but show as "${id}".`
+        `This activity has ${usageCount} log entries. Are you sure you want to delete it? The entries will remain but show as "${id}".`,
       );
       if (!confirmed) return;
     }
@@ -1865,7 +1887,7 @@
   // Render action types on settings screen open
   if (openSettingsBtn) {
     const originalOpenSettings = openSettings;
-    openSettings = function() {
+    openSettings = function () {
       originalOpenSettings();
       renderActionTypes();
     };

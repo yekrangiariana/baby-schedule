@@ -196,14 +196,19 @@
           <section class="settings-section">
             <h2 class="settings-section-title">📝 Activity Types</h2>
             <p class="settings-section-description">
-              Customize the activities you want to track. Each activity has a name, emoji, and color.
+              Customize the activities you want to track. Each activity has a
+              name, emoji, and color.
             </p>
 
             <div id="actionTypesList" class="action-types-list">
               <!-- Action types will be rendered here dynamically -->
             </div>
 
-            <button id="addActionTypeBtn" class="btn-rounded btn-secondary" style="width: 100%; margin-top: 12px;">
+            <button
+              id="addActionTypeBtn"
+              class="btn-rounded btn-secondary"
+              style="width: 100%; margin-top: 12px"
+            >
               ➕ Add New Activity
             </button>
           </section>
@@ -235,7 +240,7 @@
         </div>
         <div class="modal-body">
           <input type="hidden" id="editingTypeId" />
-          
+
           <label class="field">
             <span class="field-label">Activity Name</span>
             <input
@@ -262,12 +267,20 @@
             <span class="field-label">Color</span>
             <div class="color-picker">
               <input type="color" id="typeColorInput" value="#a8d5ff" />
-              <input type="text" id="typeColorText" class="input" value="#a8d5ff" maxlength="7" />
+              <input
+                type="text"
+                id="typeColorText"
+                class="input"
+                value="#a8d5ff"
+                maxlength="7"
+              />
             </div>
           </label>
         </div>
         <div class="modal-footer">
-          <button id="cancelModalBtn" class="btn-rounded btn-secondary">Cancel</button>
+          <button id="cancelModalBtn" class="btn-rounded btn-secondary">
+            Cancel
+          </button>
           <button id="saveTypeBtn" class="btn-rounded btn-primary">Save</button>
         </div>
       </div>
