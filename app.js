@@ -7,9 +7,17 @@
   const STORE_KEY = "babylog.entries.v1";
   const SETTINGS_KEY = "babylog.settings.v1";
   const DELETE_QUEUE_KEY = "babylog.deletes.v1";
+  const SYNC_QUEUE_KEY = "babylog.syncqueue.v1";
+  const LAST_SYNC_KEY = "babylog.lastsync.v1";
 
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => Array.from(document.querySelectorAll(s));
+
+  // Screens
+  const homeScreen = $("#homeScreen");
+  const logScreen = $("#logScreen");
+  const insightsScreen = $("#insightsScreen");
+  const settingsScreen = $("#settingsScreen");
 
   const toastEl = $("#toast");
   const nowText = $("#nowText");
@@ -17,30 +25,29 @@
   const lastPee = $("#lastPee");
   const lastPoop = $("#lastPoop");
   const todayTotals = $("#todayTotals");
+  const recentList = $("#recentList");
+  const logEntries = $("#logEntries");
   const undoBtn = $("#undoBtn");
   const viewGraphsBtn = $("#viewGraphsBtn");
   const viewLogBtn = $("#viewLogBtn");
   const printBtn = $("#printBtn");
 
-  const graphsPanel = $("#graphsPanel");
   const closeGraphsBtn = $("#closeGraphsBtn");
-  const logPanel = $("#logPanel");
   const closeLogBtn = $("#closeLogBtn");
+  const closeSettingsBtn = $("#closeSettingsBtn");
   const dateFilter = $("#dateFilter");
   const clearFilterBtn = $("#clearFilterBtn");
   const summaryEl = $("#summary");
-  const logTbody = $("#logTbody");
-  const exportCsvBtn = $("#exportCsvBtn");
-  const progressWrap = document.getElementById("progressWrap");
-  const progressBar = document.getElementById("progressBar");
-  const progressLabel = document.getElementById("progressLabel");
 
   const openSettingsBtn = $("#openSettingsBtn");
-  const settingsPanel = $("#settingsPanel");
   const appsScriptUrl = $("#appsScriptUrl");
   const syncToggle = $("#syncToggle");
   const saveSettingsBtn = $("#saveSettingsBtn");
   const syncNowBtn = $("#syncNowBtn");
+
+  // Legacy elements for compatibility
+  const logPanel = { hidden: true };
+  const graphsPanel = { hidden: true };
 
   const haptics = (ms) => {
     if (navigator.vibrate) navigator.vibrate(ms || 10);
@@ -120,6 +127,26 @@
   function saveDeletes(list) {
     localStorage.setItem(DELETE_QUEUE_KEY, JSON.stringify(list));
   }
+  function loadSyncQueue() {
+    try {
+      return JSON.parse(localStorage.getItem(SYNC_QUEUE_KEY) || "[]");
+    } catch {
+      return [];
+    }
+  }
+  function saveSyncQueue(list) {
+    localStorage.setItem(SYNC_QUEUE_KEY, JSON.stringify(list));
+  }
+  function getLastSyncTime() {
+    try {
+      return parseInt(localStorage.getItem(LAST_SYNC_KEY) || "0") || 0;
+    } catch {
+      return 0;
+    }
+  }
+  function setLastSyncTime(ts) {
+    localStorage.setItem(LAST_SYNC_KEY, String(ts || Date.now()));
+  }
 
   function formatDate(ts) {
     const d = new Date(ts);
@@ -140,9 +167,10 @@
   }
 
   let entries = loadEntries();
-  let remoteEntries = null; // when loaded from Sheets, used for rendering
   let settings = loadSettings();
   let deleteQueue = loadDeletes();
+  let syncQueue = loadSyncQueue();
+  let isSyncing = false;
 
   // If a fixed URL is provided, force-enable sync
   if (FIXED_WEB_APP_URL) {
@@ -156,8 +184,19 @@
     if (nowText) nowText.textContent = now.toLocaleString();
   }, 1000);
 
-  // Add entry
-  async function addEntry(type, note) {
+  // Show/hide undo button temporarily
+  let undoTimer = null;
+  function showUndoButton() {
+    if (!undoBtn) return;
+    undoBtn.hidden = false;
+    if (undoTimer) clearTimeout(undoTimer);
+    undoTimer = setTimeout(() => {
+      undoBtn.hidden = true;
+    }, 5000);
+  }
+
+  // Add entry - instant local save with background sync
+  function addEntry(type, note) {
     const entry = {
       id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       type,
@@ -167,66 +206,128 @@
     };
     entries.push(entry);
     saveEntries(entries);
-    // Immediate tactile + toast feedback
+    
+    // Add to sync queue
+    syncQueue.push({ type: "create", entry, queuedAt: Date.now() });
+    saveSyncQueue(syncQueue);
+    
+    // Immediate UI update
     haptics(15);
     toast(`${capitalize(type)} logged`);
-
-    // Background push to Sheets and refresh when confirmed
-    setLoading(true, "Saving to Sheets");
-    maybeSync([entry])
-      .then(async () => {
-        const appeared = await waitForEntryOnSheet(entry.id, 9000, 600);
-        setLoading(false, "Saving to Sheets");
-        if (!appeared) {
-          toast("Couldn't verify save — check connection and try again");
-        }
-        await maybeLoadRemoteEntries();
-        updateStatus();
-      })
-      .catch(() => {
-        setLoading(false, "Saving to Sheets");
-        toast("Save failed — check connection");
-      });
-  }
-
-  async function waitForEntryOnSheet(id, timeoutMs, intervalMs) {
-    const deadline = Date.now() + (timeoutMs || 6000);
-    const step = intervalMs || 600;
-    while (Date.now() < deadline) {
-      await maybeLoadRemoteEntries();
-      if (
-        Array.isArray(remoteEntries) &&
-        remoteEntries.some((e) => e.id === id)
-      ) {
-        return true;
-      }
-      await new Promise((r) => setTimeout(r, step));
-    }
-    return false;
+    updateStatus();
+    showUndoButton();
+    
+    // Update open screens immediately
+    if (!logScreen.hidden) renderLog();
+    if (!insightsScreen.hidden) renderGraphs();
+    
+    // Trigger background sync
+    backgroundSync();
   }
 
   function capitalize(s) {
     return s.charAt(0).toUpperCase() + s.slice(1);
   }
 
-  // Undo last
+  // Screen Navigation
+  function showScreen(screen) {
+    // Update nav buttons
+    $$(`.nav-item`).forEach(btn => btn.classList.remove('active'));
+    
+    if (screen === 'home') {
+      homeScreen.hidden = false;
+      logScreen.hidden = true;
+      insightsScreen.hidden = true;
+      settingsScreen.hidden = true;
+      $$(`.nav-item[data-screen="home"]`)[0]?.classList.add('active');
+    } else if (screen === 'log') {
+      homeScreen.hidden = true;
+      logScreen.hidden = false;
+      insightsScreen.hidden = true;
+      settingsScreen.hidden = true;
+      renderLog();
+      backgroundSync();
+      startRemoteAutoRefresh();
+    } else if (screen === 'insights') {
+      homeScreen.hidden = true;
+      logScreen.hidden = true;
+      insightsScreen.hidden = false;
+      settingsScreen.hidden = true;
+      renderGraphs();
+      backgroundSync();
+    } else if (screen === 'settings') {
+      homeScreen.hidden = true;
+      logScreen.hidden = true;
+      insightsScreen.hidden = true;
+      settingsScreen.hidden = false;
+    }
+  }
+
+  function goHome() {
+    showScreen('home');
+    stopRemoteAutoRefresh();
+  }
+
+  // Render recent activity on home screen
+  function renderRecentActivity() {
+    if (!recentList) return;
+    const recent = entries
+      .slice()
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(0, 4);
+    
+    if (recent.length === 0) {
+      recentList.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px;">No activity yet</p>';
+      return;
+    }
+    
+    recentList.innerHTML = recent.map((e, index) => `
+      <div class="recent-item" style="animation-delay: ${index * 0.05}s">
+        <div class="recent-icon ${e.type}">${getTypeEmoji(e.type)}</div>
+        <div class="recent-info">
+          <div class="recent-type">${capitalize(e.type)}</div>
+          <div class="recent-time">${formatDate(e.timestamp)} ${formatTime(e.timestamp)}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function getTypeEmoji(type) {
+    return { feed: '🍼', pee: '💧', poop: '💩' }[type] || '📝';
+  }
+
+  // Undo last - instant local delete with background sync
   function undoLast() {
     if (!entries.length) return;
+    
+    // Hide undo button immediately
+    if (undoBtn) undoBtn.hidden = true;
+    if (undoTimer) clearTimeout(undoTimer);
+    
     const last = entries.pop();
     saveEntries(entries);
+    
+    // Add to delete queue for background sync
+    deleteQueue.push(last.id);
+    saveDeletes(deleteQueue);
+    syncQueue.push({ type: "delete", id: last.id, queuedAt: Date.now() });
+    saveSyncQueue(syncQueue);
+    
+    // Immediate UI update
     haptics(10);
     updateStatus();
-    // If the entry was synced to Sheets, enqueue a delete and attempt sync
-    if (settings.syncEnabled && settings.webAppUrl && last.synced) {
-      deleteQueue.push(last.id);
-      saveDeletes(deleteQueue);
-      maybeDelete([last.id]);
-    }
     toast(`Undid ${last.type} at ${formatTime(last.timestamp)}`);
+    
+    // Update open screens immediately
+    if (!logScreen.hidden) renderLog();
+    if (!insightsScreen.hidden) renderGraphs();
+    
+    // Trigger background sync
+    backgroundSync();
   }
 
   function updateStatus() {
-    const src = remoteEntries || [];
+    const src = entries;
     const lastOf = (t) => {
       const e = src
         .filter((e) => e.type === t)
@@ -243,6 +344,8 @@
     todayTotals.textContent = src.length
       ? `Today: Feed ${counts.feed || 0} • Pee ${counts.pee || 0} • Poop ${counts.poop || 0}`
       : "Today: —";
+    
+    renderRecentActivity();
   }
 
   function countByType(list) {
@@ -253,26 +356,25 @@
   }
 
   async function openLog() {
-    logPanel.hidden = false;
-    setLoading(true);
-    await maybeLoadRemoteEntries();
+    showScreen('log');
     renderLog();
     updateStatus();
+    // Trigger background sync to pull latest from other devices
+    backgroundSync();
     startRemoteAutoRefresh();
   }
   function closeLog() {
-    logPanel.hidden = true;
+    showScreen('home');
     stopRemoteAutoRefresh();
   }
 
   async function openGraphs() {
     haptics(8);
-    graphsPanel.hidden = false;
+    showScreen('insights');
     try {
-      if (!remoteEntries) {
-        await maybeLoadRemoteEntries();
-      }
       renderGraphs();
+      // Trigger background sync to get latest data
+      backgroundSync();
     } catch (err) {
       console.error("Failed to render graphs:", err);
       toast("Graphs unavailable — add some logs first");
@@ -281,11 +383,19 @@
 
   function closeGraphs() {
     haptics(6);
-    graphsPanel.hidden = true;
+    showScreen('home');
+  }
+  
+  function openSettings() {
+    showScreen('settings');
+  }
+  
+  function closeSettings() {
+    showScreen('home');
   }
 
   function renderGraphs() {
-    if (!remoteEntries || !remoteEntries.length) return;
+    if (!entries || !entries.length) return;
 
     const today = new Date();
     const todayStart = new Date(
@@ -297,7 +407,7 @@
     const last7days = Date.now() - 7 * 24 * 60 * 60 * 1000;
 
     // Today's totals
-    const todayEntries = remoteEntries.filter((e) => e.timestamp >= todayStart);
+    const todayEntries = entries.filter((e) => e.timestamp >= todayStart);
     const todayCounts = { feed: 0, pee: 0, poop: 0 };
     todayEntries.forEach((e) => {
       if (todayCounts[e.type] !== undefined) todayCounts[e.type]++;
@@ -312,7 +422,7 @@
     const hourlyData = Array(24)
       .fill(0)
       .map((_, i) => ({ hour: i, count: 0 }));
-    remoteEntries
+    entries
       .filter((e) => e.timestamp >= last24h)
       .forEach((e) => {
         const h = new Date(e.timestamp).getHours();
@@ -325,7 +435,7 @@
     for (let i = 6; i >= 0; i--) {
       const dayStart = todayStart - i * 24 * 60 * 60 * 1000;
       const dayEnd = dayStart + 24 * 60 * 60 * 1000;
-      const dayEntries = remoteEntries.filter(
+      const dayEntries = entries.filter(
         (e) => e.timestamp >= dayStart && e.timestamp < dayEnd,
       );
       const counts = { feed: 0, pee: 0, poop: 0 };
@@ -354,9 +464,17 @@
   function drawBarChart(canvasId, data) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
+    
+    // Set higher resolution for better quality
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    
     const ctx = canvas.getContext("2d");
-    const w = canvas.width,
-      h = canvas.height;
+    ctx.scale(dpr, dpr);
+    const w = rect.width,
+      h = rect.height;
 
     // White background
     ctx.fillStyle = "#ffffff";
@@ -385,9 +503,17 @@
   function drawLineChart(canvasId, data) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
+    
+    // Set higher resolution for better quality
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    
     const ctx = canvas.getContext("2d");
-    const w = canvas.width,
-      h = canvas.height;
+    ctx.scale(dpr, dpr);
+    const w = rect.width,
+      h = rect.height;
 
     // White background
     ctx.fillStyle = "#ffffff";
@@ -396,15 +522,40 @@
     const max = Math.max(...data.map((d) => d.count), 1);
     const step = w / (data.length - 1 || 1);
 
-    ctx.strokeStyle = "#60a5fa";
-    ctx.lineWidth = 2;
+    // Draw smooth curve with gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, h);
+    gradient.addColorStop(0, '#60a5fa');
+    gradient.addColorStop(1, '#93c5fd');
+    
+    ctx.strokeStyle = gradient;
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
     ctx.beginPath();
+    
     data.forEach((d, i) => {
       const x = i * step;
       const y = h - 30 - (d.count / max) * (h - 60);
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+      if (i === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        // Use quadratic curves for smooth lines
+        const prevX = (i - 1) * step;
+        const prevY = h - 30 - (data[i - 1].count / max) * (h - 60);
+        const cpX = (prevX + x) / 2;
+        const cpY = (prevY + y) / 2;
+        ctx.quadraticCurveTo(prevX, prevY, cpX, cpY);
+      }
     });
+    
+    // Draw final segment
+    if (data.length > 1) {
+      const lastIdx = data.length - 1;
+      const x = lastIdx * step;
+      const y = h - 30 - (data[lastIdx].count / max) * (h - 60);
+      ctx.lineTo(x, y);
+    }
+    
     ctx.stroke();
 
     ctx.fillStyle = "#6b7280";
@@ -422,9 +573,17 @@
   function drawStackedBarChart(canvasId, data) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
+    
+    // Set higher resolution for better quality
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    
     const ctx = canvas.getContext("2d");
-    const w = canvas.width,
-      h = canvas.height;
+    ctx.scale(dpr, dpr);
+    const w = rect.width,
+      h = rect.height;
 
     // White background
     ctx.fillStyle = "#ffffff";
@@ -467,9 +626,17 @@
   function drawRatioChart(canvasId, data) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
+    
+    // Set higher resolution for better quality
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    
     const ctx = canvas.getContext("2d");
-    const w = canvas.width,
-      h = canvas.height;
+    ctx.scale(dpr, dpr);
+    const w = rect.width,
+      h = rect.height;
 
     // White background
     ctx.fillStyle = "#ffffff";
@@ -519,38 +686,40 @@
     ctx.fillText(status + " (target: 1-2:1)", w / 2, 58);
   }
   function renderLog() {
-    if (!remoteEntries) {
-      summaryEl.textContent = "Loading remote log…";
-      logTbody.innerHTML = "";
-      return;
-    }
-    const source = remoteEntries;
+    const source = entries;
     const filterVal = dateFilter.value ? new Date(dateFilter.value) : null;
     const list = filterVal
       ? source.filter((e) => isSameDay(e.timestamp, filterVal))
       : source;
     const counts = countByType(list);
 
+    // Update summary text
     summaryEl.textContent = list.length
       ? `Showing ${list.length} entries — Feed ${counts.feed || 0}, Pee ${counts.pee || 0}, Poop ${counts.poop || 0}`
       : "No entries yet";
 
-    logTbody.innerHTML = "";
+    // Render log entries as cards
+    logEntries.innerHTML = "";
+    if (list.length === 0) {
+      return; // Summary already shows "No entries yet"
+    }
+
     list
       .slice()
       .sort((a, b) => b.timestamp - a.timestamp)
       .forEach((e) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${formatDate(e.timestamp)}</td>
-          <td>${formatTime(e.timestamp)}</td>
-          <td>${capitalize(e.type)}</td>
-          <td>${escapeHtml(e.note || "")}</td>
-          <td class="no-print">
-            <button class="secondary" data-del="${e.id}">Delete</button>
-          </td>
+        const card = document.createElement("div");
+        card.className = "log-entry";
+        card.innerHTML = `
+          <div class="log-entry-icon ${e.type}">${getTypeEmoji(e.type)}</div>
+          <div class="log-entry-content">
+            <div class="log-entry-type">${capitalize(e.type)}</div>
+            <div class="log-entry-time">${formatDate(e.timestamp)} ${formatTime(e.timestamp)}</div>
+            ${e.note ? `<div class="log-entry-note">${escapeHtml(e.note)}</div>` : ''}
+          </div>
+          <button class="log-entry-delete" data-del="${e.id}">Delete</button>
         `;
-        logTbody.appendChild(tr);
+        logEntries.appendChild(card);
       });
   }
 
@@ -561,15 +730,31 @@
     );
   }
 
-  async function deleteEntry(id) {
-    if (!settings.syncEnabled || !settings.webAppUrl) return;
+  function deleteEntry(id) {
+    // Remove from local entries immediately
+    const index = entries.findIndex(e => e.id === id);
+    if (index === -1) return;
+    
+    const deleted = entries.splice(index, 1)[0];
+    saveEntries(entries);
+    
+    // Add to delete queue for background sync
+    deleteQueue.push(id);
+    saveDeletes(deleteQueue);
+    syncQueue.push({ type: "delete", id, queuedAt: Date.now() });
+    saveSyncQueue(syncQueue);
+    
+    // Immediate UI update
     haptics(8);
-    toast("Deleting…");
-    await maybeDelete([id]);
-    await maybeLoadRemoteEntries();
-    renderLog();
+    toast(`Deleted ${deleted.type} entry`);
     updateStatus();
-    toast("Entry deleted from Sheets");
+    
+    // Update open screens immediately
+    if (!logScreen.hidden) renderLog();
+    if (!insightsScreen.hidden) renderGraphs();
+    
+    // Trigger background sync
+    backgroundSync();
   }
 
   // Button press feedback (visual + haptics on pointer)
@@ -595,45 +780,119 @@
     clearFilterBtn,
     closeGraphsBtn,
     closeLogBtn,
-    exportCsvBtn,
     openSettingsBtn,
   ].forEach(attachPressFeedback);
 
-  function exportCsv() {
-    const source = remoteEntries || [];
-    const rows = [["Date", "Time", "Type", "Note", "ID"]];
-    source.forEach((e) => {
-      rows.push([
-        formatDate(e.timestamp),
-        formatTime(e.timestamp),
-        e.type,
-        e.note?.replaceAll("\n", " "),
-        e.id,
-      ]);
-    });
-    const csv = rows
-      .map((r) =>
-        r
-          .map((cell) => {
-            const s = String(cell ?? "");
-            if (/[",\n]/.test(s)) return '"' + s.replaceAll('"', '""') + '"';
-            return s;
-          })
-          .join(","),
-      )
-      .join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `baby-log-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+  async function printView() {
+    // Ensure remote data is loaded and log is displayed
+    await openLog();
+    // Wait for DOM to update with rendered data
+    setTimeout(() => window.print(), 400);
   }
 
-  function printView() {
-    openLog();
-    setTimeout(() => window.print(), 200);
+  // Background sync: push local changes to Sheets and pull remote changes
+  async function backgroundSync() {
+    const cfg = loadSettings();
+    if (!cfg.syncEnabled || !cfg.webAppUrl || isSyncing) return;
+    
+    isSyncing = true;
+    const hadPendingChanges = syncQueue.length > 0;
+    
+    try {
+      // Step 1: Push local changes (sync queue)
+      if (syncQueue.length > 0) {
+        const createOps = syncQueue.filter(op => op.type === 'create');
+        const deleteOps = syncQueue.filter(op => op.type === 'delete');
+        
+        // Push creates
+        if (createOps.length > 0) {
+          await maybeSync(createOps.map(op => op.entry));
+          // Remove successfully synced operations
+          syncQueue = syncQueue.filter(op => op.type !== 'create' || !createOps.includes(op));
+          saveSyncQueue(syncQueue);
+        }
+        
+        // Push deletes
+        if (deleteOps.length > 0) {
+          await maybeDelete(deleteOps.map(op => op.id));
+          // Remove successfully synced deletes
+          syncQueue = syncQueue.filter(op => op.type !== 'delete' || !deleteOps.includes(op));
+          saveSyncQueue(syncQueue);
+        }
+      }
+      
+      // Step 2: Pull remote changes and merge
+      await pullAndMergeRemote();
+      
+      setLastSyncTime(Date.now());
+      
+      // Show subtle sync confirmation only if we had pending changes
+      if (hadPendingChanges && syncQueue.length === 0) {
+        // All changes synced successfully
+        console.log('✓ Synced with Google Sheets');
+      }
+    } catch (err) {
+      console.error('Background sync failed:', err);
+      // Silently fail - will retry on next sync attempt
+    } finally {
+      isSyncing = false;
+    }
+  }
+
+  // Pull remote entries and merge with local
+  async function pullAndMergeRemote() {
+    const cfg = loadSettings();
+    if (!cfg.syncEnabled || !cfg.webAppUrl) return;
+    
+    let remoteEntries = null;
+    
+    // Try to fetch from Sheets
+    try {
+      const url = new URL(cfg.webAppUrl);
+      url.searchParams.set('action', 'list');
+      url.searchParams.set('t', String(Date.now()));
+      const res = await fetch(url.toString(), { method: 'GET', mode: 'cors' });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          remoteEntries = normalizeRemote(data);
+        }
+      }
+    } catch {
+      // Fallback to JSONP
+      try {
+        const data = await jsonpList(cfg.webAppUrl);
+        remoteEntries = normalizeRemote(data || []);
+      } catch {
+        // Sync failed silently - keep using local data
+        return;
+      }
+    }
+    
+    if (!remoteEntries) return;
+    
+    // Merge: Add remote entries not in local
+    const localIds = new Set(entries.map(e => e.id));
+    const newRemoteEntries = remoteEntries.filter(e => !localIds.has(e.id));
+    
+    if (newRemoteEntries.length > 0) {
+      entries.push(...newRemoteEntries);
+      entries.sort((a, b) => b.timestamp - a.timestamp);
+      saveEntries(entries);
+      
+      // Show notification for new entries from other devices
+      if (newRemoteEntries.length === 1) {
+        toast(`Synced 1 new entry from another device`);
+      } else {
+        toast(`Synced ${newRemoteEntries.length} new entries from other devices`);
+      }
+      
+      // Update UI
+      updateStatus();
+      renderRecentActivity();
+      if (!logScreen.classList.contains('hidden')) renderLog();
+      if (!insightsScreen.classList.contains('hidden')) renderGraphs();
+    }
   }
 
   // Load entries from Google Sheets (if sync enabled). Fallback to local on failure.
@@ -827,26 +1086,39 @@
     }
   });
   closeGraphsBtn.addEventListener("click", closeGraphs);
-  viewLogBtn.addEventListener("click", openLog);
   closeLogBtn.addEventListener("click", closeLog);
-  exportCsvBtn.addEventListener("click", exportCsv);
+  closeSettingsBtn.addEventListener("click", closeSettings);
+  viewLogBtn.addEventListener("click", openLog);
   printBtn.addEventListener("click", printView);
   dateFilter.addEventListener("change", renderLog);
   clearFilterBtn.addEventListener("click", () => {
     dateFilter.value = "";
     renderLog();
   });
-  logTbody.addEventListener("click", (e) => {
+  
+  // Wire up log entry delete buttons (event delegation)
+  logEntries.addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-del]");
     if (btn) {
       deleteEntry(btn.dataset.del);
     }
   });
+  
+  // Bottom navigation
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const screen = item.dataset.screen;
+      if (screen) {
+        if (screen === 'log') openLog();
+        else if (screen === 'insights') openGraphs();
+        else if (screen === 'settings') openSettings();
+        else showScreen(screen);
+      }
+    });
+  });
 
   if (openSettingsBtn && settingsPanel) {
-    openSettingsBtn.addEventListener("click", () =>
-      settingsPanel.scrollIntoView({ behavior: "smooth" }),
-    );
+    openSettingsBtn.addEventListener("click", openSettings);
   }
   if (saveSettingsBtn && appsScriptUrl && syncToggle) {
     saveSettingsBtn.addEventListener("click", () => {
@@ -876,44 +1148,28 @@
 
   // Init
   updateStatus();
-  // Prime remote snapshot on load and when refocusing
+  // Prime initial sync on load and when refocusing
   if (settings.syncEnabled && settings.webAppUrl) {
-    maybeLoadRemoteEntries().then(() => updateStatus());
+    backgroundSync();
     window.addEventListener("focus", () => {
-      maybeLoadRemoteEntries().then(() => {
-        renderLog();
-        updateStatus();
-      });
+      backgroundSync();
     });
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) {
-        maybeLoadRemoteEntries().then(() => {
-          renderLog();
-          updateStatus();
-        });
+        backgroundSync();
       }
     });
   }
   initSettingsUI();
 
-  // Auto-sync any pending entries on load and when going back online (if sync is enabled)
+  // Auto-sync any pending operations on load and when going back online
   if (settings.syncEnabled && settings.webAppUrl) {
-    const pending = entries.filter((e) => !e.synced);
-    if (pending.length) {
-      // run in background without toasts on load
-      maybeSync(pending);
-    }
-    if (deleteQueue.length) {
-      maybeDelete(deleteQueue.slice());
+    // Sync any queued operations
+    if (syncQueue.length || deleteQueue.length) {
+      backgroundSync();
     }
     window.addEventListener("online", () => {
-      const unsynced = entries.filter((e) => !e.synced);
-      if (unsynced.length) maybeSync(unsynced);
-      if (deleteQueue.length) maybeDelete(deleteQueue.slice());
-      maybeLoadRemoteEntries().then(() => {
-        renderLog();
-        updateStatus();
-      });
+      backgroundSync();
     });
   }
 
@@ -922,9 +1178,7 @@
   function startRemoteAutoRefresh() {
     if (remoteRefreshTimer) clearInterval(remoteRefreshTimer);
     remoteRefreshTimer = setInterval(async () => {
-      await maybeLoadRemoteEntries();
-      renderLog();
-      updateStatus();
+      await backgroundSync();
     }, 20000);
   }
   function stopRemoteAutoRefresh() {

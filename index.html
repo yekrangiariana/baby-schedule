@@ -6,47 +6,107 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>Baby Log</title>
+    <title>Baby Tracker</title>
     <link rel="stylesheet" href="styles.css" />
-    <meta name="theme-color" content="#111827" />
+    <meta name="theme-color" content="#FFF5F7" />
   </head>
   <body>
-    <header class="app-header">
-      <h1>Baby Log</h1>
-      <div class="now" id="nowText"></div>
-    </header>
+    <!-- Main Screen -->
+    <div class="screen" id="homeScreen">
+      <header class="screen-header">
+        <h1>👶 Baby Tracker</h1>
+      </header>
 
-    <main class="container">
-      <section class="quick-actions">
-        <button class="action action-feed" data-type="feed">Feed</button>
-        <button class="action action-pee" data-type="pee">Pee</button>
-        <button class="action action-poop" data-type="poop">Poop</button>
-      </section>
+      <main class="screen-content">
+        <!-- Quick Actions -->
+        <section class="quick-actions">
+          <button class="action action-feed" data-type="feed">
+            <span class="action-emoji">🍼</span>
+            <span class="action-label">Feed</span>
+          </button>
+          <button class="action action-pee" data-type="pee">
+            <span class="action-emoji">💧</span>
+            <span class="action-label">Pee</span>
+          </button>
+          <button class="action action-poop" data-type="poop">
+            <span class="action-emoji">💩</span>
+            <span class="action-label">Poop</span>
+          </button>
+        </section>
 
-      <section class="status">
-        <div class="last-row">
-          <span>Last feed:</span> <strong id="lastFeed">—</strong>
-        </div>
-        <div class="last-row">
-          <span>Last pee:</span> <strong id="lastPee">—</strong>
-        </div>
-        <div class="last-row">
-          <span>Last poop:</span> <strong id="lastPoop">—</strong>
-        </div>
-        <div class="today-totals" id="todayTotals">Today: —</div>
-        <div class="actions-row">
-          <button id="undoBtn" class="secondary">Undo last</button>
-          <button id="viewGraphsBtn" class="secondary">Graphs</button>
-          <button id="viewLogBtn" class="secondary">View log</button>
-          <button id="printBtn" class="secondary">Print</button>
-        </div>
-      </section>
+        <!-- Today's Summary -->
+        <section class="today-summary">
+          <h2>📊 Today's Summary</h2>
+          <div class="now" id="nowText"></div>
+          <div class="today-stats" id="todayTotals">Loading...</div>
+        </section>
 
-      <section class="panel" id="graphsPanel" hidden>
-        <div class="panel-header">
-          <h2>Graphs</h2>
-          <button id="closeGraphsBtn" class="icon" aria-label="Close">✕</button>
+        <!-- Recent Activity -->
+        <section class="recent-activity">
+          <h3>Recent Activity</h3>
+          <div class="recent-list" id="recentList"></div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Activity Log Screen (Full Page) -->
+    <div class="screen screen-modal" id="logScreen" hidden>
+      <header class="screen-header">
+        <button class="back-btn" id="closeLogBtn">
+          <span>←</span>
+        </button>
+        <h1>📋 Activity Log</h1>
+        <button class="icon-btn" id="printBtn">🖨️</button>
+      </header>
+
+      <div class="screen-toolbar">
+        <input type="date" id="dateFilter" class="date-input" />
+        <button id="clearFilterBtn" class="btn-small">Clear</button>
+      </div>
+
+      <main class="screen-content">
+        <!-- Stats Cards -->
+        <div class="log-stats">
+          <div class="stat-mini stat-feed">
+            <div class="stat-mini-icon">🍼</div>
+            <div class="stat-mini-content">
+              <div class="stat-mini-label">Last Feed</div>
+              <div class="stat-mini-value" id="lastFeed">—</div>
+            </div>
+          </div>
+          <div class="stat-mini stat-pee">
+            <div class="stat-mini-icon">💧</div>
+            <div class="stat-mini-content">
+              <div class="stat-mini-label">Last Pee</div>
+              <div class="stat-mini-value" id="lastPee">—</div>
+            </div>
+          </div>
+          <div class="stat-mini stat-poop">
+            <div class="stat-mini-icon">💩</div>
+            <div class="stat-mini-content">
+              <div class="stat-mini-label">Last Poop</div>
+              <div class="stat-mini-value" id="lastPoop">—</div>
+            </div>
+          </div>
         </div>
+
+        <div class="summary" id="summary"></div>
+        
+        <div class="log-entries" id="logEntries"></div>
+      </main>
+    </div>
+
+    <!-- Insights Screen (Full Page) -->
+    <div class="screen screen-modal" id="insightsScreen" hidden>
+      <header class="screen-header">
+        <button class="back-btn" id="closeGraphsBtn">
+          <span>←</span>
+        </button>
+        <h1>📈 Insights</h1>
+        <div></div>
+      </header>
+
+      <main class="screen-content">
         <div class="graphs-container">
           <div class="graph-card">
             <h3>Today's Activity</h3>
@@ -61,84 +121,91 @@
             <canvas id="weekChart" width="300" height="200"></canvas>
           </div>
           <div class="graph-card">
-            <h3>Feed to Diaper Ratio (Today)</h3>
+            <h3>Feed to Diaper Ratio</h3>
             <canvas id="ratioChart" width="300" height="200"></canvas>
             <div class="graph-guide">
-              <strong>Healthy: 1-2 diapers per feed</strong><br />
+              <strong>💚 Healthy: 1-2 diapers per feed</strong><br />
               &lt;1:1 = Monitor intake • 1-2:1 = Good • &gt;2:1 = Great
-              hydration
             </div>
           </div>
         </div>
-      </section>
+      </main>
+    </div>
 
-      <section class="panel" id="logPanel" hidden>
-        <div class="panel-header">
-          <h2>Log</h2>
-          <div class="panel-actions">
-            <input type="date" id="dateFilter" />
-            <button id="clearFilterBtn" class="secondary">Clear</button>
-            <button id="exportCsvBtn" class="secondary">Export CSV</button>
-            <button id="closeLogBtn" class="icon" aria-label="Close">✕</button>
-          </div>
-        </div>
-        <div class="summary" id="summary"></div>
-        <div class="progress-wrap" id="progressWrap" hidden>
-          <div class="progress" aria-hidden="true">
-            <div class="progress-bar" id="progressBar" style="width: 0%"></div>
-          </div>
-          <div class="progress-label" id="progressLabel">Loading… 0%</div>
-        </div>
-        <div class="table-wrap">
-          <table id="logTable">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Type</th>
-                <th>Note</th>
-                <th class="no-print">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="logTbody"></tbody>
-          </table>
-        </div>
-      </section>
+    <!-- Settings Screen (Full Page) -->
+    <div class="screen screen-modal" id="settingsScreen" hidden>
+      <header class="screen-header">
+        <button class="back-btn" id="closeSettingsBtn">
+          <span>←</span>
+        </button>
+        <h1>⚙️ Settings</h1>
+        <div></div>
+      </header>
 
-      <section class="panel" id="settingsPanel">
-        <div class="panel-header">
-          <h2>Settings</h2>
-        </div>
+      <main class="screen-content">
         <div class="settings">
           <label class="field">
-            <span>Google Apps Script Web App URL (optional)</span>
+            <span class="field-label">Google Sheets Sync URL</span>
             <input
               type="url"
               id="appsScriptUrl"
+              class="input"
               placeholder="https://script.google.com/macros/s/.../exec"
             />
           </label>
           <label class="field-inline">
             <input type="checkbox" id="syncToggle" />
-            <span>Enable sync to Google Sheets when online</span>
+            <span>Enable cloud sync</span>
           </label>
           <div class="settings-actions">
-            <button id="saveSettingsBtn" class="primary">Save Settings</button>
-            <button id="syncNowBtn" class="secondary">Sync Now</button>
+            <button id="saveSettingsBtn" class="btn-rounded btn-primary">💾 Save Settings</button>
+            <button id="syncNowBtn" class="btn-rounded btn-secondary">🔄 Sync Now</button>
           </div>
-          <small class="hint"
-            >Leave blank to keep everything local. See README for setup
-            instructions.</small
-          >
+          <small class="hint">
+            💡 Leave blank to keep everything local. See README for setup.
+          </small>
         </div>
-      </section>
-    </main>
+      </main>
+    </div>
 
-    <footer class="app-footer">
-      <button id="openSettingsBtn" class="link">Settings</button>
-    </footer>
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-screen="home">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">Home</span>
+      </button>
+      <button class="nav-item" data-screen="log" id="viewLogBtn">
+        <span class="nav-icon">📋</span>
+        <span class="nav-label">Log</span>
+      </button>
+      <button class="nav-item" data-screen="insights" id="viewGraphsBtn">
+        <span class="nav-icon">📈</span>
+        <span class="nav-label">Insights</span>
+      </button>
+      <button class="nav-item" data-screen="settings" id="openSettingsBtn">
+        <span class="nav-icon">⚙️</span>
+        <span class="nav-label">Settings</span>
+      </button>
+    </nav>
 
     <div id="toast" role="status" aria-live="polite"></div>
+    
+    <!-- Floating Undo Button -->
+    <button id="undoBtn" class="floating-undo" hidden>
+      <span class="undo-icon">↩️</span>
+      <span class="undo-text">Undo</span>
+    </button>
+
+    <!-- Hidden elements for legacy compatibility -->
+    <div hidden>
+      <div id="progressWrap"></div>
+      <div id="progressBar"></div>
+      <div id="progressLabel"></div>
+      <table id="logTable"><tbody id="logTbody"></tbody></table>
+      <div id="settingsPanel"></div>
+      <div id="logPanel"></div>
+      <div id="graphsPanel"></div>
+    </div>
 
     <script src="app.js"></script>
   </body>
