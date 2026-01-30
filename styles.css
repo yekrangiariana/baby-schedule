@@ -823,7 +823,11 @@ body {
 
 .theme-option:has(input:checked) {
   border-color: var(--accent);
-  background: linear-gradient(135deg, rgba(155, 135, 245, 0.08), rgba(255, 139, 167, 0.08));
+  background: linear-gradient(
+    135deg,
+    rgba(155, 135, 245, 0.08),
+    rgba(255, 139, 167, 0.08)
+  );
   box-shadow: 0 2px 8px var(--shadow);
 }
 
@@ -953,13 +957,15 @@ body {
   margin-top: 24px;
 }
 
-.emoji-picker, .color-picker {
+.emoji-picker,
+.color-picker {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 8px;
 }
 
-.emoji-btn, .color-btn {
+.emoji-btn,
+.color-btn {
   width: 44px;
   height: 44px;
   border-radius: 10px;
@@ -973,11 +979,13 @@ body {
   transition: all 0.2s;
 }
 
-.emoji-btn:hover, .color-btn:hover {
+.emoji-btn:hover,
+.color-btn:hover {
   transform: scale(1.05);
 }
 
-.emoji-btn.selected, .color-btn.selected {
+.emoji-btn.selected,
+.color-btn.selected {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px var(--accent);
 }
@@ -1024,8 +1032,13 @@ body {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 
 .btn-secondary {

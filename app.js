@@ -12,9 +12,9 @@
 
   // Default action types
   const DEFAULT_ACTION_TYPES = [
-    { id: 'feed', name: 'Feed', emoji: '🍼', color: '#a8d5ff' },
-    { id: 'pee', name: 'Pee', emoji: '💧', color: '#ffe4a8' },
-    { id: 'poop', name: 'Poop', emoji: '💩', color: '#ffb3ba' }
+    { id: "feed", name: "Feed", emoji: "🍼", color: "#a8d5ff" },
+    { id: "pee", name: "Pee", emoji: "💧", color: "#ffe4a8" },
+    { id: "poop", name: "Poop", emoji: "💩", color: "#ffb3ba" },
   ];
 
   const $ = (s) => document.querySelector(s);
@@ -184,7 +184,14 @@
     localStorage.setItem(ACTION_TYPES_KEY, JSON.stringify(types));
   }
   function getActionTypeById(id) {
-    return actionTypes.find(t => t.id === id) || { id, name: id, emoji: '📝', color: '#cbd5e1' };
+    return (
+      actionTypes.find((t) => t.id === id) || {
+        id,
+        name: id,
+        emoji: "📝",
+        color: "#cbd5e1",
+      }
+    );
   }
 
   function formatDate(ts) {
@@ -214,19 +221,19 @@
 
   // Apply saved theme or default to blossom
   function applyTheme(theme) {
-    const validThemes = ['blossom', 'comet', 'meadow'];
-    const selectedTheme = validThemes.includes(theme) ? theme : 'blossom';
-    document.body.setAttribute('data-theme', selectedTheme);
-    
+    const validThemes = ["blossom", "comet", "meadow"];
+    const selectedTheme = validThemes.includes(theme) ? theme : "blossom";
+    document.body.setAttribute("data-theme", selectedTheme);
+
     // Update radio buttons
     const themeRadios = document.querySelectorAll('input[name="theme"]');
-    themeRadios.forEach(radio => {
+    themeRadios.forEach((radio) => {
       radio.checked = radio.value === selectedTheme;
     });
   }
 
   // Load and apply theme on startup
-  applyTheme(settings.theme || 'blossom');
+  applyTheme(settings.theme || "blossom");
 
   // If a fixed URL is provided, force-enable sync
   if (FIXED_WEB_APP_URL) {
@@ -357,10 +364,9 @@
     }
 
     recentList.innerHTML = recent
-      .map(
-        (e, index) => {
-          const typeInfo = getActionTypeById(e.type);
-          return `
+      .map((e, index) => {
+        const typeInfo = getActionTypeById(e.type);
+        return `
       <div class="recent-item" style="animation-delay: ${index * 0.05}s">
         <div class="recent-icon" style="background: ${typeInfo.color}30; color: ${typeInfo.color};">${typeInfo.emoji}</div>
         <div class="recent-info">
@@ -369,26 +375,29 @@
         </div>
       </div>
     `;
-        },
-      )
+      })
       .join("");
   }
 
   // Render action buttons on home screen
   function renderHomeScreen() {
     if (!actionButtons) return;
-    
-    actionButtons.innerHTML = actionTypes.map(type => `
+
+    actionButtons.innerHTML = actionTypes
+      .map(
+        (type) => `
       <button class="action" data-type="${type.id}" style="border-color: ${type.color};">
         <div class="action-glow" style="background: linear-gradient(135deg, ${type.color}30, ${type.color});"></div>
         <span class="action-emoji">${type.emoji}</span>
         <span class="action-label">${type.name}</span>
       </button>
-    `).join('');
-    
+    `,
+      )
+      .join("");
+
     // Re-attach event listeners and press feedback
-    actionButtons.querySelectorAll('.action').forEach(btn => {
-      btn.addEventListener('click', () => {
+    actionButtons.querySelectorAll(".action").forEach((btn) => {
+      btn.addEventListener("click", () => {
         const type = btn.dataset.type;
         addEntry(type);
       });
@@ -400,12 +409,12 @@
     const actionType = getActionTypeById(type);
     return actionType.emoji;
   }
-  
+
   function getTypeColor(type) {
     const actionType = getActionTypeById(type);
     return actionType.color;
   }
-  
+
   function getTypeName(type) {
     const actionType = getActionTypeById(type);
     return actionType.name;
@@ -443,16 +452,20 @@
 
   function updateStatus() {
     const src = entries;
-    
+
     // Render dynamic mini stats
     if (logStats) {
-      logStats.innerHTML = actionTypes.slice(0, 3).map(type => {
-        const e = src
-          .filter((e) => e.type === type.id)
-          .sort((a, b) => b.timestamp - a.timestamp)[0];
-        const lastTime = e ? `${formatDate(e.timestamp)} ${formatTime(e.timestamp)}` : "—";
-        
-        return `
+      logStats.innerHTML = actionTypes
+        .slice(0, 3)
+        .map((type) => {
+          const e = src
+            .filter((e) => e.type === type.id)
+            .sort((a, b) => b.timestamp - a.timestamp)[0];
+          const lastTime = e
+            ? `${formatDate(e.timestamp)} ${formatTime(e.timestamp)}`
+            : "—";
+
+          return `
           <div class="stat-mini" style="background: ${type.color}20; border-color: ${type.color};">
             <div class="stat-mini-icon">${type.emoji}</div>
             <div class="stat-mini-content">
@@ -461,19 +474,20 @@
             </div>
           </div>
         `;
-      }).join('');
+        })
+        .join("");
     }
 
     const today = new Date();
     const todayEntries = src.filter((e) => isSameDay(e.timestamp, today));
     const counts = countByType(todayEntries);
-    
+
     // Build dynamic summary text
-    const summaryParts = actionTypes.map(type => 
-      `${type.name} ${counts[type.id] || 0}`
+    const summaryParts = actionTypes.map(
+      (type) => `${type.name} ${counts[type.id] || 0}`,
     );
     todayTotals.textContent = src.length
-      ? `Today: ${summaryParts.join(' • ')}`
+      ? `Today: ${summaryParts.join(" • ")}`
       : "Today: —";
 
     // Show sync warning on home screen if not connected
@@ -481,12 +495,12 @@
     const currentSettings = loadSettings();
     const hasUrl = !!(currentSettings.webAppUrl || FIXED_WEB_APP_URL);
     const isSyncConfigured = hasUrl && currentSettings.syncEnabled;
-    
+
     // Only show warning on home screen when NOT connected
     if (syncNoticeWarning) {
       syncNoticeWarning.hidden = isSyncConfigured;
     }
-    
+
     // Update success notice in settings (handled separately when settings screen is shown)
     if (syncNoticeSuccess) {
       syncNoticeSuccess.hidden = !isSyncConfigured;
@@ -556,7 +570,7 @@
     // Build dynamic counts object
     const createCountsObj = () => {
       const obj = {};
-      actionTypes.forEach(type => {
+      actionTypes.forEach((type) => {
         obj[type.id] = 0;
       });
       return obj;
@@ -566,16 +580,20 @@
     const renderLegend = (elementId) => {
       const legendEl = document.getElementById(elementId);
       if (legendEl) {
-        legendEl.innerHTML = actionTypes.map(type => `
+        legendEl.innerHTML = actionTypes
+          .map(
+            (type) => `
           <div class="legend-item">
             <span class="legend-color" style="background: ${type.color};"></span>
             <span class="legend-label">${type.name}</span>
           </div>
-        `).join('');
+        `,
+          )
+          .join("");
       }
     };
-    renderLegend('weekLegend');
-    renderLegend('hourlyLegend');
+    renderLegend("weekLegend");
+    renderLegend("hourlyLegend");
 
     // Today's totals
     const todayEntries = entries.filter((e) => e.timestamp >= todayStart);
@@ -583,12 +601,12 @@
     todayEntries.forEach((e) => {
       if (todayCounts[e.type] !== undefined) todayCounts[e.type]++;
     });
-    
+
     // Build chart data from action types
-    const todayChartData = actionTypes.map(type => ({
+    const todayChartData = actionTypes.map((type) => ({
       label: type.name,
       value: todayCounts[type.id] || 0,
-      color: type.color
+      color: type.color,
     }));
     drawBarChart("todayChart", todayChartData);
 
@@ -597,7 +615,7 @@
       .fill(0)
       .map((_, i) => {
         const obj = { hour: i };
-        actionTypes.forEach(type => {
+        actionTypes.forEach((type) => {
           obj[type.id] = 0;
         });
         return obj;
@@ -632,10 +650,10 @@
     drawStackedBarChart("weekChart", dailyData);
 
     // Only show ratio chart if we have feed and diaper types
-    const hasFeed = actionTypes.some(t => t.id === 'feed');
-    const hasPee = actionTypes.some(t => t.id === 'pee');
-    const hasPoop = actionTypes.some(t => t.id === 'poop');
-    
+    const hasFeed = actionTypes.some((t) => t.id === "feed");
+    const hasPee = actionTypes.some((t) => t.id === "pee");
+    const hasPoop = actionTypes.some((t) => t.id === "poop");
+
     if (hasFeed && (hasPee || hasPoop)) {
       const feedCount = todayCounts.feed || 0;
       const diaperCount = (todayCounts.pee || 0) + (todayCounts.poop || 0);
@@ -709,7 +727,9 @@
 
     // Find max value across all types dynamically
     const max = Math.max(
-      ...data.map((d) => Math.max(...actionTypes.map(type => d[type.id] || 0))),
+      ...data.map((d) =>
+        Math.max(...actionTypes.map((type) => d[type.id] || 0)),
+      ),
       1,
     );
     const step = w / (data.length - 1 || 1);
@@ -749,7 +769,7 @@
     };
 
     // Draw lines for each action type
-    actionTypes.forEach(type => {
+    actionTypes.forEach((type) => {
       drawLine(type.id, type.color);
     });
 
@@ -796,8 +816,10 @@
 
     // Calculate max total dynamically
     const maxTotal = Math.max(
-      ...data.map((d) => actionTypes.reduce((sum, type) => sum + (d[type.id] || 0), 0)),
-      1
+      ...data.map((d) =>
+        actionTypes.reduce((sum, type) => sum + (d[type.id] || 0), 0),
+      ),
+      1,
     );
     const barWidth = w / data.length - 16;
     const spacing = 16;
@@ -808,7 +830,7 @@
       let y = h - 30;
 
       // Draw stacked segments in reverse order (bottom to top)
-      [...actionTypes].reverse().forEach(type => {
+      [...actionTypes].reverse().forEach((type) => {
         const segmentH = (d[type.id] || 0) * scale;
         ctx.fillStyle = type.color;
         ctx.fillRect(x, y - segmentH, barWidth, segmentH);
@@ -893,11 +915,11 @@
     const counts = countByType(list);
 
     // Build dynamic summary text
-    const summaryParts = actionTypes.map(type => 
-      `${type.name} ${counts[type.id] || 0}`
+    const summaryParts = actionTypes.map(
+      (type) => `${type.name} ${counts[type.id] || 0}`,
     );
     summaryEl.textContent = list.length
-      ? `Showing ${list.length} entries — ${summaryParts.join(', ')}`
+      ? `Showing ${list.length} entries — ${summaryParts.join(", ")}`
       : "No entries yet";
 
     // Render log entries as cards
@@ -1322,10 +1344,12 @@
   if (saveSettingsBtn && appsScriptUrl) {
     saveSettingsBtn.addEventListener("click", async () => {
       const url = appsScriptUrl.value.trim();
-      
+
       // Get selected theme
-      const selectedTheme = document.querySelector('input[name="theme"]:checked')?.value || 'blossom';
-      
+      const selectedTheme =
+        document.querySelector('input[name="theme"]:checked')?.value ||
+        "blossom";
+
       // Automatically enable sync if URL is provided
       settings = {
         webAppUrl: url,
@@ -1333,18 +1357,18 @@
         theme: selectedTheme,
       };
       saveSettings(settings);
-      
+
       // Apply theme immediately
       applyTheme(selectedTheme);
-      
+
       if (url) {
         // Show loading state
-        const btnText = saveSettingsBtn.querySelector('.btn-text');
-        const btnLoading = saveSettingsBtn.querySelector('.btn-loading');
+        const btnText = saveSettingsBtn.querySelector(".btn-text");
+        const btnLoading = saveSettingsBtn.querySelector(".btn-loading");
         if (btnText) btnText.hidden = true;
         if (btnLoading) btnLoading.hidden = false;
         saveSettingsBtn.disabled = true;
-        
+
         try {
           // Sync with Google Sheets
           await backgroundSync(); // Use backgroundSync instead of syncAll for first connection
@@ -1381,8 +1405,8 @@
   }
 
   // Theme switching - instant preview
-  document.querySelectorAll('input[name="theme"]').forEach(radio => {
-    radio.addEventListener('change', (e) => {
+  document.querySelectorAll('input[name="theme"]').forEach((radio) => {
+    radio.addEventListener("change", (e) => {
       applyTheme(e.target.value);
     });
   });
@@ -1533,8 +1557,10 @@
   // Action Types Manager
   function renderActionTypesList() {
     if (!actionTypesList) return;
-    
-    actionTypesList.innerHTML = actionTypes.map(type => `
+
+    actionTypesList.innerHTML = actionTypes
+      .map(
+        (type) => `
       <div class="action-type-item">
         <div class="action-type-preview" style="background: ${type.color}20; border: 2px solid ${type.color};">
           ${type.emoji}
@@ -1547,60 +1573,65 @@
           <button class="action-type-btn" data-delete="${type.id}" title="Delete">🗑️</button>
         </div>
       </div>
-    `).join('');
+    `,
+      )
+      .join("");
   }
 
   if (addActionTypeBtn) {
-    addActionTypeBtn.addEventListener('click', () => {
+    addActionTypeBtn.addEventListener("click", () => {
       editingActionTypeId = null;
-      actionTypeModalTitle.textContent = 'Add Activity Type';
-      actionTypeName.value = '';
-      actionTypeEmoji.value = '';
-      actionTypeColor.value = '';
+      actionTypeModalTitle.textContent = "Add Activity Type";
+      actionTypeName.value = "";
+      actionTypeEmoji.value = "";
+      actionTypeColor.value = "";
       actionTypeModal.hidden = false;
     });
   }
 
   if (actionTypeModal) {
     // Emoji picker
-    $$('.emoji-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        $$('.emoji-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
+    $$(".emoji-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        $$(".emoji-btn").forEach((b) => b.classList.remove("selected"));
+        btn.classList.add("selected");
         actionTypeEmoji.value = btn.dataset.emoji;
       });
     });
 
     // Color picker
-    $$('.color-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        $$('.color-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
+    $$(".color-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        $$(".color-btn").forEach((b) => b.classList.remove("selected"));
+        btn.classList.add("selected");
         actionTypeColor.value = btn.dataset.color;
       });
     });
 
     // Save action type
     if (saveActionTypeBtn) {
-      saveActionTypeBtn.addEventListener('click', () => {
+      saveActionTypeBtn.addEventListener("click", () => {
         const name = actionTypeName.value.trim();
         const emoji = actionTypeEmoji.value;
         const color = actionTypeColor.value;
 
         if (!name || !emoji || !color) {
-          toast('⚠️ Please fill all fields');
+          toast("⚠️ Please fill all fields");
           return;
         }
 
         if (editingActionTypeId) {
           // Edit existing
-          const index = actionTypes.findIndex(t => t.id === editingActionTypeId);
+          const index = actionTypes.findIndex(
+            (t) => t.id === editingActionTypeId,
+          );
           if (index !== -1) {
             actionTypes[index] = { ...actionTypes[index], name, emoji, color };
           }
         } else {
           // Add new
-          const id = name.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_' + Date.now();
+          const id =
+            name.toLowerCase().replace(/[^a-z0-9]/g, "_") + "_" + Date.now();
           actionTypes.push({ id, name, emoji, color });
         }
 
@@ -1608,39 +1639,45 @@
         renderActionTypesList();
         renderHomeScreen();
         actionTypeModal.hidden = true;
-        toast(editingActionTypeId ? '✓ Activity updated' : '✓ Activity added');
+        toast(editingActionTypeId ? "✓ Activity updated" : "✓ Activity added");
       });
     }
 
     // Cancel
     if (cancelActionTypeBtn) {
-      cancelActionTypeBtn.addEventListener('click', () => {
+      cancelActionTypeBtn.addEventListener("click", () => {
         actionTypeModal.hidden = true;
       });
     }
 
     // Handle edit and delete clicks
     if (actionTypesList) {
-      actionTypesList.addEventListener('click', (e) => {
-        const editBtn = e.target.closest('[data-edit]');
-        const deleteBtn = e.target.closest('[data-delete]');
+      actionTypesList.addEventListener("click", (e) => {
+        const editBtn = e.target.closest("[data-edit]");
+        const deleteBtn = e.target.closest("[data-delete]");
 
         if (editBtn) {
           const id = editBtn.dataset.edit;
-          const type = actionTypes.find(t => t.id === id);
+          const type = actionTypes.find((t) => t.id === id);
           if (type) {
             editingActionTypeId = id;
-            actionTypeModalTitle.textContent = 'Edit Activity Type';
+            actionTypeModalTitle.textContent = "Edit Activity Type";
             actionTypeName.value = type.name;
             actionTypeEmoji.value = type.emoji;
             actionTypeColor.value = type.color;
 
             // Select current emoji and color
-            $$('.emoji-btn').forEach(btn => {
-              btn.classList.toggle('selected', btn.dataset.emoji === type.emoji);
+            $$(".emoji-btn").forEach((btn) => {
+              btn.classList.toggle(
+                "selected",
+                btn.dataset.emoji === type.emoji,
+              );
             });
-            $$('.color-btn').forEach(btn => {
-              btn.classList.toggle('selected', btn.dataset.color === type.color);
+            $$(".color-btn").forEach((btn) => {
+              btn.classList.toggle(
+                "selected",
+                btn.dataset.color === type.color,
+              );
             });
 
             actionTypeModal.hidden = false;
@@ -1649,22 +1686,22 @@
 
         if (deleteBtn) {
           const id = deleteBtn.dataset.delete;
-          const type = actionTypes.find(t => t.id === id);
-          
+          const type = actionTypes.find((t) => t.id === id);
+
           // Check if there are entries with this type
-          const entriesCount = entries.filter(e => e.type === id).length;
-          
+          const entriesCount = entries.filter((e) => e.type === id).length;
+
           let confirmMsg = `Delete "${type.name}"?`;
           if (entriesCount > 0) {
             confirmMsg += `\n\n⚠️ ${entriesCount} log entries use this activity. They will still be visible but the activity type won't be available for new entries.`;
           }
-          
+
           if (confirm(confirmMsg)) {
-            actionTypes = actionTypes.filter(t => t.id !== id);
+            actionTypes = actionTypes.filter((t) => t.id !== id);
             saveActionTypes(actionTypes);
             renderActionTypesList();
             renderHomeScreen();
-            toast('✓ Activity deleted');
+            toast("✓ Activity deleted");
           }
         }
       });

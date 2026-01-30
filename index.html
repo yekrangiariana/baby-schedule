@@ -23,9 +23,15 @@
           <h2>📊 Today's Summary</h2>
           <div class="now" id="nowText"></div>
           <div class="today-stats" id="todayTotals">Loading...</div>
-          <div class="sync-notice sync-notice-warning" id="syncNoticeWarning" hidden>
+          <div
+            class="sync-notice sync-notice-warning"
+            id="syncNoticeWarning"
+            hidden
+          >
             <span>💡 Data stored locally only.</span>
-            <button class="sync-notice-link" id="syncNoticeLink">Connect Google Sheets</button>
+            <button class="sync-notice-link" id="syncNoticeLink">
+              Connect Google Sheets
+            </button>
           </div>
         </section>
 
@@ -79,15 +85,15 @@
             <canvas id="todayChart" width="300" height="200"></canvas>
             <div class="graph-legend">
               <div class="legend-item">
-                <span class="legend-color" style="background: #60a5fa;"></span>
+                <span class="legend-color" style="background: #60a5fa"></span>
                 <span class="legend-label">Feed</span>
               </div>
               <div class="legend-item">
-                <span class="legend-color" style="background: #fbbf24;"></span>
+                <span class="legend-color" style="background: #fbbf24"></span>
                 <span class="legend-label">Pee</span>
               </div>
               <div class="legend-item">
-                <span class="legend-color" style="background: #f87171;"></span>
+                <span class="legend-color" style="background: #f87171"></span>
                 <span class="legend-label">Poop</span>
               </div>
             </div>
@@ -126,11 +132,15 @@
           <!-- Google Sheets Sync Section -->
           <section class="settings-section">
             <h2 class="settings-section-title">☁️ Google Sheets Sync</h2>
-            
-            <div class="sync-notice sync-notice-success" id="syncNoticeSuccess" hidden>
+
+            <div
+              class="sync-notice sync-notice-success"
+              id="syncNoticeSuccess"
+              hidden
+            >
               <span>✓ Connected to Google Sheets</span>
             </div>
-            
+
             <label class="field">
               <span class="field-label">Sync URL</span>
               <input
@@ -140,19 +150,28 @@
                 placeholder="https://script.google.com/macros/s/.../exec"
               />
             </label>
-            
+
             <div class="settings-actions">
-              <button id="saveSettingsBtn" class="btn-rounded btn-primary" style="width: 100%;">
+              <button
+                id="saveSettingsBtn"
+                class="btn-rounded btn-primary"
+                style="width: 100%"
+              >
                 <span class="btn-text">💾 Connect & Sync</span>
                 <span class="btn-loading" hidden>🔄 Syncing...</span>
               </button>
             </div>
-            
+
             <small class="hint">
-              💡 Paste your Google Sheets Web App URL above. Leave blank to keep everything local only.
+              💡 Paste your Google Sheets Web App URL above. Leave blank to keep
+              everything local only.
             </small>
-            
-            <button id="viewHelpBtn" class="btn-rounded btn-secondary" style="margin-top: 1rem; width: 100%;">
+
+            <button
+              id="viewHelpBtn"
+              class="btn-rounded btn-secondary"
+              style="margin-top: 1rem; width: 100%"
+            >
               📖 View Setup Guide
             </button>
           </section>
@@ -160,11 +179,17 @@
           <!-- Action Types Section -->
           <section class="settings-section">
             <h2 class="settings-section-title">📝 Activity Types</h2>
-            <p class="settings-section-description">Customize the activities you want to track</p>
-            
+            <p class="settings-section-description">
+              Customize the activities you want to track
+            </p>
+
             <div id="actionTypesList" class="action-types-list"></div>
-            
-            <button id="addActionTypeBtn" class="btn-rounded btn-secondary" style="width: 100%; margin-top: 12px;">
+
+            <button
+              id="addActionTypeBtn"
+              class="btn-rounded btn-secondary"
+              style="width: 100%; margin-top: 12px"
+            >
               ➕ Add Activity Type
             </button>
           </section>
@@ -172,7 +197,7 @@
           <!-- Theme Section -->
           <section class="settings-section">
             <h2 class="settings-section-title">🎨 Theme</h2>
-            
+
             <div class="theme-options">
               <label class="theme-option">
                 <input type="radio" name="theme" value="blossom" checked />
@@ -196,12 +221,18 @@
     <div class="modal" id="actionTypeModal" hidden>
       <div class="modal-content">
         <h3 class="modal-title" id="actionTypeModalTitle">Add Activity Type</h3>
-        
+
         <label class="field">
           <span class="field-label">Name</span>
-          <input type="text" id="actionTypeName" class="input" placeholder="e.g., Sleep, Bath, Medicine" maxlength="15" />
+          <input
+            type="text"
+            id="actionTypeName"
+            class="input"
+            placeholder="e.g., Sleep, Bath, Medicine"
+            maxlength="15"
+          />
         </label>
-        
+
         <label class="field">
           <span class="field-label">Emoji</span>
           <div class="emoji-picker">
@@ -218,27 +249,85 @@
             <button type="button" class="emoji-btn" data-emoji="🏃">🏃</button>
             <button type="button" class="emoji-btn" data-emoji="⏰">⏰</button>
           </div>
-          <input type="text" id="actionTypeEmoji" class="input" placeholder="Selected emoji" readonly style="margin-top: 8px;" />
+          <input
+            type="text"
+            id="actionTypeEmoji"
+            class="input"
+            placeholder="Selected emoji"
+            readonly
+            style="margin-top: 8px"
+          />
         </label>
-        
+
         <label class="field">
           <span class="field-label">Color</span>
           <div class="color-picker">
-            <button type="button" class="color-btn" data-color="#a8d5ff" style="background: #a8d5ff;"></button>
-            <button type="button" class="color-btn" data-color="#ffe4a8" style="background: #ffe4a8;"></button>
-            <button type="button" class="color-btn" data-color="#ffb3ba" style="background: #ffb3ba;"></button>
-            <button type="button" class="color-btn" data-color="#bae1ff" style="background: #bae1ff;"></button>
-            <button type="button" class="color-btn" data-color="#ffdfba" style="background: #ffdfba;"></button>
-            <button type="button" class="color-btn" data-color="#baffc9" style="background: #baffc9;"></button>
-            <button type="button" class="color-btn" data-color="#e0bbff" style="background: #e0bbff;"></button>
-            <button type="button" class="color-btn" data-color="#ffd4e5" style="background: #ffd4e5;"></button>
+            <button
+              type="button"
+              class="color-btn"
+              data-color="#a8d5ff"
+              style="background: #a8d5ff"
+            ></button>
+            <button
+              type="button"
+              class="color-btn"
+              data-color="#ffe4a8"
+              style="background: #ffe4a8"
+            ></button>
+            <button
+              type="button"
+              class="color-btn"
+              data-color="#ffb3ba"
+              style="background: #ffb3ba"
+            ></button>
+            <button
+              type="button"
+              class="color-btn"
+              data-color="#bae1ff"
+              style="background: #bae1ff"
+            ></button>
+            <button
+              type="button"
+              class="color-btn"
+              data-color="#ffdfba"
+              style="background: #ffdfba"
+            ></button>
+            <button
+              type="button"
+              class="color-btn"
+              data-color="#baffc9"
+              style="background: #baffc9"
+            ></button>
+            <button
+              type="button"
+              class="color-btn"
+              data-color="#e0bbff"
+              style="background: #e0bbff"
+            ></button>
+            <button
+              type="button"
+              class="color-btn"
+              data-color="#ffd4e5"
+              style="background: #ffd4e5"
+            ></button>
           </div>
-          <input type="text" id="actionTypeColor" class="input" placeholder="Selected color" readonly style="margin-top: 8px;" />
+          <input
+            type="text"
+            id="actionTypeColor"
+            class="input"
+            placeholder="Selected color"
+            readonly
+            style="margin-top: 8px"
+          />
         </label>
-        
+
         <div class="modal-actions">
-          <button id="cancelActionTypeBtn" class="btn-rounded btn-secondary">Cancel</button>
-          <button id="saveActionTypeBtn" class="btn-rounded btn-primary">Save</button>
+          <button id="cancelActionTypeBtn" class="btn-rounded btn-secondary">
+            Cancel
+          </button>
+          <button id="saveActionTypeBtn" class="btn-rounded btn-primary">
+            Save
+          </button>
         </div>
       </div>
     </div>
@@ -251,7 +340,7 @@
         <div></div>
       </header>
 
-      <main class="screen-content" style="padding: 1rem;">
+      <main class="screen-content" style="padding: 1rem">
         <div id="helpContent" class="help-content">
           Loading documentation...
         </div>
