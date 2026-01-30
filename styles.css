@@ -2,27 +2,28 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 
 :root {
-  --bg-primary: #fff5f7;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #fef3f5;
-  --text-primary: #1a202c;
-  --text-secondary: #4a5568;
-  --text-muted: #a0aec0;
+  --bg-primary: linear-gradient(135deg, #fef5f8 0%, #fef0f4 100%);
+  --bg-secondary: rgba(255, 255, 255, 0.35);
+  --bg-tertiary: rgba(255, 245, 248, 0.45);
+  --text-primary: #2d2d2d;
+  --text-secondary: #787878;
+  --text-muted: #a8a8a8;
 
-  --pastel-feed: #a8d5ff;
-  --pastel-feed-light: #e3f2ff;
-  --pastel-pee: #ffe4a8;
-  --pastel-pee-light: #fff5e0;
-  --pastel-poop: #ffb3ba;
-  --pastel-poop-light: #ffe5e8;
+  --pastel-feed: #b8deff;
+  --pastel-feed-light: #e8f4ff;
+  --pastel-pee: #ffe9b8;
+  --pastel-pee-light: #fff8e8;
+  --pastel-poop: #ffbfc4;
+  --pastel-poop-light: #ffeaec;
 
-  --primary: #f093a3;
-  --primary-light: #ffd4db;
-  --accent: #9b87f5;
-  --success: #7dd3c0;
-  --border: #e2e8f0;
-  --shadow: rgba(0, 0, 0, 0.08);
-  --shadow-lg: rgba(0, 0, 0, 0.15);
+  --primary: #ff85a8;
+  --primary-light: #ffc5d7;
+  --accent: #ff85a8;
+  --success: #5fd89a;
+  --border: rgba(255, 255, 255, 0.4);
+  --shadow: rgba(0, 0, 0, 0.04);
+  --shadow-md: rgba(255, 133, 168, 0.15);
+  --shadow-lg: rgba(255, 133, 168, 0.3);
 
   --bottom-nav-height: 72px;
 

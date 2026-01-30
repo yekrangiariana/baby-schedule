@@ -224,10 +224,10 @@
   let actionTypes = loadActionTypes();
   let isSyncing = false;
 
-  // Apply saved theme or default to classic
+  // Apply saved theme or default to blossom
   function applyTheme(theme) {
-    const validThemes = ["classic", "blossom", "comet", "meadow"];
-    const selectedTheme = validThemes.includes(theme) ? theme : "classic";
+    const validThemes = ["blossom", "comet", "meadow"];
+    const selectedTheme = validThemes.includes(theme) ? theme : "blossom";
     document.body.setAttribute("data-theme", selectedTheme);
 
     // Update radio buttons
@@ -238,7 +238,7 @@
   }
 
   // Load and apply theme on startup
-  applyTheme(settings.theme || "classic");
+  applyTheme(settings.theme || "blossom");
 
   // If a fixed URL is provided, force-enable sync
   if (FIXED_WEB_APP_URL) {
