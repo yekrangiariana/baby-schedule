@@ -1,8 +1,7 @@
 (function () {
   // Optional: hardcode your Google Apps Script Web App URL here to avoid using the Settings UI.
   // If non-empty, syncing will be enabled automatically and the Settings section will be hidden.
-  const FIXED_WEB_APP_URL =
-    "https://script.google.com/macros/s/AKfycbzfIn9RBteJw8mAvlZGcPdmx7Rznw91MVw-epmEtou9gS3s8Tmi5xW8D18ncxLRYzym/exec";
+  const FIXED_WEB_APP_URL = "";
 
   const STORE_KEY = "babylog.entries.v1";
   const SETTINGS_KEY = "babylog.settings.v1";
@@ -10,13 +9,6 @@
   const SYNC_QUEUE_KEY = "babylog.syncqueue.v1";
   const LAST_SYNC_KEY = "babylog.lastsync.v1";
   const ACTION_TYPES_KEY = "babylog.actiontypes.v1";
-
-  // Default action types
-  const DEFAULT_ACTION_TYPES = [
-    { id: "feed", name: "Feed", emoji: "🍼", color: "#a8d5ff" },
-    { id: "pee", name: "Pee", emoji: "💧", color: "#ffe4a8" },
-    { id: "poop", name: "Poop", emoji: "💩", color: "#ffb3ba" },
-  ];
 
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => Array.from(document.querySelectorAll(s));
@@ -30,7 +22,12 @@
   const toastEl = $("#toast");
   const nowText = $("#nowText");
   const actionButtons = $("#actionButtons");
+  const miniStatsHome = $("#miniStatsHome");
   const logStats = $("#logStats");
+  const logSummaryCard = $("#logSummaryCard");
+  const lastFeed = $("#lastFeed");
+  const lastPee = $("#lastPoop");
+  const lastPoop = $("#lastPoop");
   const todayTotals = $("#todayTotals");
   const syncNoticeWarning = $("#syncNoticeWarning");
   const syncNoticeSuccess = $("#syncNoticeSuccess");
@@ -40,7 +37,6 @@
   const undoBtn = $("#undoBtn");
   const viewGraphsBtn = $("#viewGraphsBtn");
   const viewLogBtn = $("#viewLogBtn");
-  const printBtn = $("#printBtn");
 
   const closeGraphsBtn = $("#closeGraphsBtn");
   const closeLogBtn = $("#closeLogBtn");
@@ -58,13 +54,15 @@
   const actionTypesList = $("#actionTypesList");
   const addActionTypeBtn = $("#addActionTypeBtn");
   const actionTypeModal = $("#actionTypeModal");
-  const actionTypeModalTitle = $("#actionTypeModalTitle");
-  const actionTypeName = $("#actionTypeName");
-  const actionTypeEmoji = $("#actionTypeEmoji");
-  const actionTypeColor = $("#actionTypeColor");
-  const saveActionTypeBtn = $("#saveActionTypeBtn");
-  const cancelActionTypeBtn = $("#cancelActionTypeBtn");
-  let editingActionTypeId = null;
+  const modalTitle = $("#modalTitle");
+  const editingTypeId = $("#editingTypeId");
+  const typeNameInput = $("#typeNameInput");
+  const typeEmojiInput = $("#typeEmojiInput");
+  const typeColorInput = $("#typeColorInput");
+  const typeColorText = $("#typeColorText");
+  const closeModalBtn = $("#closeModalBtn");
+  const cancelModalBtn = $("#cancelModalBtn");
+  const saveTypeBtn = $("#saveTypeBtn");
 
   // Screens
   const helpScreen = $("#helpScreen");
@@ -172,29 +170,33 @@
   function setLastSyncTime(ts) {
     localStorage.setItem(LAST_SYNC_KEY, String(ts || Date.now()));
   }
+// Default action types
+  function getDefaultActionTypes() {
+    return [
+      { id: "feed", name: "Feed", emoji: "🍼", color: "#a8d5ff" },
+      { id: "pee", name: "Pee", emoji: "💧", color: "#ffe4a8" },
+      { id: "poop", name: "Poop", emoji: "💩", color: "#ffb3ba" },
+    ];
+  }
+
   function loadActionTypes() {
     try {
       const stored = localStorage.getItem(ACTION_TYPES_KEY);
-      if (!stored) return DEFAULT_ACTION_TYPES;
-      return JSON.parse(stored);
+      return stored ? JSON.parse(stored) : getDefaultActionTypes();
     } catch {
-      return DEFAULT_ACTION_TYPES;
+      return getDefaultActionTypes();
     }
   }
+
   function saveActionTypes(types) {
     localStorage.setItem(ACTION_TYPES_KEY, JSON.stringify(types));
   }
+
   function getActionTypeById(id) {
-    return (
-      actionTypes.find((t) => t.id === id) || {
-        id,
-        name: id,
-        emoji: "📝",
-        color: "#cbd5e1",
-      }
-    );
+    return actionTypes.find((t) => t.id === id) || null;
   }
 
+  
   function formatDate(ts) {
     const d = new Date(ts);
     return d.toLocaleDateString();
@@ -242,6 +244,19 @@
     saveSettings(settings);
   }
 
+  // Initialize app and sync with Google Sheets
+  async function initializeApp() {
+    // First, pull from Google Sheets to get latest data
+    await pullAndMergeRemote();
+    
+    // Then render UI with the synced data
+    renderHomeScreen();
+    updateStatus();
+  }
+
+  // Start initialization
+  initializeApp();
+
   // Render clock
   setInterval(() => {
     const now = new Date();
@@ -276,9 +291,8 @@
     saveSyncQueue(syncQueue);
 
     // Immediate UI update
-    const typeInfo = getActionTypeById(type);
     haptics(15);
-    toast(`${typeInfo.name} logged`);
+    toast(`${capitalize(type)} logged`);
     updateStatus();
     showUndoButton();
 
@@ -365,60 +379,33 @@
     }
 
     recentList.innerHTML = recent
-      .map((e, index) => {
-        const typeInfo = getActionTypeById(e.type);
-        return `
+      .map(
+        (e, index) => `
       <div class="recent-item" style="animation-delay: ${index * 0.05}s">
-        <div class="recent-icon" style="background: ${typeInfo.color}30; color: ${typeInfo.color};">${typeInfo.emoji}</div>
+        <div class="recent-icon ${e.type}">${getTypeEmoji(e.type)}</div>
         <div class="recent-info">
-          <div class="recent-type">${typeInfo.name}</div>
+          <div class="recent-type">${capitalize(e.type)}</div>
           <div class="recent-time">${formatDate(e.timestamp)} ${formatTime(e.timestamp)}</div>
         </div>
       </div>
-    `;
-      })
-      .join("");
-  }
-
-  // Render action buttons on home screen
-  function renderHomeScreen() {
-    if (!actionButtons) return;
-
-    actionButtons.innerHTML = actionTypes
-      .map(
-        (type) => `
-      <button class="action" data-type="${type.id}" style="border-color: ${type.color};">
-        <div class="action-glow" style="background: linear-gradient(135deg, ${type.color}30, ${type.color});"></div>
-        <span class="action-emoji">${type.emoji}</span>
-        <span class="action-label">${type.name}</span>
-      </button>
     `,
       )
       .join("");
-
-    // Re-attach event listeners and press feedback
-    actionButtons.querySelectorAll(".action").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const type = btn.dataset.type;
-        addEntry(type);
-      });
-      attachPressFeedback(btn);
-    });
   }
 
   function getTypeEmoji(type) {
     const actionType = getActionTypeById(type);
-    return actionType.emoji;
+    return actionType ? actionType.emoji : "📝";
   }
 
   function getTypeColor(type) {
     const actionType = getActionTypeById(type);
-    return actionType.color;
+    return actionType ? actionType.color : "#e2e8f0";
   }
 
   function getTypeName(type) {
     const actionType = getActionTypeById(type);
-    return actionType.name;
+    return actionType ? actionType.name : type;
   }
 
   // Undo last - instant local delete with background sync
@@ -451,45 +438,202 @@
     backgroundSync();
   }
 
-  function updateStatus() {
-    const src = entries;
-
-    // Render dynamic mini stats
-    if (logStats) {
-      logStats.innerHTML = actionTypes
-        .slice(0, 3)
-        .map((type) => {
-          const e = src
-            .filter((e) => e.type === type.id)
-            .sort((a, b) => b.timestamp - a.timestamp)[0];
-          const lastTime = e
-            ? `${formatDate(e.timestamp)} ${formatTime(e.timestamp)}`
-            : "—";
-
-          return `
-          <div class="stat-mini" style="background: ${type.color}20; border-color: ${type.color};">
-            <div class="stat-mini-icon">${type.emoji}</div>
-            <div class="stat-mini-content">
-              <div class="stat-mini-label">Last ${type.name}</div>
-              <div class="stat-mini-value">${lastTime}</div>
-            </div>
-          </div>
+  // Render home screen action buttons dynamically
+  function renderHomeScreen() {
+    // Render action buttons
+    if (actionButtons) {
+      actionButtons.innerHTML = "";
+      actionTypes.forEach((type) => {
+        const btn = document.createElement("button");
+        btn.className = `action action-${type.id}`;
+        btn.dataset.type = type.id;
+        btn.style.borderColor = type.color;
+        btn.innerHTML = `
+          <span class="action-emoji">${type.emoji}</span>
+          <span class="action-label">${type.name}</span>
         `;
-        })
-        .join("");
+        
+        // Add gradient background
+        const gradientBefore = document.createElement("style");
+        gradientBefore.textContent = `
+          .action-${type.id}::before {
+            background: linear-gradient(135deg, ${type.color}33, ${type.color});
+          }
+        `;
+        if (!document.querySelector(`style[data-type="${type.id}"]`)) {
+          gradientBefore.setAttribute("data-type", type.id);
+          document.head.appendChild(gradientBefore);
+        }
+        
+        actionButtons.appendChild(btn);
+      });
+      
+      // Re-attach event listeners to new buttons
+      $$(".action").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          await addEntry(btn.dataset.type);
+        });
+      });
     }
 
+    // Render mini-stats
+    if (miniStatsHome) {
+      miniStatsHome.innerHTML = "";
+      // Only show first 3 types to avoid crowding
+      actionTypes.slice(0, 3).forEach((type) => {
+        const stat = document.createElement("div");
+        stat.className = `stat-mini stat-${type.id}`;
+        stat.style.borderColor = type.color;
+        stat.innerHTML = `
+          <div class="stat-mini-icon">${type.emoji}</div>
+          <div class="stat-mini-content">
+            <div class="stat-mini-label">Last ${type.name}</div>
+            <div class="stat-mini-value" id="last${capitalize(type.id)}">—</div>
+          </div>
+        `;
+        miniStatsHome.appendChild(stat);
+      });
+    }
+  }
+
+  // Render stats for log screen (all activity types)
+  function renderLogStats() {
+    if (!logStats) return;
+    
+    logStats.innerHTML = "";
+    const src = entries;
+    
+    // Show all activity types in a grid
+    actionTypes.forEach((type) => {
+      const stat = document.createElement("div");
+      stat.className = `stat-card stat-${type.id}`;
+      
+      const lastEntry = src
+        .filter((e) => e.type === type.id)
+        .sort((a, b) => b.timestamp - a.timestamp)[0];
+      
+      const lastTime = lastEntry ? `${formatDate(lastEntry.timestamp)} ${formatTime(lastEntry.timestamp)}` : "—";
+      
+      stat.innerHTML = `
+        <div class="stat-icon" style="background-color: ${type.color}">${type.emoji}</div>
+        <div class="stat-info">
+          <div class="stat-label">Last ${type.name}</div>
+          <div class="stat-value">${lastTime}</div>
+        </div>
+      `;
+      logStats.appendChild(stat);
+    });
+  }
+
+  // Render summary overview for log screen
+  function renderLogSummary() {
+    if (!logSummaryCard) return;
+    
+    const src = entries;
+    const today = new Date();
+    const todayEntries = src.filter((e) => isSameDay(e.timestamp, today));
+    const todayCounts = countByType(todayEntries);
+    
+    // Find most logged activity (all time)
+    const allCounts = countByType(src);
+    const mostLoggedId = Object.keys(allCounts).length > 0 ? Object.keys(allCounts).reduce((a, b) => 
+      allCounts[a] > allCounts[b] ? a : b
+    ) : null;
+    const mostLoggedType = mostLoggedId ? getActionTypeById(mostLoggedId) : null;
+    
+    // Calculate streak (consecutive days with at least one entry)
+    let streak = 0;
+    let checkDate = new Date(today);
+    while (true) {
+      const hasEntry = src.some(e => isSameDay(e.timestamp, checkDate));
+      if (!hasEntry) break;
+      streak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+    
+    logSummaryCard.innerHTML = `
+      <div class="summary-header">
+        <h3>📊 Overview</h3>
+        <div class="summary-header-actions">
+          <div class="summary-badges">
+            <span class="summary-badge">${src.length} Total</span>
+            <span class="summary-badge">${todayEntries.length} Today</span>
+          </div>
+          <button class="summary-export-btn" onclick="exportToCSV()">📥 Export CSV</button>
+        </div>
+      </div>
+      
+      <div class="summary-quick-stats">
+        <div class="quick-stat">
+          <div class="quick-stat-icon">🔥</div>
+          <div class="quick-stat-value">${streak}</div>
+          <div class="quick-stat-label">Day Streak</div>
+        </div>
+        ${mostLoggedType ? `
+          <div class="quick-stat">
+            <div class="quick-stat-icon" style="background-color: ${mostLoggedType.color}33">${mostLoggedType.emoji}</div>
+            <div class="quick-stat-value">${allCounts[mostLoggedId]}</div>
+            <div class="quick-stat-label">Most: ${mostLoggedType.name}</div>
+          </div>
+        ` : ''}
+      </div>
+      
+      <div class="summary-divider"></div>
+      
+      <div class="summary-activities">
+        <div class="summary-activities-header">Last Activity Times</div>
+        <div class="summary-activities-grid">
+          ${actionTypes.map(type => {
+            const lastEntry = src
+              .filter((e) => e.type === type.id)
+              .sort((a, b) => b.timestamp - a.timestamp)[0];
+            const lastTime = lastEntry ? `${formatDate(lastEntry.timestamp)} ${formatTime(lastEntry.timestamp)}` : "—";
+            const todayCount = todayCounts[type.id] || 0;
+            
+            return `
+              <div class="activity-row">
+                <div class="activity-row-icon" style="background-color: ${type.color}">${type.emoji}</div>
+                <div class="activity-row-info">
+                  <div class="activity-row-name">${type.name}${todayCount > 0 ? ` <span class="activity-today-count">+${todayCount}</span>` : ''}</div>
+                  <div class="activity-row-time">${lastTime}</div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  function updateStatus() {
+    const src = entries;
+    
+    // Update dynamic mini-stats for home screen (first 3 only)
+    actionTypes.slice(0, 3).forEach((type) => {
+      const lastEl = document.getElementById(`lastHome${capitalize(type.id)}`);
+      if (lastEl) {
+        const e = src
+          .filter((e) => e.type === type.id)
+          .sort((a, b) => b.timestamp - a.timestamp)[0];
+        lastEl.textContent = e ? `${formatDate(e.timestamp)} ${formatTime(e.timestamp)}` : "—";
+      }
+    });
+
+    // Build dynamic today's summary
     const today = new Date();
     const todayEntries = src.filter((e) => isSameDay(e.timestamp, today));
     const counts = countByType(todayEntries);
-
-    // Build dynamic summary text
-    const summaryParts = actionTypes.map(
-      (type) => `${type.name} ${counts[type.id] || 0}`,
-    );
-    todayTotals.textContent = src.length
-      ? `Today: ${summaryParts.join(" • ")}`
-      : "Today: —";
+    
+    if (todayTotals) {
+      if (src.length) {
+        const summaryParts = actionTypes.map((type) => 
+          `${type.name} ${counts[type.id] || 0}`
+        ).join(" • ");
+        todayTotals.textContent = `Today: ${summaryParts}`;
+      } else {
+        todayTotals.textContent = "Today: —";
+      }
+    }
 
     // Show sync warning on home screen if not connected
     // Reload settings to ensure we have latest state
@@ -519,6 +663,7 @@
 
   async function openLog() {
     showScreen("log");
+    renderLogSummary();
     renderLog();
     updateStatus();
     // Trigger background sync to pull latest from other devices
@@ -538,7 +683,6 @@
       // Trigger background sync to get latest data
       backgroundSync();
     } catch (err) {
-      console.error("Failed to render graphs:", err);
       toast("Graphs unavailable — add some logs first");
     }
   }
@@ -556,8 +700,30 @@
     showScreen("home");
   }
 
+  function renderGraphLegends() {
+    const legendIds = ["todayLegend", "weekLegend", "hourlyLegend"];
+    legendIds.forEach((legendId) => {
+      const legend = document.getElementById(legendId);
+      if (!legend) return;
+
+      legend.innerHTML = "";
+      actionTypes.forEach((type) => {
+        const item = document.createElement("div");
+        item.className = "legend-item";
+        item.innerHTML = `
+          <span class="legend-color" style="background: ${type.color}"></span>
+          <span class="legend-label">${type.name}</span>
+        `;
+        legend.appendChild(item);
+      });
+    });
+  }
+
   function renderGraphs() {
     if (!entries || !entries.length) return;
+
+    // Render legends dynamically
+    renderGraphLegends();
 
     const today = new Date();
     const todayStart = new Date(
@@ -568,50 +734,25 @@
     const last24h = Date.now() - 24 * 60 * 60 * 1000;
     const last7days = Date.now() - 7 * 24 * 60 * 60 * 1000;
 
-    // Build dynamic counts object
-    const createCountsObj = () => {
-      const obj = {};
-      actionTypes.forEach((type) => {
-        obj[type.id] = 0;
-      });
-      return obj;
-    };
-
-    // Render legends
-    const renderLegend = (elementId) => {
-      const legendEl = document.getElementById(elementId);
-      if (legendEl) {
-        legendEl.innerHTML = actionTypes
-          .map(
-            (type) => `
-          <div class="legend-item">
-            <span class="legend-color" style="background: ${type.color};"></span>
-            <span class="legend-label">${type.name}</span>
-          </div>
-        `,
-          )
-          .join("");
-      }
-    };
-    renderLegend("weekLegend");
-    renderLegend("hourlyLegend");
-
-    // Today's totals
+    // Today's totals - dynamic
     const todayEntries = entries.filter((e) => e.timestamp >= todayStart);
-    const todayCounts = createCountsObj();
+    const todayCounts = {};
+    actionTypes.forEach((type) => {
+      todayCounts[type.id] = 0;
+    });
     todayEntries.forEach((e) => {
       if (todayCounts[e.type] !== undefined) todayCounts[e.type]++;
     });
+    drawBarChart(
+      "todayChart",
+      actionTypes.map((type) => ({
+        label: type.name,
+        value: todayCounts[type.id],
+        color: type.color,
+      }))
+    );
 
-    // Build chart data from action types
-    const todayChartData = actionTypes.map((type) => ({
-      label: type.name,
-      value: todayCounts[type.id] || 0,
-      color: type.color,
-    }));
-    drawBarChart("todayChart", todayChartData);
-
-    // Last 24 hours by hour
+    // Last 24 hours by hour - dynamic
     const hourlyData = Array(24)
       .fill(0)
       .map((_, i) => {
@@ -631,7 +772,7 @@
       });
     drawLineChart("hourlyChart", hourlyData);
 
-    // 7-day trend
+    // 7-day trend - dynamic
     const dailyData = [];
     for (let i = 6; i >= 0; i--) {
       const dayStart = todayStart - i * 24 * 60 * 60 * 1000;
@@ -639,7 +780,10 @@
       const dayEntries = entries.filter(
         (e) => e.timestamp >= dayStart && e.timestamp < dayEnd,
       );
-      const counts = createCountsObj();
+      const counts = {};
+      actionTypes.forEach((type) => {
+        counts[type.id] = 0;
+      });
       dayEntries.forEach((e) => {
         if (counts[e.type] !== undefined) counts[e.type]++;
       });
@@ -650,12 +794,13 @@
     }
     drawStackedBarChart("weekChart", dailyData);
 
-    // Only show ratio chart if we have feed and diaper types
+    // Feed-to-Diaper Ratio (only if feed/pee/poop exist)
     const hasFeed = actionTypes.some((t) => t.id === "feed");
-    const hasPee = actionTypes.some((t) => t.id === "pee");
-    const hasPoop = actionTypes.some((t) => t.id === "poop");
+    const hasDiaper =
+      actionTypes.some((t) => t.id === "pee") ||
+      actionTypes.some((t) => t.id === "poop");
 
-    if (hasFeed && (hasPee || hasPoop)) {
+    if (hasFeed && hasDiaper) {
       const feedCount = todayCounts.feed || 0;
       const diaperCount = (todayCounts.pee || 0) + (todayCounts.poop || 0);
       const ratio = feedCount > 0 ? (diaperCount / feedCount).toFixed(1) : 0;
@@ -727,16 +872,15 @@
     ctx.fillRect(0, 0, w, h);
 
     // Find max value across all types dynamically
+    const allTypeIds = actionTypes.map((t) => t.id);
     const max = Math.max(
-      ...data.map((d) =>
-        Math.max(...actionTypes.map((type) => d[type.id] || 0)),
-      ),
+      ...data.map((d) => Math.max(...allTypeIds.map((id) => d[id] || 0))),
       1,
     );
     const step = w / (data.length - 1 || 1);
 
     // Helper function to draw a smooth line
-    const drawLine = (typeId, color) => {
+    const drawLine = (type, color) => {
       ctx.strokeStyle = color;
       ctx.lineWidth = 3;
       ctx.lineCap = "round";
@@ -745,13 +889,13 @@
 
       data.forEach((d, i) => {
         const x = i * step;
-        const y = h - 40 - ((d[typeId] || 0) / max) * (h - 70);
+        const y = h - 40 - ((d[type] || 0) / max) * (h - 70);
         if (i === 0) {
           ctx.moveTo(x, y);
         } else {
           // Use quadratic curves for smooth lines
           const prevX = (i - 1) * step;
-          const prevY = h - 40 - ((data[i - 1][typeId] || 0) / max) * (h - 70);
+          const prevY = h - 40 - ((data[i - 1][type] || 0) / max) * (h - 70);
           const cpX = (prevX + x) / 2;
           const cpY = (prevY + y) / 2;
           ctx.quadraticCurveTo(prevX, prevY, cpX, cpY);
@@ -762,14 +906,14 @@
       if (data.length > 1) {
         const lastIdx = data.length - 1;
         const x = lastIdx * step;
-        const y = h - 40 - ((data[lastIdx][typeId] || 0) / max) * (h - 70);
+        const y = h - 40 - ((data[lastIdx][type] || 0) / max) * (h - 70);
         ctx.lineTo(x, y);
       }
 
       ctx.stroke();
     };
 
-    // Draw lines for each action type
+    // Draw lines for each action type dynamically
     actionTypes.forEach((type) => {
       drawLine(type.id, type.color);
     });
@@ -815,12 +959,13 @@
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, w, h);
 
-    // Calculate max total dynamically
+    // Calculate totals dynamically
+    const allTypeIds = actionTypes.map((t) => t.id);
     const maxTotal = Math.max(
       ...data.map((d) =>
-        actionTypes.reduce((sum, type) => sum + (d[type.id] || 0), 0),
+        allTypeIds.reduce((sum, id) => sum + (d[id] || 0), 0)
       ),
-      1,
+      1
     );
     const barWidth = w / data.length - 16;
     const spacing = 16;
@@ -830,7 +975,7 @@
       const x = i * (barWidth + spacing) + spacing / 2;
       let y = h - 30;
 
-      // Draw stacked segments in reverse order (bottom to top)
+      // Draw stacked segments for each action type (reverse order so first type is on top)
       [...actionTypes].reverse().forEach((type) => {
         const segmentH = (d[type.id] || 0) * scale;
         ctx.fillStyle = type.color;
@@ -915,13 +1060,17 @@
       : source;
     const counts = countByType(list);
 
-    // Build dynamic summary text
-    const summaryParts = actionTypes.map(
-      (type) => `${type.name} ${counts[type.id] || 0}`,
-    );
-    summaryEl.textContent = list.length
-      ? `Showing ${list.length} entries — ${summaryParts.join(", ")}`
-      : "No entries yet";
+    // Update summary text with dynamic types
+    if (summaryEl) {
+      if (list.length) {
+        const countParts = actionTypes.map((type) => 
+          `${type.name} ${counts[type.id] || 0}`
+        ).join(", ");
+        summaryEl.textContent = `Showing ${list.length} entries — ${countParts}`;
+      } else {
+        summaryEl.textContent = "No entries yet";
+      }
+    }
 
     // Render log entries as cards
     logEntries.innerHTML = "";
@@ -933,13 +1082,12 @@
       .slice()
       .sort((a, b) => b.timestamp - a.timestamp)
       .forEach((e) => {
-        const typeInfo = getActionTypeById(e.type);
         const card = document.createElement("div");
         card.className = "log-entry";
         card.innerHTML = `
-          <div class="log-entry-icon" style="background: ${typeInfo.color}30; color: ${typeInfo.color};">${typeInfo.emoji}</div>
+          <div class="log-entry-icon ${e.type}" style="background-color: ${getTypeColor(e.type)}">${getTypeEmoji(e.type)}</div>
           <div class="log-entry-content">
-            <div class="log-entry-type">${typeInfo.name}</div>
+            <div class="log-entry-type">${getTypeName(e.type)}</div>
             <div class="log-entry-time">${formatDate(e.timestamp)} ${formatTime(e.timestamp)}</div>
             ${e.note ? `<div class="log-entry-note">${escapeHtml(e.note)}</div>` : ""}
           </div>
@@ -955,6 +1103,46 @@
       (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
     );
   }
+
+  // Export entries to CSV
+  window.exportToCSV = function() {
+    const src = entries;
+    if (src.length === 0) {
+      toast("No entries to export");
+      return;
+    }
+
+    // CSV header
+    let csv = "Date,Time,Activity,Note\n";
+    
+    // Sort by timestamp (newest first) and add rows
+    src
+      .slice()
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .forEach((e) => {
+        const date = formatDate(e.timestamp);
+        const time = formatTime(e.timestamp);
+        const activity = getTypeName(e.type);
+        const note = (e.note || "").replace(/"/g, '""'); // Escape quotes
+        
+        csv += `"${date}","${time}","${activity}","${note}"\n`;
+      });
+    
+    // Create download
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    const filename = `baby-log-${new Date().toISOString().split('T')[0]}.csv`;
+    
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast(`✓ Exported ${src.length} entries`);
+  };
 
   function deleteEntry(id) {
     // Remove from local entries immediately
@@ -996,10 +1184,10 @@
     el.addEventListener("pointercancel", clear);
   }
   [
+    ...$$(".action"),
     undoBtn,
     viewGraphsBtn,
     viewLogBtn,
-    printBtn,
     saveSettingsBtn,
     clearFilterBtn,
     closeGraphsBtn,
@@ -1007,17 +1195,12 @@
     openSettingsBtn,
   ].forEach(attachPressFeedback);
 
-  async function printView() {
-    // Ensure remote data is loaded and log is displayed
-    await openLog();
-    // Wait for DOM to update with rendered data
-    setTimeout(() => window.print(), 400);
-  }
-
   // Background sync: push local changes to Sheets and pull remote changes
   async function backgroundSync() {
     const cfg = loadSettings();
-    if (!cfg.syncEnabled || !cfg.webAppUrl || isSyncing) return;
+    if (!cfg.syncEnabled || !cfg.webAppUrl || isSyncing) {
+      return;
+    }
 
     isSyncing = true;
     const hadPendingChanges = syncQueue.length > 0;
@@ -1053,17 +1236,29 @@
       await pullAndMergeRemote();
 
       setLastSyncTime(Date.now());
-
-      // Show subtle sync confirmation only if we had pending changes
-      if (hadPendingChanges && syncQueue.length === 0) {
-        // All changes synced successfully
-        console.log("✓ Synced with Google Sheets");
-      }
     } catch (err) {
-      console.error("Background sync failed:", err);
       // Silently fail - will retry on next sync attempt
     } finally {
       isSyncing = false;
+    }
+  }
+
+  async function syncActionTypesToSheet() {
+    const cfg = loadSettings();
+    if (!cfg.syncEnabled || !cfg.webAppUrl) return;
+
+    try {
+      const response = await fetch(cfg.webAppUrl, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "saveActionTypes",
+          actionTypes: actionTypes,
+        }),
+      });
+    } catch (err) {
+      // Silently fail
     }
   }
 
@@ -1082,7 +1277,18 @@
       const res = await fetch(url.toString(), { method: "GET", mode: "cors" });
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data)) {
+        // New API response format with action types
+        if (data.entries && Array.isArray(data.entries)) {
+          remoteEntries = normalizeRemote(data.entries);
+          // Update action types if provided
+          if (data.actionTypes && Array.isArray(data.actionTypes) && data.actionTypes.length > 0) {
+            actionTypes = data.actionTypes;
+            saveActionTypes(actionTypes);
+            renderHomeScreen();
+            renderActionTypes();
+          }
+        } else if (Array.isArray(data)) {
+          // Legacy format - just entries array
           remoteEntries = normalizeRemote(data);
         }
       }
@@ -1090,7 +1296,21 @@
       // Fallback to JSONP
       try {
         const data = await jsonpList(cfg.webAppUrl);
-        remoteEntries = normalizeRemote(data || []);
+        if (data) {
+          // Check for new format
+          if (data.entries) {
+            remoteEntries = normalizeRemote(data.entries || []);
+            if (data.actionTypes && Array.isArray(data.actionTypes) && data.actionTypes.length > 0) {
+              actionTypes = data.actionTypes;
+              saveActionTypes(actionTypes);
+              renderHomeScreen();
+              renderActionTypes();
+            }
+          } else {
+            // Legacy format
+            remoteEntries = normalizeRemote(data || []);
+          }
+        }
       } catch {
         // Sync failed silently - keep using local data
         return;
@@ -1226,7 +1446,7 @@
       };
       // Use a simple request that avoids CORS preflight (no-cors + text/plain)
       try {
-        await fetch(cfg.webAppUrl, {
+        const response = await fetch(cfg.webAppUrl, {
           method: "POST",
           mode: "no-cors",
           headers: { "Content-Type": "text/plain" },
@@ -1236,7 +1456,7 @@
         });
         // We can't read the response (opaque), assume delivery and verify via read-back
         return "opaque";
-      } catch {
+      } catch (err) {
         return "fail";
       }
     }
@@ -1301,18 +1521,20 @@
     toast("Sync complete");
   }
 
-  // Wire events
+  // Wire events (action buttons are wired in renderHomeScreen)
   undoBtn.addEventListener("click", undoLast);
   viewGraphsBtn.addEventListener("click", async () => {
     try {
       await openGraphs();
     } catch (err) {
-      console.error("Graph button error:", err);
+      // Silently fail
     }
   });
   viewLogBtn.addEventListener("click", openLog);
-  printBtn.addEventListener("click", printView);
   dateFilter.addEventListener("change", renderLog);
+  dateFilter.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
   clearFilterBtn.addEventListener("click", () => {
     dateFilter.value = "";
     renderLog();
@@ -1411,6 +1633,243 @@
       applyTheme(e.target.value);
     });
   });
+
+  // Action Types Manager
+  function renderActionTypes() {
+    if (!actionTypesList) return;
+    
+    actionTypesList.innerHTML = "";
+    
+    actionTypes.forEach((type, index) => {
+      const item = document.createElement("div");
+      item.className = "action-type-item";
+      item.innerHTML = `
+        <div class="action-type-color" style="background-color: ${type.color}">
+          ${type.emoji}
+        </div>
+        <div class="action-type-info">
+          <div class="action-type-name">${type.name}</div>
+          <div class="action-type-meta">ID: ${type.id}</div>
+        </div>
+        <div class="action-type-actions">
+          <button class="action-type-btn" data-edit="${type.id}" title="Edit">✏️</button>
+          <button class="action-type-btn" data-delete="${type.id}" title="Delete">🗑️</button>
+          ${index > 0 ? `<button class="action-type-btn" data-move-up="${type.id}" title="Move Up">↑</button>` : ''}
+          ${index < actionTypes.length - 1 ? `<button class="action-type-btn" data-move-down="${type.id}" title="Move Down">↓</button>` : ''}
+        </div>
+      `;
+      actionTypesList.appendChild(item);
+    });
+
+    // Add event listeners
+    $$("[data-edit]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-edit");
+        openActionTypeModal(id);
+      });
+    });
+
+    $$("[data-delete]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-delete");
+        deleteActionType(id);
+      });
+    });
+
+    $$("[data-move-up]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-move-up");
+        moveActionType(id, -1);
+      });
+    });
+
+    $$("[data-move-down]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-move-down");
+        moveActionType(id, 1);
+      });
+    });
+  }
+
+  function openActionTypeModal(editId = null) {
+    if (!actionTypeModal) return;
+
+    if (editId) {
+      const type = getActionTypeById(editId);
+      if (!type) return;
+
+      modalTitle.textContent = "Edit Activity";
+      editingTypeId.value = editId;
+      typeNameInput.value = type.name;
+      typeEmojiInput.value = type.emoji;
+      typeColorInput.value = type.color;
+      typeColorText.value = type.color;
+    } else {
+      modalTitle.textContent = "Add Activity";
+      editingTypeId.value = "";
+      typeNameInput.value = "";
+      typeEmojiInput.value = "";
+      typeColorInput.value = "#a8d5ff";
+      typeColorText.value = "#a8d5ff";
+    }
+
+    actionTypeModal.hidden = false;
+    typeNameInput.focus();
+  }
+
+  function closeActionTypeModal() {
+    if (actionTypeModal) actionTypeModal.hidden = true;
+  }
+
+  function saveActionType() {
+    const name = typeNameInput.value.trim();
+    const emoji = typeEmojiInput.value.trim();
+    const color = typeColorInput.value;
+    const editId = editingTypeId.value;
+
+    if (!name) {
+      toast("⚠️ Please enter an activity name");
+      return;
+    }
+
+    if (!emoji) {
+      toast("⚠️ Please enter an emoji");
+      return;
+    }
+
+    if (editId) {
+      // Edit existing
+      const type = getActionTypeById(editId);
+      if (type) {
+        type.name = name;
+        type.emoji = emoji;
+        type.color = color;
+      }
+    } else {
+      // Add new
+      const id = name.toLowerCase().replace(/[^a-z0-9]/g, "_");
+      
+      // Check if ID already exists
+      if (getActionTypeById(id)) {
+        toast("⚠️ An activity with this name already exists");
+        return;
+      }
+
+      actionTypes.push({ id, name, emoji, color });
+    }
+
+    saveActionTypes(actionTypes);
+    renderActionTypes();
+    renderHomeScreen();
+    closeActionTypeModal();
+    toast(editId ? "✓ Activity updated" : "✓ Activity added");
+
+    // If sync is enabled, sync action types to Google Sheets
+    if (settings.syncEnabled && settings.webAppUrl) {
+      syncActionTypesToSheet();
+    }
+  }
+
+  function deleteActionType(id) {
+    // Don't allow deleting if it's the last type
+    if (actionTypes.length <= 1) {
+      toast("⚠️ You must have at least one activity type");
+      return;
+    }
+
+    // Check if any entries use this type
+    const usageCount = entries.filter((e) => e.type === id).length;
+    
+    if (usageCount > 0) {
+      const confirmed = confirm(
+        `This activity has ${usageCount} log entries. Are you sure you want to delete it? The entries will remain but show as "${id}".`
+      );
+      if (!confirmed) return;
+    }
+
+    actionTypes = actionTypes.filter((t) => t.id !== id);
+    saveActionTypes(actionTypes);
+    renderActionTypes();
+    renderHomeScreen();
+    toast("✓ Activity deleted");
+
+    // Sync to sheet if enabled
+    if (settings.syncEnabled && settings.webAppUrl) {
+      syncActionTypesToSheet();
+    }
+  }
+
+  function moveActionType(id, direction) {
+    const index = actionTypes.findIndex((t) => t.id === id);
+    if (index === -1) return;
+
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= actionTypes.length) return;
+
+    // Swap
+    [actionTypes[index], actionTypes[newIndex]] = [
+      actionTypes[newIndex],
+      actionTypes[index],
+    ];
+
+    saveActionTypes(actionTypes);
+    renderActionTypes();
+    renderHomeScreen();
+
+    // Sync to sheet if enabled
+    if (settings.syncEnabled && settings.webAppUrl) {
+      syncActionTypesToSheet();
+    }
+  }
+
+  // Action Type Modal Event Listeners
+  if (addActionTypeBtn) {
+    addActionTypeBtn.addEventListener("click", () => {
+      openActionTypeModal();
+    });
+  }
+
+  if (closeModalBtn) {
+    closeModalBtn.addEventListener("click", closeActionTypeModal);
+  }
+
+  if (cancelModalBtn) {
+    cancelModalBtn.addEventListener("click", closeActionTypeModal);
+  }
+
+  if (saveTypeBtn) {
+    saveTypeBtn.addEventListener("click", saveActionType);
+  }
+
+  if (typeColorInput && typeColorText) {
+    typeColorInput.addEventListener("input", (e) => {
+      typeColorText.value = e.target.value;
+    });
+    typeColorText.addEventListener("input", (e) => {
+      const value = e.target.value;
+      if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+        typeColorInput.value = value;
+      }
+    });
+  }
+
+  // Close modal on overlay click
+  if (actionTypeModal) {
+    actionTypeModal.addEventListener("click", (e) => {
+      if (e.target === actionTypeModal) {
+        closeActionTypeModal();
+      }
+    });
+  }
+
+  // Render action types on settings screen open
+  if (openSettingsBtn) {
+    const originalOpenSettings = openSettings;
+    openSettings = function() {
+      originalOpenSettings();
+      renderActionTypes();
+    };
+  }
 
   // Back button handlers
   $$(".back-btn[data-back]").forEach((btn) => {
@@ -1522,7 +1981,6 @@
 
       helpContent.innerHTML = html;
     } catch (error) {
-      console.error("Error loading help:", error);
       helpContent.innerHTML = `
         <div style="text-align: center; padding: 2rem;">
           <p style="color: var(--text-secondary);">📖 User Guide</p>
@@ -1552,165 +2010,9 @@
         appsScriptUrl.placeholder = "URL is configured in code";
       }
     }
-    renderActionTypesList();
-  }
-
-  // Action Types Manager
-  function renderActionTypesList() {
-    if (!actionTypesList) return;
-
-    actionTypesList.innerHTML = actionTypes
-      .map(
-        (type) => `
-      <div class="action-type-item">
-        <div class="action-type-preview" style="background: ${type.color}20; border: 2px solid ${type.color};">
-          ${type.emoji}
-        </div>
-        <div class="action-type-info">
-          <div class="action-type-name">${type.name}</div>
-        </div>
-        <div class="action-type-actions">
-          <button class="action-type-btn" data-edit="${type.id}" title="Edit">✏️</button>
-          <button class="action-type-btn" data-delete="${type.id}" title="Delete">🗑️</button>
-        </div>
-      </div>
-    `,
-      )
-      .join("");
-  }
-
-  if (addActionTypeBtn) {
-    addActionTypeBtn.addEventListener("click", () => {
-      editingActionTypeId = null;
-      actionTypeModalTitle.textContent = "Add Activity Type";
-      actionTypeName.value = "";
-      actionTypeEmoji.value = "";
-      actionTypeColor.value = "";
-      actionTypeModal.hidden = false;
-    });
-  }
-
-  if (actionTypeModal) {
-    // Emoji picker
-    $$(".emoji-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        $$(".emoji-btn").forEach((b) => b.classList.remove("selected"));
-        btn.classList.add("selected");
-        actionTypeEmoji.value = btn.dataset.emoji;
-      });
-    });
-
-    // Color picker
-    $$(".color-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        $$(".color-btn").forEach((b) => b.classList.remove("selected"));
-        btn.classList.add("selected");
-        actionTypeColor.value = btn.dataset.color;
-      });
-    });
-
-    // Save action type
-    if (saveActionTypeBtn) {
-      saveActionTypeBtn.addEventListener("click", () => {
-        const name = actionTypeName.value.trim();
-        const emoji = actionTypeEmoji.value;
-        const color = actionTypeColor.value;
-
-        if (!name || !emoji || !color) {
-          toast("⚠️ Please fill all fields");
-          return;
-        }
-
-        if (editingActionTypeId) {
-          // Edit existing
-          const index = actionTypes.findIndex(
-            (t) => t.id === editingActionTypeId,
-          );
-          if (index !== -1) {
-            actionTypes[index] = { ...actionTypes[index], name, emoji, color };
-          }
-        } else {
-          // Add new
-          const id =
-            name.toLowerCase().replace(/[^a-z0-9]/g, "_") + "_" + Date.now();
-          actionTypes.push({ id, name, emoji, color });
-        }
-
-        saveActionTypes(actionTypes);
-        renderActionTypesList();
-        renderHomeScreen();
-        actionTypeModal.hidden = true;
-        toast(editingActionTypeId ? "✓ Activity updated" : "✓ Activity added");
-      });
-    }
-
-    // Cancel
-    if (cancelActionTypeBtn) {
-      cancelActionTypeBtn.addEventListener("click", () => {
-        actionTypeModal.hidden = true;
-      });
-    }
-
-    // Handle edit and delete clicks
-    if (actionTypesList) {
-      actionTypesList.addEventListener("click", (e) => {
-        const editBtn = e.target.closest("[data-edit]");
-        const deleteBtn = e.target.closest("[data-delete]");
-
-        if (editBtn) {
-          const id = editBtn.dataset.edit;
-          const type = actionTypes.find((t) => t.id === id);
-          if (type) {
-            editingActionTypeId = id;
-            actionTypeModalTitle.textContent = "Edit Activity Type";
-            actionTypeName.value = type.name;
-            actionTypeEmoji.value = type.emoji;
-            actionTypeColor.value = type.color;
-
-            // Select current emoji and color
-            $$(".emoji-btn").forEach((btn) => {
-              btn.classList.toggle(
-                "selected",
-                btn.dataset.emoji === type.emoji,
-              );
-            });
-            $$(".color-btn").forEach((btn) => {
-              btn.classList.toggle(
-                "selected",
-                btn.dataset.color === type.color,
-              );
-            });
-
-            actionTypeModal.hidden = false;
-          }
-        }
-
-        if (deleteBtn) {
-          const id = deleteBtn.dataset.delete;
-          const type = actionTypes.find((t) => t.id === id);
-
-          // Check if there are entries with this type
-          const entriesCount = entries.filter((e) => e.type === id).length;
-
-          let confirmMsg = `Delete "${type.name}"?`;
-          if (entriesCount > 0) {
-            confirmMsg += `\n\n⚠️ ${entriesCount} log entries use this activity. They will still be visible but the activity type won't be available for new entries.`;
-          }
-
-          if (confirm(confirmMsg)) {
-            actionTypes = actionTypes.filter((t) => t.id !== id);
-            saveActionTypes(actionTypes);
-            renderActionTypesList();
-            renderHomeScreen();
-            toast("✓ Activity deleted");
-          }
-        }
-      });
-    }
   }
 
   // Init
-  renderHomeScreen();
   updateStatus();
   // Prime initial sync on load and when refocusing
   if (settings.syncEnabled && settings.webAppUrl) {

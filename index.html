@@ -44,7 +44,9 @@
         <!-- Quick Actions -->
         <section class="quick-actions">
           <h3>Log Activity</h3>
-          <div class="action-buttons" id="actionButtons"></div>
+          <div class="action-buttons" id="actionButtons">
+            <!-- Action buttons will be rendered dynamically -->
+          </div>
         </section>
       </main>
     </div>
@@ -53,19 +55,20 @@
     <div class="screen screen-modal" id="logScreen" hidden>
       <header class="screen-header">
         <h1>📋 Activity Log</h1>
-        <button class="icon-btn" id="printBtn">🖨️</button>
       </header>
 
-      <div class="screen-toolbar">
-        <input type="date" id="dateFilter" class="date-input" />
-        <button id="clearFilterBtn" class="btn-small">Clear</button>
-      </div>
-
       <main class="screen-content">
-        <!-- Stats Cards -->
-        <div class="log-stats" id="logStats"></div>
+        <!-- Combined Summary Overview -->
+        <div class="log-summary-card" id="logSummaryCard">
+          <!-- Dynamic summary will be rendered here -->
+        </div>
 
         <div class="summary" id="summary"></div>
+
+        <div class="screen-toolbar">
+          <input type="date" id="dateFilter" class="date-input" />
+          <button id="clearFilterBtn" class="btn-small">Clear</button>
+        </div>
 
         <div class="log-entries" id="logEntries"></div>
       </main>
@@ -83,30 +86,23 @@
           <div class="graph-card">
             <h3>Today's Activity</h3>
             <canvas id="todayChart" width="300" height="200"></canvas>
-            <div class="graph-legend">
-              <div class="legend-item">
-                <span class="legend-color" style="background: #60a5fa"></span>
-                <span class="legend-label">Feed</span>
-              </div>
-              <div class="legend-item">
-                <span class="legend-color" style="background: #fbbf24"></span>
-                <span class="legend-label">Pee</span>
-              </div>
-              <div class="legend-item">
-                <span class="legend-color" style="background: #f87171"></span>
-                <span class="legend-label">Poop</span>
-              </div>
+            <div class="graph-legend" id="todayLegend">
+              <!-- Legend will be rendered dynamically -->
             </div>
           </div>
           <div class="graph-card">
             <h3>7-Day Trend</h3>
             <canvas id="weekChart" width="300" height="200"></canvas>
-            <div class="graph-legend" id="weekLegend"></div>
+            <div class="graph-legend" id="weekLegend">
+              <!-- Legend will be rendered dynamically -->
+            </div>
           </div>
           <div class="graph-card">
             <h3>Last 24 Hours</h3>
+            <div class="graph-legend" id="hourlyLegend">
+              <!-- Legend will be rendered dynamically -->
+            </div>
             <canvas id="hourlyChart" width="300" height="200"></canvas>
-            <div class="graph-legend" id="hourlyLegend"></div>
           </div>
           <div class="graph-card">
             <h3>Feed to Diaper Ratio</h3>
@@ -176,24 +172,6 @@
             </button>
           </section>
 
-          <!-- Action Types Section -->
-          <section class="settings-section">
-            <h2 class="settings-section-title">📝 Activity Types</h2>
-            <p class="settings-section-description">
-              Customize the activities you want to track
-            </p>
-
-            <div id="actionTypesList" class="action-types-list"></div>
-
-            <button
-              id="addActionTypeBtn"
-              class="btn-rounded btn-secondary"
-              style="width: 100%; margin-top: 12px"
-            >
-              ➕ Add Activity Type
-            </button>
-          </section>
-
           <!-- Theme Section -->
           <section class="settings-section">
             <h2 class="settings-section-title">🎨 Theme</h2>
@@ -213,123 +191,24 @@
               </label>
             </div>
           </section>
+
+          <!-- Action Types Section -->
+          <section class="settings-section">
+            <h2 class="settings-section-title">📝 Activity Types</h2>
+            <p class="settings-section-description">
+              Customize the activities you want to track. Each activity has a name, emoji, and color.
+            </p>
+
+            <div id="actionTypesList" class="action-types-list">
+              <!-- Action types will be rendered here dynamically -->
+            </div>
+
+            <button id="addActionTypeBtn" class="btn-rounded btn-secondary" style="width: 100%; margin-top: 12px;">
+              ➕ Add New Activity
+            </button>
+          </section>
         </div>
       </main>
-    </div>
-
-    <!-- Action Type Editor Modal -->
-    <div class="modal" id="actionTypeModal" hidden>
-      <div class="modal-content">
-        <h3 class="modal-title" id="actionTypeModalTitle">Add Activity Type</h3>
-
-        <label class="field">
-          <span class="field-label">Name</span>
-          <input
-            type="text"
-            id="actionTypeName"
-            class="input"
-            placeholder="e.g., Sleep, Bath, Medicine"
-            maxlength="15"
-          />
-        </label>
-
-        <label class="field">
-          <span class="field-label">Emoji</span>
-          <div class="emoji-picker">
-            <button type="button" class="emoji-btn" data-emoji="🍼">🍼</button>
-            <button type="button" class="emoji-btn" data-emoji="💧">💧</button>
-            <button type="button" class="emoji-btn" data-emoji="💩">💩</button>
-            <button type="button" class="emoji-btn" data-emoji="😴">😴</button>
-            <button type="button" class="emoji-btn" data-emoji="🛁">🛁</button>
-            <button type="button" class="emoji-btn" data-emoji="💊">💊</button>
-            <button type="button" class="emoji-btn" data-emoji="🌡️">🌡️</button>
-            <button type="button" class="emoji-btn" data-emoji="🎵">🎵</button>
-            <button type="button" class="emoji-btn" data-emoji="📖">📖</button>
-            <button type="button" class="emoji-btn" data-emoji="🚗">🚗</button>
-            <button type="button" class="emoji-btn" data-emoji="🏃">🏃</button>
-            <button type="button" class="emoji-btn" data-emoji="⏰">⏰</button>
-          </div>
-          <input
-            type="text"
-            id="actionTypeEmoji"
-            class="input"
-            placeholder="Selected emoji"
-            readonly
-            style="margin-top: 8px"
-          />
-        </label>
-
-        <label class="field">
-          <span class="field-label">Color</span>
-          <div class="color-picker">
-            <button
-              type="button"
-              class="color-btn"
-              data-color="#a8d5ff"
-              style="background: #a8d5ff"
-            ></button>
-            <button
-              type="button"
-              class="color-btn"
-              data-color="#ffe4a8"
-              style="background: #ffe4a8"
-            ></button>
-            <button
-              type="button"
-              class="color-btn"
-              data-color="#ffb3ba"
-              style="background: #ffb3ba"
-            ></button>
-            <button
-              type="button"
-              class="color-btn"
-              data-color="#bae1ff"
-              style="background: #bae1ff"
-            ></button>
-            <button
-              type="button"
-              class="color-btn"
-              data-color="#ffdfba"
-              style="background: #ffdfba"
-            ></button>
-            <button
-              type="button"
-              class="color-btn"
-              data-color="#baffc9"
-              style="background: #baffc9"
-            ></button>
-            <button
-              type="button"
-              class="color-btn"
-              data-color="#e0bbff"
-              style="background: #e0bbff"
-            ></button>
-            <button
-              type="button"
-              class="color-btn"
-              data-color="#ffd4e5"
-              style="background: #ffd4e5"
-            ></button>
-          </div>
-          <input
-            type="text"
-            id="actionTypeColor"
-            class="input"
-            placeholder="Selected color"
-            readonly
-            style="margin-top: 8px"
-          />
-        </label>
-
-        <div class="modal-actions">
-          <button id="cancelActionTypeBtn" class="btn-rounded btn-secondary">
-            Cancel
-          </button>
-          <button id="saveActionTypeBtn" class="btn-rounded btn-primary">
-            Save
-          </button>
-        </div>
-      </div>
     </div>
 
     <!-- Help/Documentation Screen -->
@@ -345,6 +224,53 @@
           Loading documentation...
         </div>
       </main>
+    </div>
+
+    <!-- Action Type Editor Modal -->
+    <div class="modal-overlay" id="actionTypeModal" hidden>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="modalTitle">Add Activity</h3>
+          <button class="modal-close" id="closeModalBtn">✕</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="editingTypeId" />
+          
+          <label class="field">
+            <span class="field-label">Activity Name</span>
+            <input
+              type="text"
+              id="typeNameInput"
+              class="input"
+              placeholder="e.g., Sleep, Bath, Play"
+              maxlength="20"
+            />
+          </label>
+
+          <label class="field">
+            <span class="field-label">Emoji</span>
+            <input
+              type="text"
+              id="typeEmojiInput"
+              class="input emoji-input"
+              placeholder="😴"
+              maxlength="2"
+            />
+          </label>
+
+          <label class="field">
+            <span class="field-label">Color</span>
+            <div class="color-picker">
+              <input type="color" id="typeColorInput" value="#a8d5ff" />
+              <input type="text" id="typeColorText" class="input" value="#a8d5ff" maxlength="7" />
+            </div>
+          </label>
+        </div>
+        <div class="modal-footer">
+          <button id="cancelModalBtn" class="btn-rounded btn-secondary">Cancel</button>
+          <button id="saveTypeBtn" class="btn-rounded btn-primary">Save</button>
+        </div>
+      </div>
     </div>
 
     <!-- Bottom Navigation -->

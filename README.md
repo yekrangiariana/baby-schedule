@@ -64,8 +64,11 @@ The app works 100% offline by default. Enable cloud sync to backup data and acce
 ### Step 1: Create Your Google Sheet
 
 1. Create a new Google Sheet
-2. Rename the first sheet to `Log` (or keep as default)
-3. Add headers in row 1: `Timestamp`, `ISO`, `Type`, `Note`, `ID`, `Source`
+2. Create TWO sheets (tabs):
+   - **Data** (or "Log" for backward compatibility): For storing activity entries
+     - Add headers in row 1: `Timestamp`, `ISO`, `Type`, `Note`, `ID`, `Source`
+   - **Config**: For storing custom activity types (will be auto-created by the script)
+3. Make sure your first sheet is named "Data" or "Log"
 
 ### Step 2: Add the Apps Script
 
@@ -74,44 +77,79 @@ The app works 100% offline by default. Enable cloud sync to backup data and acce
 3. Paste the following script:
 
 ```javascript
+// Helper: Get or create a sheet by name
+function getOrCreateSheet(ss, name) {
+  var sheet = ss.getSheetByName(name);
+  if (!sheet) {
+    sheet = ss.insertSheet(name);
+  }
+  return sheet;
+}
+
 function doPost(e) {
   try {
     var body = JSON.parse(e.postData.contents || '{}');
-
-    // If you used a standalone script, prefer openById('SHEET_ID')
     var ss = SpreadsheetApp.getActive();
-    var sh = ss.getSheetByName('Log') || ss.getActiveSheet();
+
+    // Handle action types sync (goes to "Config" tab)
+    if (body.action === 'saveActionTypes' && body.actionTypes) {
+      var configSheet = getOrCreateSheet(ss, 'Config');
+      
+      // Clear existing and write header
+      configSheet.clear();
+      configSheet.appendRow(['ID', 'Name', 'Emoji', 'Color']);
+      
+      // Write action types
+      body.actionTypes.forEach(function(type) {
+        configSheet.appendRow([
+          type.id || '',
+          type.name || '',
+          type.emoji || '',
+          type.color || ''
+        ]);
+      });
+      
+      return ContentService
+        .createTextOutput(JSON.stringify({status: 'ok', action: 'saveActionTypes'}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // Handle regular entries (goes to "Data" tab, fallback to "Log" for backward compatibility)
+    var dataSheet = ss.getSheetByName('Data') || ss.getSheetByName('Log') || ss.getActiveSheet();
 
     // Handle deletions by entry ID
     if (body.action === 'delete' && body.id) {
       var id = String(body.id);
-      var values = sh.getDataRange().getValues();
-      // Assume ID is in column 5 (A=1 ... E=5). Adjust if needed.
-      var idCol = 5;
-      for (var r = 2; r <= values.length; r++) { // skip header row
+      var values = dataSheet.getDataRange().getValues();
+      var idCol = 5; // Column E (ID column)
+      
+      for (var r = 2; r <= values.length; r++) {
         if (String(values[r-1][idCol-1]) === id) {
-          sh.deleteRow(r);
+          dataSheet.deleteRow(r);
           break;
         }
       }
+      
       return ContentService
-        .createTextOutput(JSON.stringify({status:'ok', action:'delete'}))
+        .createTextOutput(JSON.stringify({status: 'ok', action: 'delete'}))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    // Default: append a new event
+    // Default: append a new entry
     var ts = new Date(body.timestamp || Date.now());
-    sh.appendRow([
-      ts,                      // Timestamp (Date)
-      new Date(ts).toISOString(), // ISO string
-      body.type || '',
-      body.note || '',
-      body.id || '',
-      body.source || 'babylog-web'
+    dataSheet.appendRow([
+      ts,                                // Timestamp (Date)
+      new Date(ts).toISOString(),       // ISO string
+      body.type || '',                   // Type (e.g., feed, pee, poop, custom)
+      body.note || '',                   // Note
+      body.id || '',                     // Unique ID
+      body.source || 'babylog-web'       // Source
     ]);
+    
     return ContentService
-      .createTextOutput(JSON.stringify({status: 'ok', action:'append'}))
+      .createTextOutput(JSON.stringify({status: 'ok', action: 'append'}))
       .setMimeType(ContentService.MimeType.JSON);
+      
   } catch (err) {
     return ContentService
       .createTextOutput(JSON.stringify({status: 'error', message: String(err)}))
@@ -119,43 +157,71 @@ function doPost(e) {
   }
 }
 
-// List all entries as JSON (supports JSONP via `?callback=fn`)
 function doGet(e) {
   try {
     var ss = SpreadsheetApp.getActive();
-    var sh = ss.getSheetByName('Log') || ss.getActiveSheet();
-    var values = sh.getDataRange().getValues();
-    // Expect columns: Timestamp, ISO, Type, Note, ID, Source
-    var rows = [];
-    for (var r = 2; r <= values.length; r++) { // skip header
-      var row = values[r-1];
+    
+    // Read entries from "Data" tab (fallback to "Log" for backward compatibility)
+    var dataSheet = ss.getSheetByName('Data') || ss.getSheetByName('Log') || ss.getActiveSheet();
+    var dataValues = dataSheet.getDataRange().getValues();
+    
+    var entries = [];
+    for (var r = 2; r <= dataValues.length; r++) {
+      var row = dataValues[r-1];
       var ts = row[0];
       var iso = row[1];
       var type = row[2];
       var note = row[3];
       var id = row[4];
-      rows.push({
+      
+      entries.push({
         id: String(id || ''),
         type: String(type || ''),
         note: String(note || ''),
         timestamp: ts instanceof Date ? ts.getTime() : (iso ? Date.parse(iso) : 0),
-        iso: String(iso || ''),
+        iso: String(iso || '')
       });
     }
+    
     // Sort newest first
-    rows.sort(function(a,b){ return b.timestamp - a.timestamp; });
-
-    var payload = JSON.stringify(rows);
+    entries.sort(function(a, b) { return b.timestamp - a.timestamp; });
+    
+    // Read action types from "Config" tab (if exists)
+    var actionTypes = [];
+    var configSheet = ss.getSheetByName('Config');
+    if (configSheet) {
+      var configValues = configSheet.getDataRange().getValues();
+      for (var r = 2; r <= configValues.length; r++) {
+        var row = configValues[r-1];
+        actionTypes.push({
+          id: String(row[0] || ''),
+          name: String(row[1] || ''),
+          emoji: String(row[2] || ''),
+          color: String(row[3] || '')
+        });
+      }
+    }
+    
+    // Return both entries and action types
+    var response = {
+      entries: entries,
+      actionTypes: actionTypes
+    };
+    
+    var payload = JSON.stringify(response);
     var cb = e && e.parameter && e.parameter.callback;
+    
     if (cb) {
-      // JSONP
+      // JSONP support
       return ContentService
         .createTextOutput(cb + '(' + payload + ')')
         .setMimeType(ContentService.MimeType.JAVASCRIPT);
     }
+    
     return ContentService
       .createTextOutput(payload)
       .setMimeType(ContentService.MimeType.JSON);
+      
   } catch (err) {
     return ContentService
       .createTextOutput(JSON.stringify({status: 'error', message: String(err)}))
