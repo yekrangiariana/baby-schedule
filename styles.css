@@ -249,9 +249,11 @@ body {
 }
 
 .action {
-  background: var(--bg-secondary);
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
   border: 2px solid transparent;
-  border-radius: 20px;
+  border-radius: 22px;
   padding: 20px 12px;
   cursor: pointer;
   display: flex;
@@ -259,7 +261,9 @@ body {
   align-items: center;
   gap: 8px;
   transition: all 0.2s;
-  box-shadow: 0 4px 12px var(--shadow);
+  box-shadow: 
+    0 6px 16px rgba(0, 0, 0, 0.04),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6);
   position: relative;
   overflow: hidden;
 }
@@ -330,11 +334,20 @@ body {
 
 /* Today's Summary */
 .today-summary {
-  background: linear-gradient(135deg, var(--accent), #ff8ba7);
-  border-radius: 20px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 133, 168, 0.35) 0%,
+    rgba(255, 139, 167, 0.4) 100%
+  );
+  backdrop-filter: blur(50px) saturate(180%);
+  -webkit-backdrop-filter: blur(50px) saturate(180%);
+  border-radius: 24px;
   padding: 20px;
   margin-bottom: 20px;
-  box-shadow: 0 6px 20px var(--shadow-lg);
+  box-shadow: 
+    0 8px 32px rgba(255, 133, 168, 0.2),
+    inset 0 1px 1px rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   color: white;
 }
 
@@ -1210,12 +1223,17 @@ body {
   left: 0;
   right: 0;
   height: var(--bottom-nav-height);
-  background: var(--bg-secondary);
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(50px) saturate(180%);
+  -webkit-backdrop-filter: blur(50px) saturate(180%);
   display: flex;
   justify-content: space-around;
   align-items: stretch;
   padding-bottom: max(env(safe-area-inset-bottom), 8px);
-  box-shadow: 0 -2px 12px var(--shadow);
+  box-shadow: 
+    0 -4px 20px rgba(0, 0, 0, 0.03),
+    inset 0 1px 1px rgba(255, 255, 255, 0.7);
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
   z-index: 110;
 }
 
@@ -1236,10 +1254,19 @@ body {
 
 .nav-item.active {
   color: var(--accent);
-  background: linear-gradient(135deg, var(--accent), #ff8ba7);
-  border-radius: 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 133, 168, 0.4),
+    rgba(255, 139, 167, 0.45)
+  );
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border-radius: 18px;
   margin: 0 4px;
-  box-shadow: 0 4px 12px rgba(155, 135, 245, 0.4);
+  box-shadow: 
+    0 6px 20px rgba(255, 133, 168, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   transform: translateY(-2px);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
