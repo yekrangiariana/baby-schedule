@@ -48,6 +48,9 @@
   const openSettingsBtn = $("#openSettingsBtn");
   const appsScriptUrl = $("#appsScriptUrl");
   const saveSettingsBtn = $("#saveSettingsBtn");
+  const exportCSVBtn = $("#exportCSVBtn");
+  const importCSVBtn = $("#importCSVBtn");
+  const importCSVInput = $("#importCSVInput");
   const viewHelpBtn = $("#viewHelpBtn");
 
   // Action Types Manager
@@ -565,7 +568,6 @@
             <span class="summary-badge">${src.length} Total</span>
             <span class="summary-badge">${todayEntries.length} Today</span>
           </div>
-          <button class="summary-export-btn" onclick="exportToCSV()">📥 Export CSV</button>
         </div>
       </div>
       
@@ -1157,6 +1159,82 @@
 
     toast(`✓ Exported ${src.length} entries`);
   };
+
+  function importFromCSV(file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      try {
+        const csv = e.target.result;
+        const lines = csv.split("\n");
+
+        // Skip header row
+        const dataLines = lines.slice(1).filter((line) => line.trim());
+
+        let imported = 0;
+        dataLines.forEach((line) => {
+          // Simple CSV parsing (handles quoted fields)
+          const matches = line.match(/("(?:[^"]|"")*"|[^,]*)/g);
+          if (!matches || matches.length < 3) return;
+
+          const date = matches[0].replace(/^"|"$/g, "").trim();
+          const time = matches[1].replace(/^"|"$/g, "").trim();
+          const activity = matches[2].replace(/^"|"$/g, "").trim();
+          const note = matches[3]
+            ? matches[3].replace(/^"|"$/g, "").replace(/""/g, '"').trim()
+            : "";
+
+          // Parse date and time
+          const dateTimeStr = `${date} ${time}`;
+          const timestamp = new Date(dateTimeStr).getTime();
+
+          if (isNaN(timestamp)) return;
+
+          // Find matching activity type (case insensitive)
+          const type = actionTypes.find(
+            (t) => t.name.toLowerCase() === activity.toLowerCase(),
+          );
+
+          if (!type) return;
+
+          // Check if entry already exists (by timestamp and type)
+          const exists = entries.some(
+            (e) =>
+              Math.abs(e.timestamp - timestamp) < 60000 && e.type === type.id,
+          );
+
+          if (exists) return;
+
+          // Create entry
+          const entry = {
+            id: `${timestamp}_${Math.random().toString(36).slice(2, 8)}`,
+            type: type.id,
+            note: note,
+            timestamp: timestamp,
+            synced: false,
+          };
+
+          entries.push(entry);
+          imported++;
+        });
+
+        if (imported > 0) {
+          saveEntries(entries);
+          updateStatus();
+          renderHomeScreen();
+          toast(`✓ Imported ${imported} entries`);
+
+          // Trigger background sync
+          backgroundSync();
+        } else {
+          toast("No new entries found in CSV");
+        }
+      } catch (err) {
+        toast("Error importing CSV - check file format");
+      }
+    };
+
+    reader.readAsText(file);
+  }
 
   function deleteEntry(id) {
     // Remove from local entries immediately
@@ -1891,6 +1969,29 @@
       originalOpenSettings();
       renderActionTypes();
     };
+  }
+
+  // Export CSV button
+  if (exportCSVBtn) {
+    exportCSVBtn.addEventListener("click", () => {
+      exportToCSV();
+    });
+  }
+
+  // Import CSV button
+  if (importCSVBtn && importCSVInput) {
+    importCSVBtn.addEventListener("click", () => {
+      importCSVInput.click();
+    });
+
+    importCSVInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        importFromCSV(file);
+        // Reset input so same file can be selected again
+        importCSVInput.value = "";
+      }
+    });
   }
 
   // Back button handlers

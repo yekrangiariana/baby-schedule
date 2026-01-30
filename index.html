@@ -197,6 +197,36 @@
               ➕ Add New Activity
             </button>
           </section>
+
+          <!-- Data Management Section -->
+          <section class="settings-section">
+            <h2 class="settings-section-title">💾 Data Management</h2>
+            <p class="settings-section-description">
+              Export your data as CSV or import previously exported data.
+            </p>
+
+            <button
+              id="exportCSVBtn"
+              class="btn-rounded btn-secondary"
+              style="width: 100%; margin-bottom: 12px"
+            >
+              📥 Export CSV
+            </button>
+
+            <button
+              id="importCSVBtn"
+              class="btn-rounded btn-secondary"
+              style="width: 100%"
+            >
+              📤 Import CSV
+            </button>
+            <input
+              type="file"
+              id="importCSVInput"
+              accept=".csv"
+              style="display: none"
+            />
+          </section>
         </div>
       </main>
     </div>
