@@ -139,7 +139,7 @@ body {
 .screen-modal {
   z-index: 100;
   transform: translateX(100%);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .screen-modal:not([hidden]) {
@@ -156,6 +156,10 @@ body {
   gap: 12px;
   flex-shrink: 0;
   box-shadow: 0 2px 12px var(--shadow);
+}
+
+.screen-indicator {
+  display: none;
 }
 
 .screen-header h1 {
@@ -220,7 +224,7 @@ body {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 16px;
+  padding: max(env(safe-area-inset-top), 8px) 16px 16px 16px;
   padding-bottom: calc(var(--bottom-nav-height) + 16px);
   -webkit-overflow-scrolling: touch;
 }
@@ -1207,7 +1211,6 @@ body {
   right: 0;
   height: var(--bottom-nav-height);
   background: var(--bg-secondary);
-  border-top: 1px solid var(--border);
   display: flex;
   justify-content: space-around;
   align-items: stretch;
@@ -1227,12 +1230,23 @@ body {
   justify-content: center;
   gap: 4px;
   color: var(--text-muted);
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 8px 4px;
 }
 
 .nav-item.active {
   color: var(--accent);
+  background: linear-gradient(135deg, var(--accent), #ff8ba7);
+  border-radius: 16px;
+  margin: 0 4px;
+  box-shadow: 0 4px 12px rgba(155, 135, 245, 0.4);
+  transform: translateY(-2px);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-item.active .nav-icon,
+.nav-item.active .nav-label {
+  color: white;
 }
 
 .nav-icon {
