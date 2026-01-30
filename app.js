@@ -206,21 +206,21 @@
     };
     entries.push(entry);
     saveEntries(entries);
-    
+
     // Add to sync queue
     syncQueue.push({ type: "create", entry, queuedAt: Date.now() });
     saveSyncQueue(syncQueue);
-    
+
     // Immediate UI update
     haptics(15);
     toast(`${capitalize(type)} logged`);
     updateStatus();
     showUndoButton();
-    
+
     // Update open screens immediately
     if (!logScreen.hidden) renderLog();
     if (!insightsScreen.hidden) renderGraphs();
-    
+
     // Trigger background sync
     backgroundSync();
   }
@@ -232,15 +232,15 @@
   // Screen Navigation
   function showScreen(screen) {
     // Update nav buttons
-    $$(`.nav-item`).forEach(btn => btn.classList.remove('active'));
-    
-    if (screen === 'home') {
+    $$(`.nav-item`).forEach((btn) => btn.classList.remove("active"));
+
+    if (screen === "home") {
       homeScreen.hidden = false;
       logScreen.hidden = true;
       insightsScreen.hidden = true;
       settingsScreen.hidden = true;
-      $$(`.nav-item[data-screen="home"]`)[0]?.classList.add('active');
-    } else if (screen === 'log') {
+      $$(`.nav-item[data-screen="home"]`)[0]?.classList.add("active");
+    } else if (screen === "log") {
       homeScreen.hidden = true;
       logScreen.hidden = false;
       insightsScreen.hidden = true;
@@ -248,14 +248,14 @@
       renderLog();
       backgroundSync();
       startRemoteAutoRefresh();
-    } else if (screen === 'insights') {
+    } else if (screen === "insights") {
       homeScreen.hidden = true;
       logScreen.hidden = true;
       insightsScreen.hidden = false;
       settingsScreen.hidden = true;
       renderGraphs();
       backgroundSync();
-    } else if (screen === 'settings') {
+    } else if (screen === "settings") {
       homeScreen.hidden = true;
       logScreen.hidden = true;
       insightsScreen.hidden = true;
@@ -264,7 +264,7 @@
   }
 
   function goHome() {
-    showScreen('home');
+    showScreen("home");
     stopRemoteAutoRefresh();
   }
 
@@ -275,13 +275,16 @@
       .slice()
       .sort((a, b) => b.timestamp - a.timestamp)
       .slice(0, 4);
-    
+
     if (recent.length === 0) {
-      recentList.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px;">No activity yet</p>';
+      recentList.innerHTML =
+        '<p style="text-align:center;color:var(--text-muted);padding:20px;">No activity yet</p>';
       return;
     }
-    
-    recentList.innerHTML = recent.map((e, index) => `
+
+    recentList.innerHTML = recent
+      .map(
+        (e, index) => `
       <div class="recent-item" style="animation-delay: ${index * 0.05}s">
         <div class="recent-icon ${e.type}">${getTypeEmoji(e.type)}</div>
         <div class="recent-info">
@@ -289,39 +292,41 @@
           <div class="recent-time">${formatDate(e.timestamp)} ${formatTime(e.timestamp)}</div>
         </div>
       </div>
-    `).join('');
+    `,
+      )
+      .join("");
   }
 
   function getTypeEmoji(type) {
-    return { feed: '🍼', pee: '💧', poop: '💩' }[type] || '📝';
+    return { feed: "🍼", pee: "💧", poop: "💩" }[type] || "📝";
   }
 
   // Undo last - instant local delete with background sync
   function undoLast() {
     if (!entries.length) return;
-    
+
     // Hide undo button immediately
     if (undoBtn) undoBtn.hidden = true;
     if (undoTimer) clearTimeout(undoTimer);
-    
+
     const last = entries.pop();
     saveEntries(entries);
-    
+
     // Add to delete queue for background sync
     deleteQueue.push(last.id);
     saveDeletes(deleteQueue);
     syncQueue.push({ type: "delete", id: last.id, queuedAt: Date.now() });
     saveSyncQueue(syncQueue);
-    
+
     // Immediate UI update
     haptics(10);
     updateStatus();
     toast(`Undid ${last.type} at ${formatTime(last.timestamp)}`);
-    
+
     // Update open screens immediately
     if (!logScreen.hidden) renderLog();
     if (!insightsScreen.hidden) renderGraphs();
-    
+
     // Trigger background sync
     backgroundSync();
   }
@@ -344,7 +349,7 @@
     todayTotals.textContent = src.length
       ? `Today: Feed ${counts.feed || 0} • Pee ${counts.pee || 0} • Poop ${counts.poop || 0}`
       : "Today: —";
-    
+
     renderRecentActivity();
   }
 
@@ -356,7 +361,7 @@
   }
 
   async function openLog() {
-    showScreen('log');
+    showScreen("log");
     renderLog();
     updateStatus();
     // Trigger background sync to pull latest from other devices
@@ -364,13 +369,13 @@
     startRemoteAutoRefresh();
   }
   function closeLog() {
-    showScreen('home');
+    showScreen("home");
     stopRemoteAutoRefresh();
   }
 
   async function openGraphs() {
     haptics(8);
-    showScreen('insights');
+    showScreen("insights");
     try {
       renderGraphs();
       // Trigger background sync to get latest data
@@ -383,15 +388,15 @@
 
   function closeGraphs() {
     haptics(6);
-    showScreen('home');
+    showScreen("home");
   }
-  
+
   function openSettings() {
-    showScreen('settings');
+    showScreen("settings");
   }
-  
+
   function closeSettings() {
-    showScreen('home');
+    showScreen("home");
   }
 
   function renderGraphs() {
@@ -464,13 +469,13 @@
   function drawBarChart(canvasId, data) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
-    
+
     // Set higher resolution for better quality
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
-    
+
     const ctx = canvas.getContext("2d");
     ctx.scale(dpr, dpr);
     const w = rect.width,
@@ -503,13 +508,13 @@
   function drawLineChart(canvasId, data) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
-    
+
     // Set higher resolution for better quality
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
-    
+
     const ctx = canvas.getContext("2d");
     ctx.scale(dpr, dpr);
     const w = rect.width,
@@ -524,15 +529,15 @@
 
     // Draw smooth curve with gradient
     const gradient = ctx.createLinearGradient(0, 0, 0, h);
-    gradient.addColorStop(0, '#60a5fa');
-    gradient.addColorStop(1, '#93c5fd');
-    
+    gradient.addColorStop(0, "#60a5fa");
+    gradient.addColorStop(1, "#93c5fd");
+
     ctx.strokeStyle = gradient;
     ctx.lineWidth = 3;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
     ctx.beginPath();
-    
+
     data.forEach((d, i) => {
       const x = i * step;
       const y = h - 30 - (d.count / max) * (h - 60);
@@ -547,7 +552,7 @@
         ctx.quadraticCurveTo(prevX, prevY, cpX, cpY);
       }
     });
-    
+
     // Draw final segment
     if (data.length > 1) {
       const lastIdx = data.length - 1;
@@ -555,7 +560,7 @@
       const y = h - 30 - (data[lastIdx].count / max) * (h - 60);
       ctx.lineTo(x, y);
     }
-    
+
     ctx.stroke();
 
     ctx.fillStyle = "#6b7280";
@@ -573,13 +578,13 @@
   function drawStackedBarChart(canvasId, data) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
-    
+
     // Set higher resolution for better quality
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
-    
+
     const ctx = canvas.getContext("2d");
     ctx.scale(dpr, dpr);
     const w = rect.width,
@@ -626,13 +631,13 @@
   function drawRatioChart(canvasId, data) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
-    
+
     // Set higher resolution for better quality
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
-    
+
     const ctx = canvas.getContext("2d");
     ctx.scale(dpr, dpr);
     const w = rect.width,
@@ -715,7 +720,7 @@
           <div class="log-entry-content">
             <div class="log-entry-type">${capitalize(e.type)}</div>
             <div class="log-entry-time">${formatDate(e.timestamp)} ${formatTime(e.timestamp)}</div>
-            ${e.note ? `<div class="log-entry-note">${escapeHtml(e.note)}</div>` : ''}
+            ${e.note ? `<div class="log-entry-note">${escapeHtml(e.note)}</div>` : ""}
           </div>
           <button class="log-entry-delete" data-del="${e.id}">Delete</button>
         `;
@@ -732,27 +737,27 @@
 
   function deleteEntry(id) {
     // Remove from local entries immediately
-    const index = entries.findIndex(e => e.id === id);
+    const index = entries.findIndex((e) => e.id === id);
     if (index === -1) return;
-    
+
     const deleted = entries.splice(index, 1)[0];
     saveEntries(entries);
-    
+
     // Add to delete queue for background sync
     deleteQueue.push(id);
     saveDeletes(deleteQueue);
     syncQueue.push({ type: "delete", id, queuedAt: Date.now() });
     saveSyncQueue(syncQueue);
-    
+
     // Immediate UI update
     haptics(8);
     toast(`Deleted ${deleted.type} entry`);
     updateStatus();
-    
+
     // Update open screens immediately
     if (!logScreen.hidden) renderLog();
     if (!insightsScreen.hidden) renderGraphs();
-    
+
     // Trigger background sync
     backgroundSync();
   }
@@ -794,45 +799,49 @@
   async function backgroundSync() {
     const cfg = loadSettings();
     if (!cfg.syncEnabled || !cfg.webAppUrl || isSyncing) return;
-    
+
     isSyncing = true;
     const hadPendingChanges = syncQueue.length > 0;
-    
+
     try {
       // Step 1: Push local changes (sync queue)
       if (syncQueue.length > 0) {
-        const createOps = syncQueue.filter(op => op.type === 'create');
-        const deleteOps = syncQueue.filter(op => op.type === 'delete');
-        
+        const createOps = syncQueue.filter((op) => op.type === "create");
+        const deleteOps = syncQueue.filter((op) => op.type === "delete");
+
         // Push creates
         if (createOps.length > 0) {
-          await maybeSync(createOps.map(op => op.entry));
+          await maybeSync(createOps.map((op) => op.entry));
           // Remove successfully synced operations
-          syncQueue = syncQueue.filter(op => op.type !== 'create' || !createOps.includes(op));
+          syncQueue = syncQueue.filter(
+            (op) => op.type !== "create" || !createOps.includes(op),
+          );
           saveSyncQueue(syncQueue);
         }
-        
+
         // Push deletes
         if (deleteOps.length > 0) {
-          await maybeDelete(deleteOps.map(op => op.id));
+          await maybeDelete(deleteOps.map((op) => op.id));
           // Remove successfully synced deletes
-          syncQueue = syncQueue.filter(op => op.type !== 'delete' || !deleteOps.includes(op));
+          syncQueue = syncQueue.filter(
+            (op) => op.type !== "delete" || !deleteOps.includes(op),
+          );
           saveSyncQueue(syncQueue);
         }
       }
-      
+
       // Step 2: Pull remote changes and merge
       await pullAndMergeRemote();
-      
+
       setLastSyncTime(Date.now());
-      
+
       // Show subtle sync confirmation only if we had pending changes
       if (hadPendingChanges && syncQueue.length === 0) {
         // All changes synced successfully
-        console.log('✓ Synced with Google Sheets');
+        console.log("✓ Synced with Google Sheets");
       }
     } catch (err) {
-      console.error('Background sync failed:', err);
+      console.error("Background sync failed:", err);
       // Silently fail - will retry on next sync attempt
     } finally {
       isSyncing = false;
@@ -843,15 +852,15 @@
   async function pullAndMergeRemote() {
     const cfg = loadSettings();
     if (!cfg.syncEnabled || !cfg.webAppUrl) return;
-    
+
     let remoteEntries = null;
-    
+
     // Try to fetch from Sheets
     try {
       const url = new URL(cfg.webAppUrl);
-      url.searchParams.set('action', 'list');
-      url.searchParams.set('t', String(Date.now()));
-      const res = await fetch(url.toString(), { method: 'GET', mode: 'cors' });
+      url.searchParams.set("action", "list");
+      url.searchParams.set("t", String(Date.now()));
+      const res = await fetch(url.toString(), { method: "GET", mode: "cors" });
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data)) {
@@ -868,30 +877,32 @@
         return;
       }
     }
-    
+
     if (!remoteEntries) return;
-    
+
     // Merge: Add remote entries not in local
-    const localIds = new Set(entries.map(e => e.id));
-    const newRemoteEntries = remoteEntries.filter(e => !localIds.has(e.id));
-    
+    const localIds = new Set(entries.map((e) => e.id));
+    const newRemoteEntries = remoteEntries.filter((e) => !localIds.has(e.id));
+
     if (newRemoteEntries.length > 0) {
       entries.push(...newRemoteEntries);
       entries.sort((a, b) => b.timestamp - a.timestamp);
       saveEntries(entries);
-      
+
       // Show notification for new entries from other devices
       if (newRemoteEntries.length === 1) {
         toast(`Synced 1 new entry from another device`);
       } else {
-        toast(`Synced ${newRemoteEntries.length} new entries from other devices`);
+        toast(
+          `Synced ${newRemoteEntries.length} new entries from other devices`,
+        );
       }
-      
+
       // Update UI
       updateStatus();
       renderRecentActivity();
-      if (!logScreen.classList.contains('hidden')) renderLog();
-      if (!insightsScreen.classList.contains('hidden')) renderGraphs();
+      if (!logScreen.classList.contains("hidden")) renderLog();
+      if (!insightsScreen.classList.contains("hidden")) renderGraphs();
     }
   }
 
@@ -1095,7 +1106,7 @@
     dateFilter.value = "";
     renderLog();
   });
-  
+
   // Wire up log entry delete buttons (event delegation)
   logEntries.addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-del]");
@@ -1103,15 +1114,15 @@
       deleteEntry(btn.dataset.del);
     }
   });
-  
+
   // Bottom navigation
-  document.querySelectorAll('.nav-item').forEach(item => {
-    item.addEventListener('click', () => {
+  document.querySelectorAll(".nav-item").forEach((item) => {
+    item.addEventListener("click", () => {
       const screen = item.dataset.screen;
       if (screen) {
-        if (screen === 'log') openLog();
-        else if (screen === 'insights') openGraphs();
-        else if (screen === 'settings') openSettings();
+        if (screen === "log") openLog();
+        else if (screen === "insights") openGraphs();
+        else if (screen === "settings") openSettings();
         else showScreen(screen);
       }
     });

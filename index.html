@@ -91,7 +91,7 @@
         </div>
 
         <div class="summary" id="summary"></div>
-        
+
         <div class="log-entries" id="logEntries"></div>
       </main>
     </div>
@@ -158,8 +158,12 @@
             <span>Enable cloud sync</span>
           </label>
           <div class="settings-actions">
-            <button id="saveSettingsBtn" class="btn-rounded btn-primary">💾 Save Settings</button>
-            <button id="syncNowBtn" class="btn-rounded btn-secondary">🔄 Sync Now</button>
+            <button id="saveSettingsBtn" class="btn-rounded btn-primary">
+              💾 Save Settings
+            </button>
+            <button id="syncNowBtn" class="btn-rounded btn-secondary">
+              🔄 Sync Now
+            </button>
           </div>
           <small class="hint">
             💡 Leave blank to keep everything local. See README for setup.
@@ -189,7 +193,7 @@
     </nav>
 
     <div id="toast" role="status" aria-live="polite"></div>
-    
+
     <!-- Floating Undo Button -->
     <button id="undoBtn" class="floating-undo" hidden>
       <span class="undo-icon">↩️</span>
@@ -201,7 +205,9 @@
       <div id="progressWrap"></div>
       <div id="progressBar"></div>
       <div id="progressLabel"></div>
-      <table id="logTable"><tbody id="logTbody"></tbody></table>
+      <table id="logTable">
+        <tbody id="logTbody"></tbody>
+      </table>
       <div id="settingsPanel"></div>
       <div id="logPanel"></div>
       <div id="graphsPanel"></div>
