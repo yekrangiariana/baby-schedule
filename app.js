@@ -245,6 +245,7 @@
       logScreen.hidden = false;
       insightsScreen.hidden = true;
       settingsScreen.hidden = true;
+      $$(`.nav-item[data-screen="log"]`)[0]?.classList.add("active");
       renderLog();
       backgroundSync();
       startRemoteAutoRefresh();
@@ -253,6 +254,7 @@
       logScreen.hidden = true;
       insightsScreen.hidden = false;
       settingsScreen.hidden = true;
+      $$(`.nav-item[data-screen="insights"]`)[0]?.classList.add("active");
       renderGraphs();
       backgroundSync();
     } else if (screen === "settings") {
@@ -260,6 +262,7 @@
       logScreen.hidden = true;
       insightsScreen.hidden = true;
       settingsScreen.hidden = false;
+      $$(`.nav-item[data-screen="settings"]`)[0]?.classList.add("active");
     }
   }
 
@@ -1096,9 +1099,6 @@
       console.error("Graph button error:", err);
     }
   });
-  closeGraphsBtn.addEventListener("click", closeGraphs);
-  closeLogBtn.addEventListener("click", closeLog);
-  closeSettingsBtn.addEventListener("click", closeSettings);
   viewLogBtn.addEventListener("click", openLog);
   printBtn.addEventListener("click", printView);
   dateFilter.addEventListener("change", renderLog);

@@ -678,7 +678,7 @@ body {
   align-items: stretch;
   padding-bottom: max(env(safe-area-inset-bottom), 8px);
   box-shadow: 0 -2px 12px var(--shadow);
-  z-index: 90;
+  z-index: 110;
 }
 
 .nav-item {
