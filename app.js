@@ -256,7 +256,7 @@
     // Show loading state immediately
     renderHomeScreen(true);
     updateStatus();
-    
+
     // Pull from Google Sheets to get latest data
     await pullAndMergeRemote();
 
@@ -455,7 +455,7 @@
     // Render action buttons
     if (actionButtons) {
       actionButtons.innerHTML = "";
-      
+
       if (showLoading) {
         // Show loading skeletons
         for (let i = 0; i < 3; i++) {
@@ -469,7 +469,7 @@
         }
         return;
       }
-      
+
       actionTypes.forEach((type) => {
         const btn = document.createElement("button");
         btn.className = `action action-${type.id}`;
@@ -1461,7 +1461,7 @@
           ) {
             const currentTypesJson = JSON.stringify(actionTypes);
             const newTypesJson = JSON.stringify(data.actionTypes);
-            
+
             if (currentTypesJson !== newTypesJson) {
               actionTypes = data.actionTypes;
               saveActionTypes(actionTypes);
@@ -1489,7 +1489,7 @@
             ) {
               const currentTypesJson = JSON.stringify(actionTypes);
               const newTypesJson = JSON.stringify(data.actionTypes);
-              
+
               if (currentTypesJson !== newTypesJson) {
                 actionTypes = data.actionTypes;
                 saveActionTypes(actionTypes);

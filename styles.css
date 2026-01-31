@@ -384,10 +384,15 @@ body {
 }
 
 .action-skeleton::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
   transform: translateX(-100%);
   animation: shimmer 1.5s infinite;
 }
