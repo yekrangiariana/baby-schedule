@@ -1210,11 +1210,11 @@ body {
   .activity-filter-grid {
     gap: 4px;
   }
-  
+
   .activity-filter-item {
     padding: 6px 8px;
   }
-  
+
   .activity-filter-label {
     font-size: var(--text-sm);
   }
@@ -2677,13 +2677,16 @@ body {
   padding: 16px;
 }
 
-.screen#helpScreen h1, .screen#helpScreen h2, .screen#helpScreen h3 {
+.screen#helpScreen h1,
+.screen#helpScreen h2,
+.screen#helpScreen h3 {
   color: var(--text-primary);
   margin-top: 24px;
   margin-bottom: 12px;
 }
 
-.screen#helpScreen ul, .screen#helpScreen ol {
+.screen#helpScreen ul,
+.screen#helpScreen ol {
   color: var(--text-secondary);
   line-height: 1.6;
   margin-bottom: 16px;
@@ -2699,7 +2702,7 @@ body {
   background: var(--bg-secondary);
   padding: 2px 6px;
   border-radius: 4px;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-size: 13px;
 }
 
@@ -2746,7 +2749,7 @@ body {
 }
 
 .code-snippet summary::after {
-  content: '▼';
+  content: "▼";
   font-size: 12px;
   transition: transform 0.2s ease;
 }

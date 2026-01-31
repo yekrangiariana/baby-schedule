@@ -756,7 +756,7 @@
   function renderGraphLegends() {
     const legendIds = ["todayLegend", "weekLegend", "hourlyLegend"];
     const filteredTypes = getFilteredActivityTypes();
-    
+
     legendIds.forEach((legendId) => {
       const legend = document.getElementById(legendId);
       if (!legend) return;
@@ -779,36 +779,36 @@
       // Default: all activities selected
       return actionTypes;
     }
-    return actionTypes.filter(type => selectedActivityTypes.has(type.id));
+    return actionTypes.filter((type) => selectedActivityTypes.has(type.id));
   }
 
   function renderActivityFilter() {
-    const filterGrid = document.getElementById('activityFilterGrid');
+    const filterGrid = document.getElementById("activityFilterGrid");
     if (!filterGrid) return;
 
     // Initialize selectedActivityTypes if empty (first time)
     if (selectedActivityTypes.size === 0) {
-      actionTypes.forEach(type => selectedActivityTypes.add(type.id));
+      actionTypes.forEach((type) => selectedActivityTypes.add(type.id));
     }
 
-    filterGrid.innerHTML = '';
-    actionTypes.forEach(type => {
+    filterGrid.innerHTML = "";
+    actionTypes.forEach((type) => {
       const isSelected = selectedActivityTypes.has(type.id);
-      const item = document.createElement('div');
-      item.className = `activity-filter-item ${isSelected ? 'selected' : ''}`;
+      const item = document.createElement("div");
+      item.className = `activity-filter-item ${isSelected ? "selected" : ""}`;
       item.dataset.typeId = type.id;
-      
+
       item.innerHTML = `
         <div class="activity-filter-checkbox"></div>
         <div class="activity-filter-icon" style="background-color: ${type.color}">${type.emoji}</div>
         <div class="activity-filter-label">${type.name}</div>
       `;
-      
-      item.addEventListener('click', () => {
+
+      item.addEventListener("click", () => {
         haptics(5);
         toggleActivityFilter(type.id);
       });
-      
+
       filterGrid.appendChild(item);
     });
   }
@@ -819,10 +819,10 @@
     } else {
       selectedActivityTypes.add(typeId);
     }
-    
+
     // Update UI
     renderActivityFilter();
-    
+
     // Re-render graphs with new filter
     if (!insightsScreen.hidden) {
       renderGraphs();
@@ -835,7 +835,7 @@
 
     // Render activity filter
     renderActivityFilter();
-    
+
     const filteredTypes = getFilteredActivityTypes();
 
     if (!entries || !entries.length) {
@@ -897,7 +897,9 @@
     const last7days = Date.now() - 7 * 24 * 60 * 60 * 1000;
 
     // Today's totals - filtered by selected activities
-    const todayEntries = entries.filter((e) => e.timestamp >= todayStart && selectedActivityTypes.has(e.type));
+    const todayEntries = entries.filter(
+      (e) => e.timestamp >= todayStart && selectedActivityTypes.has(e.type),
+    );
     const todayCounts = {};
     filteredTypes.forEach((type) => {
       todayCounts[type.id] = 0;
@@ -925,7 +927,9 @@
         return obj;
       });
     entries
-      .filter((e) => e.timestamp >= last24h && selectedActivityTypes.has(e.type))
+      .filter(
+        (e) => e.timestamp >= last24h && selectedActivityTypes.has(e.type),
+      )
       .forEach((e) => {
         const h = new Date(e.timestamp).getHours();
         if (hourlyData[h][e.type] !== undefined) {
@@ -940,7 +944,10 @@
       const dayStart = todayStart - i * 24 * 60 * 60 * 1000;
       const dayEnd = dayStart + 24 * 60 * 60 * 1000;
       const dayEntries = entries.filter(
-        (e) => e.timestamp >= dayStart && e.timestamp < dayEnd && selectedActivityTypes.has(e.type),
+        (e) =>
+          e.timestamp >= dayStart &&
+          e.timestamp < dayEnd &&
+          selectedActivityTypes.has(e.type),
       );
       const counts = {};
       filteredTypes.forEach((type) => {
@@ -1828,7 +1835,7 @@
     const backBtn = document.getElementById("wizardBack");
     const nextBtn = document.getElementById("wizardNext");
     const skipBtn = document.getElementById("wizardSkip");
-    
+
     let currentHighlightedElement = null;
 
     const steps = [
@@ -1892,13 +1899,13 @@
       const step = steps[index];
 
       haptics(5);
-      
+
       // Clear previous highlighting
       if (currentHighlightedElement) {
-        currentHighlightedElement.classList.remove('wizard-highlighted');
+        currentHighlightedElement.classList.remove("wizard-highlighted");
         currentHighlightedElement = null;
       }
-      wizardOverlay.classList.remove('active');
+      wizardOverlay.classList.remove("active");
 
       // Navigate to the correct screen
       if (step.screen) {
@@ -1928,10 +1935,10 @@
           const targetEl = document.querySelector(step.target);
           if (targetEl) {
             // Add highlighting class to element
-            targetEl.classList.add('wizard-highlighted');
+            targetEl.classList.add("wizard-highlighted");
             currentHighlightedElement = targetEl;
-            wizardOverlay.classList.add('active');
-            
+            wizardOverlay.classList.add("active");
+
             // Scroll element into view
             targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
 
@@ -1964,14 +1971,14 @@
 
     function closeWizard() {
       haptics(8);
-      
+
       // Clear highlighting
       if (currentHighlightedElement) {
-        currentHighlightedElement.classList.remove('wizard-highlighted');
+        currentHighlightedElement.classList.remove("wizard-highlighted");
         currentHighlightedElement = null;
       }
-      wizardOverlay.classList.remove('active');
-      
+      wizardOverlay.classList.remove("active");
+
       wizardOverlay.hidden = true;
       spotlight.style.opacity = "0";
     }
@@ -2104,25 +2111,25 @@
   if (pasteUrlBtn && appsScriptUrl) {
     pasteUrlBtn.addEventListener("click", async () => {
       const originalText = pasteUrlBtn.textContent;
-      
+
       try {
         const text = await navigator.clipboard.readText();
         if (text.trim()) {
           appsScriptUrl.value = text.trim();
-          
+
           // Success state
-          pasteUrlBtn.textContent = '✓ Pasted!';
-          pasteUrlBtn.classList.add('copied');
-          
+          pasteUrlBtn.textContent = "✓ Pasted!";
+          pasteUrlBtn.classList.add("copied");
+
           // Haptic feedback
           haptics(5);
-          
+
           // Revert after 3 seconds
           setTimeout(() => {
             pasteUrlBtn.textContent = originalText;
-            pasteUrlBtn.classList.remove('copied');
+            pasteUrlBtn.classList.remove("copied");
           }, 3000);
-          
+
           toast("📋 URL pasted from clipboard");
         } else {
           toast("📋 Clipboard is empty");
@@ -2697,7 +2704,7 @@
       const html = simpleMarkdownToHTML(markdown);
 
       helpContent.innerHTML = html;
-      
+
       // Add functionality for copy code button
       setupCodeCopyButtons();
     } catch (error) {
@@ -2721,29 +2728,30 @@
 
   function setupCodeCopyButtons() {
     // Add copy functionality to code copy buttons
-    const copyButtons = document.querySelectorAll('.copy-code-btn');
-    copyButtons.forEach(button => {
-      button.addEventListener('click', async (e) => {
-        const codeBlock = e.target.parentNode.querySelector('pre code') || 
-                          e.target.parentNode.querySelector('details pre code');
+    const copyButtons = document.querySelectorAll(".copy-code-btn");
+    copyButtons.forEach((button) => {
+      button.addEventListener("click", async (e) => {
+        const codeBlock =
+          e.target.parentNode.querySelector("pre code") ||
+          e.target.parentNode.querySelector("details pre code");
         if (codeBlock) {
           try {
             await navigator.clipboard.writeText(codeBlock.textContent);
             const originalText = e.target.textContent;
-            
+
             // Change button to success state
-            e.target.textContent = '✓ Copied!';
-            e.target.classList.add('copied');
-            
+            e.target.textContent = "✓ Copied!";
+            e.target.classList.add("copied");
+
             setTimeout(() => {
               e.target.textContent = originalText;
-              e.target.classList.remove('copied');
+              e.target.classList.remove("copied");
             }, 3000);
-            
-            toast('📋 Apps Script code copied to clipboard');
+
+            toast("📋 Apps Script code copied to clipboard");
             haptics(5);
           } catch (err) {
-            toast('❌ Failed to copy to clipboard');
+            toast("❌ Failed to copy to clipboard");
           }
         }
       });
