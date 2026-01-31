@@ -1008,18 +1008,18 @@
 
   // Helper function to get chart colors based on current theme
   function getChartColors() {
-    const theme = document.body.getAttribute('data-theme') || 'blossom';
-    if (theme === 'midnight') {
+    const theme = document.body.getAttribute("data-theme") || "blossom";
+    if (theme === "midnight") {
       return {
-        background: '#0f172a',
-        text: '#f8fafc',
-        muted: '#cbd5e1'
+        background: "#0f172a",
+        text: "#f8fafc",
+        muted: "#cbd5e1",
       };
     }
     return {
-      background: '#ffffff',
-      text: '#1f2937',
-      muted: '#6b7280'
+      background: "#ffffff",
+      text: "#1f2937",
+      muted: "#6b7280",
     };
   }
 
@@ -1055,7 +1055,7 @@
       h = rect.height;
 
     const chartColors = getChartColors();
-    
+
     // Dynamic background based on theme
     ctx.fillStyle = chartColors.background;
     ctx.fillRect(0, 0, w, h);
@@ -1096,7 +1096,7 @@
       h = rect.height;
 
     const chartColors = getChartColors();
-    
+
     // Dynamic background based on theme
     ctx.fillStyle = chartColors.background;
     ctx.fillRect(0, 0, w, h);
@@ -1187,7 +1187,7 @@
       h = rect.height;
 
     const chartColors = getChartColors();
-    
+
     // Dynamic background based on theme
     ctx.fillStyle = chartColors.background;
     ctx.fillRect(0, 0, w, h);
@@ -1237,7 +1237,7 @@
       h = rect.height;
 
     const chartColors = getChartColors();
-    
+
     // Dynamic background based on theme
     ctx.fillStyle = chartColors.background;
     ctx.fillRect(0, 0, w, h);
@@ -1388,9 +1388,9 @@
         theme: settings.theme || "blossom",
         font: settings.font || "roboto",
         webAppUrl: settings.webAppUrl || "",
-        syncEnabled: settings.syncEnabled || false
+        syncEnabled: settings.syncEnabled || false,
       },
-      selectedActivities: Array.from(selectedActivities || new Set())
+      selectedActivities: Array.from(selectedActivities || new Set()),
     };
 
     const json = JSON.stringify(backup, null, 2);
@@ -1406,7 +1406,9 @@
     link.click();
     document.body.removeChild(link);
 
-    toast(`✓ Complete backup exported (${entries.length} entries, settings, activities)`);
+    toast(
+      `✓ Complete backup exported (${entries.length} entries, settings, activities)`,
+    );
   };
 
   function importFromCSV(file) {
@@ -1490,7 +1492,7 @@
     reader.onload = function (e) {
       try {
         const backup = JSON.parse(e.target.result);
-        
+
         // Validate backup format
         if (!backup.version || !backup.entries || !backup.actionTypes) {
           toast("Invalid backup file format");
@@ -1499,44 +1501,46 @@
 
         let importedEntries = 0;
         let importedSettings = false;
-        
+
         // Import entries (merge with existing, avoid duplicates)
         if (backup.entries && Array.isArray(backup.entries)) {
           backup.entries.forEach((entry) => {
             // Check if entry already exists (by ID or timestamp+type)
             const exists = entries.some(
-              (e) => e.id === entry.id || 
-              (Math.abs(e.timestamp - entry.timestamp) < 60000 && e.type === entry.type)
+              (e) =>
+                e.id === entry.id ||
+                (Math.abs(e.timestamp - entry.timestamp) < 60000 &&
+                  e.type === entry.type),
             );
-            
+
             if (!exists && entry.id && entry.type && entry.timestamp) {
               entries.push({
                 id: entry.id,
                 type: entry.type,
                 note: entry.note || "",
                 timestamp: entry.timestamp,
-                synced: false // Mark as unsynced
+                synced: false, // Mark as unsynced
               });
               importedEntries++;
             }
           });
         }
-        
+
         // Import action types (merge with existing, avoid duplicates)
         if (backup.actionTypes && Array.isArray(backup.actionTypes)) {
           backup.actionTypes.forEach((actionType) => {
-            const exists = actionTypes.some(a => a.id === actionType.id);
+            const exists = actionTypes.some((a) => a.id === actionType.id);
             if (!exists && actionType.id && actionType.name) {
               actionTypes.push({
                 id: actionType.id,
                 name: actionType.name,
                 emoji: actionType.emoji || "📝",
-                color: actionType.color || "#3b82f6"
+                color: actionType.color || "#3b82f6",
               });
             }
           });
         }
-        
+
         // Import settings
         if (backup.settings) {
           if (backup.settings.theme) {
@@ -1555,12 +1559,15 @@
             importedSettings = true;
           }
         }
-        
+
         // Import selected activities filter
-        if (backup.selectedActivities && Array.isArray(backup.selectedActivities)) {
+        if (
+          backup.selectedActivities &&
+          Array.isArray(backup.selectedActivities)
+        ) {
           selectedActivities = new Set(backup.selectedActivities);
         }
-        
+
         // Save everything
         if (importedEntries > 0) {
           saveEntries(entries);
@@ -1569,31 +1576,30 @@
         if (importedSettings) {
           saveSettings(settings);
         }
-        
+
         // Update UI
         updateStatus();
         renderHomeScreen();
-        if (typeof renderActionTypes === 'function') {
+        if (typeof renderActionTypes === "function") {
           renderActionTypes();
         }
-        
+
         // Show success message
         let message = `✓ Backup restored!`;
         if (importedEntries > 0) message += ` ${importedEntries} entries`;
         if (importedSettings) message += `, settings`;
         toast(message);
-        
+
         // Trigger background sync if entries were imported
         if (importedEntries > 0) {
           backgroundSync();
         }
-        
       } catch (err) {
         console.error("Import error:", err);
         toast("Error importing backup - invalid JSON format");
       }
     };
-    
+
     reader.readAsText(file);
   }
 
@@ -2262,8 +2268,7 @@
 
       // Get selected font
       const selectedFont =
-        document.querySelector('input[name="font"]:checked')?.value ||
-        "roboto";
+        document.querySelector('input[name="font"]:checked')?.value || "roboto";
 
       // Automatically enable sync if URL is provided
       settings = {

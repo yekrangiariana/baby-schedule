@@ -417,12 +417,19 @@ body[data-theme="midnight"] .activity-filter-section h3 {
 /* Font Family Applications - Override ALL fonts */
 body[data-font="roboto"] *,
 body[data-font="roboto"] {
-  font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-family:
+    "Roboto",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif !important;
 }
 
 body[data-font="mono"] *,
 body[data-font="mono"] {
-  font-family: "Roboto Mono", "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace !important;
+  font-family:
+    "Roboto Mono", "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas,
+    "Courier New", monospace !important;
 }
 
 body[data-font="lora"] *,
@@ -432,7 +439,12 @@ body[data-font="lora"] {
 
 body[data-font="inter"] *,
 body[data-font="inter"] {
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif !important;
 }
 
 body[data-font="creepster"] *,
@@ -451,7 +463,8 @@ body[data-font="inter"] code,
 body[data-font="inter"] pre,
 body[data-font="creepster"] code,
 body[data-font="creepster"] pre {
-  font-family: "SF Mono", Monaco, Menlo, Consolas, "Courier New", monospace !important;
+  font-family:
+    "SF Mono", Monaco, Menlo, Consolas, "Courier New", monospace !important;
 }
 
 /* Font Demo Previews - Override global font selection for demos */
@@ -526,15 +539,23 @@ body[data-font="creepster"] pre {
 
 /* Font Family Applications */
 body[data-font="default"] {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 body[data-font="roboto"] {
-  font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:
+    "Roboto",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 }
 
 body[data-font="mono"] {
-  font-family: "Roboto Mono", "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
+  font-family:
+    "Roboto Mono", "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas,
+    "Courier New", monospace;
 }
 
 body[data-font="lora"] {
@@ -542,7 +563,12 @@ body[data-font="lora"] {
 }
 
 body[data-font="inter"] {
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 }
 
 * {
