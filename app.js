@@ -52,6 +52,9 @@
   const exportCSVBtn = $("#exportCSVBtn");
   const importCSVBtn = $("#importCSVBtn");
   const importCSVInput = $("#importCSVInput");
+  const exportJSONBtn = $("#exportJSONBtn");
+  const importJSONBtn = $("#importJSONBtn");
+  const importJSONInput = $("#importJSONInput");
   const viewHelpBtn = $("#viewHelpBtn");
 
   // Action Types Manager
@@ -230,7 +233,7 @@
 
   // Apply saved theme or default to blossom
   function applyTheme(theme) {
-    const validThemes = ["blossom", "comet", "meadow"];
+    const validThemes = ["blossom", "comet", "meadow", "midnight"];
     const selectedTheme = validThemes.includes(theme) ? theme : "blossom";
     document.body.setAttribute("data-theme", selectedTheme);
 
@@ -248,6 +251,27 @@
 
   // Load and apply theme on startup
   applyTheme(settings.theme || "blossom");
+
+  // Apply saved font or default to roboto
+  function applyFont(font) {
+    const validFonts = ["roboto", "mono", "lora", "inter", "creepster"];
+    const selectedFont = validFonts.includes(font) ? font : "roboto";
+    document.body.setAttribute("data-font", selectedFont);
+
+    // Update radio buttons
+    const fontRadios = document.querySelectorAll('input[name="font"]');
+    fontRadios.forEach((radio) => {
+      radio.checked = radio.value === selectedFont;
+    });
+
+    // Haptic feedback when font changes
+    if (font !== "roboto" || document.body.getAttribute("data-font")) {
+      haptics(3);
+    }
+  }
+
+  // Load and apply font on startup
+  applyFont(settings.font || "roboto");
 
   // If a fixed URL is provided, force-enable sync
   if (FIXED_WEB_APP_URL) {
@@ -982,6 +1006,23 @@
     }
   }
 
+  // Helper function to get chart colors based on current theme
+  function getChartColors() {
+    const theme = document.body.getAttribute('data-theme') || 'blossom';
+    if (theme === 'midnight') {
+      return {
+        background: '#0f172a',
+        text: '#f8fafc',
+        muted: '#cbd5e1'
+      };
+    }
+    return {
+      background: '#ffffff',
+      text: '#1f2937',
+      muted: '#6b7280'
+    };
+  }
+
   // Helper function to draw rounded rectangles
   function drawRoundedRect(ctx, x, y, width, height, radius = 8) {
     ctx.beginPath();
@@ -1013,8 +1054,10 @@
     const w = rect.width,
       h = rect.height;
 
-    // White background
-    ctx.fillStyle = "#ffffff";
+    const chartColors = getChartColors();
+    
+    // Dynamic background based on theme
+    ctx.fillStyle = chartColors.background;
     ctx.fillRect(0, 0, w, h);
 
     const max = Math.max(...data.map((d) => d.value), 1);
@@ -1029,7 +1072,7 @@
       ctx.fillStyle = d.color;
       drawRoundedRect(ctx, x, y, barWidth, barHeight, 6);
 
-      ctx.fillStyle = "#1f2937";
+      ctx.fillStyle = chartColors.text;
       ctx.font = "12px sans-serif";
       ctx.textAlign = "center";
       ctx.fillText(d.label, x + barWidth / 2, h - 12);
@@ -1052,8 +1095,10 @@
     const w = rect.width,
       h = rect.height;
 
-    // White background
-    ctx.fillStyle = "#ffffff";
+    const chartColors = getChartColors();
+    
+    // Dynamic background based on theme
+    ctx.fillStyle = chartColors.background;
     ctx.fillRect(0, 0, w, h);
 
     // Find max value across filtered types only
@@ -1141,8 +1186,10 @@
     const w = rect.width,
       h = rect.height;
 
-    // White background
-    ctx.fillStyle = "#ffffff";
+    const chartColors = getChartColors();
+    
+    // Dynamic background based on theme
+    ctx.fillStyle = chartColors.background;
     ctx.fillRect(0, 0, w, h);
 
     // Calculate totals dynamically
@@ -1168,7 +1215,7 @@
       });
 
       // Label
-      ctx.fillStyle = "#6b7280";
+      ctx.fillStyle = chartColors.muted;
       ctx.font = "10px sans-serif";
       ctx.textAlign = "center";
       ctx.fillText(d.day, x + barWidth / 2, h - 10);
@@ -1189,8 +1236,10 @@
     const w = rect.width,
       h = rect.height;
 
-    // White background
-    ctx.fillStyle = "#ffffff";
+    const chartColors = getChartColors();
+    
+    // Dynamic background based on theme
+    ctx.fillStyle = chartColors.background;
     ctx.fillRect(0, 0, w, h);
 
     // Draw comparison bars
@@ -1203,7 +1252,7 @@
     const x1 = spacing;
     ctx.fillStyle = "#60a5fa";
     drawRoundedRect(ctx, x1, h - feedHeight - 50, barWidth, feedHeight, 8);
-    ctx.fillStyle = "#1f2937";
+    ctx.fillStyle = chartColors.text;
     ctx.font = "14px sans-serif";
     ctx.textAlign = "center";
     ctx.fillText(data.feeds, x1 + barWidth / 2, h - feedHeight - 60);
@@ -1215,14 +1264,14 @@
     const x2 = spacing * 2 + barWidth;
     ctx.fillStyle = "#fbbf24";
     drawRoundedRect(ctx, x2, h - diaperHeight - 50, barWidth, diaperHeight, 8);
-    ctx.fillStyle = "#1f2937";
+    ctx.fillStyle = chartColors.text;
     ctx.font = "14px sans-serif";
     ctx.fillText(data.diapers, x2 + barWidth / 2, h - diaperHeight - 60);
     ctx.font = "12px sans-serif";
     ctx.fillText("Diapers", x2 + barWidth / 2, h - 30);
 
     // Ratio display
-    ctx.fillStyle = "#1f2937";
+    ctx.fillStyle = chartColors.text;
     ctx.font = "bold 24px sans-serif";
     ctx.textAlign = "center";
     ctx.fillText(data.ratio + ":1", w / 2, 40);
@@ -1328,6 +1377,38 @@
     toast(`✓ Exported ${src.length} entries`);
   };
 
+  // Export complete backup as JSON
+  window.exportToJSON = function () {
+    const backup = {
+      version: "1.0",
+      exportDate: new Date().toISOString(),
+      entries: entries,
+      actionTypes: actionTypes,
+      settings: {
+        theme: settings.theme || "blossom",
+        font: settings.font || "roboto",
+        webAppUrl: settings.webAppUrl || "",
+        syncEnabled: settings.syncEnabled || false
+      },
+      selectedActivities: Array.from(selectedActivities || new Set())
+    };
+
+    const json = JSON.stringify(backup, null, 2);
+    const blob = new Blob([json], { type: "application/json;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    const filename = `baby-schedule-backup-${new Date().toISOString().split("T")[0]}.json`;
+
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast(`✓ Complete backup exported (${entries.length} entries, settings, activities)`);
+  };
+
   function importFromCSV(file) {
     const reader = new FileReader();
     reader.onload = function (e) {
@@ -1401,6 +1482,118 @@
       }
     };
 
+    reader.readAsText(file);
+  }
+
+  function importFromJSON(file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      try {
+        const backup = JSON.parse(e.target.result);
+        
+        // Validate backup format
+        if (!backup.version || !backup.entries || !backup.actionTypes) {
+          toast("Invalid backup file format");
+          return;
+        }
+
+        let importedEntries = 0;
+        let importedSettings = false;
+        
+        // Import entries (merge with existing, avoid duplicates)
+        if (backup.entries && Array.isArray(backup.entries)) {
+          backup.entries.forEach((entry) => {
+            // Check if entry already exists (by ID or timestamp+type)
+            const exists = entries.some(
+              (e) => e.id === entry.id || 
+              (Math.abs(e.timestamp - entry.timestamp) < 60000 && e.type === entry.type)
+            );
+            
+            if (!exists && entry.id && entry.type && entry.timestamp) {
+              entries.push({
+                id: entry.id,
+                type: entry.type,
+                note: entry.note || "",
+                timestamp: entry.timestamp,
+                synced: false // Mark as unsynced
+              });
+              importedEntries++;
+            }
+          });
+        }
+        
+        // Import action types (merge with existing, avoid duplicates)
+        if (backup.actionTypes && Array.isArray(backup.actionTypes)) {
+          backup.actionTypes.forEach((actionType) => {
+            const exists = actionTypes.some(a => a.id === actionType.id);
+            if (!exists && actionType.id && actionType.name) {
+              actionTypes.push({
+                id: actionType.id,
+                name: actionType.name,
+                emoji: actionType.emoji || "📝",
+                color: actionType.color || "#3b82f6"
+              });
+            }
+          });
+        }
+        
+        // Import settings
+        if (backup.settings) {
+          if (backup.settings.theme) {
+            settings.theme = backup.settings.theme;
+            applyTheme(backup.settings.theme);
+            importedSettings = true;
+          }
+          if (backup.settings.font) {
+            settings.font = backup.settings.font;
+            applyFont(backup.settings.font);
+            importedSettings = true;
+          }
+          if (backup.settings.webAppUrl !== undefined) {
+            settings.webAppUrl = backup.settings.webAppUrl;
+            settings.syncEnabled = backup.settings.syncEnabled || false;
+            importedSettings = true;
+          }
+        }
+        
+        // Import selected activities filter
+        if (backup.selectedActivities && Array.isArray(backup.selectedActivities)) {
+          selectedActivities = new Set(backup.selectedActivities);
+        }
+        
+        // Save everything
+        if (importedEntries > 0) {
+          saveEntries(entries);
+        }
+        saveActionTypes(actionTypes);
+        if (importedSettings) {
+          saveSettings(settings);
+        }
+        
+        // Update UI
+        updateStatus();
+        renderHomeScreen();
+        if (typeof renderActionTypes === 'function') {
+          renderActionTypes();
+        }
+        
+        // Show success message
+        let message = `✓ Backup restored!`;
+        if (importedEntries > 0) message += ` ${importedEntries} entries`;
+        if (importedSettings) message += `, settings`;
+        toast(message);
+        
+        // Trigger background sync if entries were imported
+        if (importedEntries > 0) {
+          backgroundSync();
+        }
+        
+      } catch (err) {
+        console.error("Import error:", err);
+        toast("Error importing backup - invalid JSON format");
+      }
+    };
+    
     reader.readAsText(file);
   }
 
@@ -1912,7 +2105,7 @@
         showScreen(step.screen);
       }
 
-      // Longer delay to ensure screen is fully rendered
+      // Shorter delay to ensure screen is fully rendered
       setTimeout(() => {
         title.textContent = step.title;
         description.textContent = step.description;
@@ -1960,13 +2153,13 @@
               spotlight.style.width = `${rect.width + 16}px`;
               spotlight.style.height = `${rect.height + 16}px`;
               spotlight.style.opacity = "1";
-            }, 150);
+            }, 100);
           }
         } else {
           spotlight.style.opacity = "0";
           wizardOverlay.classList.remove("top");
         }
-      }, 200);
+      }, 100);
     }
 
     function closeWizard() {
@@ -2067,16 +2260,23 @@
         document.querySelector('input[name="theme"]:checked')?.value ||
         "blossom";
 
+      // Get selected font
+      const selectedFont =
+        document.querySelector('input[name="font"]:checked')?.value ||
+        "roboto";
+
       // Automatically enable sync if URL is provided
       settings = {
         webAppUrl: url,
         syncEnabled: !!url, // Auto-enable if URL exists
         theme: selectedTheme,
+        font: selectedFont,
       };
       saveSettings(settings);
 
-      // Apply theme immediately
+      // Apply theme and font immediately
       applyTheme(selectedTheme);
+      applyFont(selectedFont);
 
       if (url) {
         // Show loading state
@@ -2169,6 +2369,13 @@
   document.querySelectorAll('input[name="theme"]').forEach((radio) => {
     radio.addEventListener("change", (e) => {
       applyTheme(e.target.value);
+    });
+  });
+
+  // Font switching - instant preview
+  document.querySelectorAll('input[name="font"]').forEach((radio) => {
+    radio.addEventListener("change", (e) => {
+      applyFont(e.target.value);
     });
   });
 
@@ -2591,6 +2798,29 @@
         importFromCSV(file);
         // Reset input so same file can be selected again
         importCSVInput.value = "";
+      }
+    });
+  }
+
+  // Export JSON button
+  if (exportJSONBtn) {
+    exportJSONBtn.addEventListener("click", () => {
+      exportToJSON();
+    });
+  }
+
+  // Import JSON button
+  if (importJSONBtn && importJSONInput) {
+    importJSONBtn.addEventListener("click", () => {
+      importJSONInput.click();
+    });
+
+    importJSONInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        importFromJSON(file);
+        // Reset input so same file can be selected again
+        importJSONInput.value = "";
       }
     });
   }

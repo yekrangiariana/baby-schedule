@@ -316,6 +316,45 @@
                 <input type="radio" name="theme" value="meadow" />
                 <span class="theme-name">🌿 Meadow</span>
               </label>
+              <label class="theme-option">
+                <input type="radio" name="theme" value="midnight" />
+                <span class="theme-name">🌙 Midnight</span>
+              </label>
+            </div>
+          </section>
+
+          <!-- Font Section -->
+          <section class="settings-section">
+            <h2 class="settings-section-title">🔤 Font</h2>
+            <p class="settings-section-description">
+              Choose your preferred font style for better readability.
+            </p>
+
+            <div class="font-options">
+              <label class="font-option">
+                <input type="radio" name="font" value="roboto" checked />
+                <span class="font-demo" data-font="roboto">Roboto</span>
+              </label>
+
+              <label class="font-option">
+                <input type="radio" name="font" value="mono" />
+                <span class="font-demo" data-font="mono">Roboto Mono</span>
+              </label>
+
+              <label class="font-option">
+                <input type="radio" name="font" value="lora" />
+                <span class="font-demo" data-font="lora">Lora</span>
+              </label>
+
+              <label class="font-option">
+                <input type="radio" name="font" value="inter" />
+                <span class="font-demo" data-font="inter">Inter</span>
+              </label>
+
+              <label class="font-option">
+                <input type="radio" name="font" value="creepster" />
+                <span class="font-demo" data-font="creepster">Creepster</span>
+              </label>
             </div>
           </section>
 
@@ -323,30 +362,39 @@
           <section class="settings-section">
             <h2 class="settings-section-title">💾 Data Management</h2>
             <p class="settings-section-description">
-              Export your data as CSV or import previously exported data.
+              Export or import your complete data including settings.
             </p>
+
+            <button
+              id="exportJSONBtn"
+              class="btn-rounded btn-primary"
+              style="width: 100%; margin-bottom: 12px"
+            >
+              📥 Export Data
+            </button>
+
+            <button
+              id="importJSONBtn"
+              class="btn-rounded btn-primary"
+              style="width: 100%; margin-bottom: 12px"
+            >
+              📤 Import Data
+            </button>
+            <input
+              type="file"
+              id="importJSONInput"
+              accept=".json"
+              style="display: none"
+            />
 
             <button
               id="exportCSVBtn"
               class="btn-rounded btn-secondary"
-              style="width: 100%; margin-bottom: 12px"
-            >
-              📥 Export CSV
-            </button>
-
-            <button
-              id="importCSVBtn"
-              class="btn-rounded btn-secondary"
               style="width: 100%"
             >
-              📤 Import CSV
+              📊 Export Your Data as CSV
             </button>
-            <input
-              type="file"
-              id="importCSVInput"
-              accept=".csv"
-              style="display: none"
-            />
+          </section>
           </section>
 
           <!-- Tutorial Section -->

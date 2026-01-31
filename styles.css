@@ -86,6 +86,28 @@ body[data-theme="blossom"] .nav-item.active {
     inset 0 1px 1px rgba(255, 255, 255, 0.6);
 }
 
+body[data-theme="blossom"] .log-summary-card {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 90, 150, 0.7) 0%,
+    rgba(255, 110, 170, 0.75) 100%
+  );
+  box-shadow:
+    0 8px 32px rgba(255, 90, 150, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6);
+}
+
+body[data-theme="blossom"] .activity-filter-section {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 90, 150, 0.7) 0%,
+    rgba(255, 110, 170, 0.75) 100%
+  );
+  box-shadow:
+    0 8px 32px rgba(255, 90, 150, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6);
+}
+
 /* Comet Theme - Cool cosmic blues and purples */
 body[data-theme="comet"] {
   --bg-primary: #f0f4ff;
@@ -134,6 +156,28 @@ body[data-theme="comet"] .nav-item.active {
   );
   box-shadow:
     0 6px 20px rgba(70, 100, 255, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6);
+}
+
+body[data-theme="comet"] .log-summary-card {
+  background: linear-gradient(
+    135deg,
+    rgba(70, 100, 255, 0.7) 0%,
+    rgba(100, 90, 255, 0.75) 100%
+  );
+  box-shadow:
+    0 8px 32px rgba(70, 100, 255, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6);
+}
+
+body[data-theme="comet"] .activity-filter-section {
+  background: linear-gradient(
+    135deg,
+    rgba(70, 100, 255, 0.7) 0%,
+    rgba(100, 90, 255, 0.75) 100%
+  );
+  box-shadow:
+    0 8px 32px rgba(70, 100, 255, 0.35),
     inset 0 1px 1px rgba(255, 255, 255, 0.6);
 }
 
@@ -188,6 +232,319 @@ body[data-theme="meadow"] .nav-item.active {
     inset 0 1px 1px rgba(255, 255, 255, 0.6);
 }
 
+body[data-theme="meadow"] .log-summary-card {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 200, 90, 0.7) 0%,
+    rgba(15, 210, 140, 0.75) 100%
+  );
+  box-shadow:
+    0 8px 32px rgba(30, 200, 90, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6);
+}
+
+body[data-theme="meadow"] .activity-filter-section {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 200, 90, 0.7) 0%,
+    rgba(15, 210, 140, 0.75) 100%
+  );
+  box-shadow:
+    0 8px 32px rgba(30, 200, 90, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6);
+}
+
+/* Midnight Theme - Elegant black and white with midnight blues */
+body[data-theme="midnight"] {
+  --bg-primary: #0f0f23;
+  --bg-secondary: #1a1a2e;
+  --bg-tertiary: #16213e;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
+
+  --pastel-feed: #3b82f6;
+  --pastel-feed-light: #1e293b;
+  --pastel-pee: #fbbf24;
+  --pastel-pee-light: #292524;
+  --pastel-poop: #f59e0b;
+  --pastel-poop-light: #292524;
+
+  --primary: #1e40af;
+  --primary-light: #3b82f6;
+  --accent: #60a5fa;
+  --success: #3b82f6;
+  --border: #334155;
+  --shadow: rgba(0, 0, 0, 0.5);
+  --shadow-lg: rgba(0, 0, 0, 0.7);
+}
+
+body[data-theme="midnight"] .screen-header {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+  border-bottom: 1px solid #334155;
+}
+
+body[data-theme="midnight"] .today-summary {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 64, 175, 0.8) 0%,
+    rgba(59, 130, 246, 0.6) 100%
+  );
+  border: 1px solid #334155;
+  box-shadow:
+    0 8px 32px rgba(30, 64, 175, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+body[data-theme="midnight"] .nav-item.active {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 64, 175, 0.8),
+    rgba(59, 130, 246, 0.6)
+  );
+  color: #f8fafc;
+  box-shadow:
+    0 6px 20px rgba(30, 64, 175, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+body[data-theme="midnight"] .quick-action {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid #334155;
+  color: #f8fafc;
+}
+
+body[data-theme="midnight"] .quick-action:hover {
+  background: rgba(51, 65, 85, 0.9);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+body[data-theme="midnight"] .log-summary-card {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 64, 175, 0.8) 0%,
+    rgba(59, 130, 246, 0.6) 100%
+  );
+  border: 1px solid #334155;
+  box-shadow:
+    0 8px 32px rgba(30, 64, 175, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+body[data-theme="midnight"] .graph-card {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid #334155;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+body[data-theme="midnight"] .graph-card canvas {
+  background: #0f172a;
+  border: 1px solid #334155;
+}
+
+body[data-theme="midnight"] .graph-card h3 {
+  color: #f8fafc;
+}
+
+body[data-theme="midnight"] .graph-guide {
+  color: #cbd5e1;
+  border-top-color: #334155;
+}
+
+body[data-theme="midnight"] .input,
+body[data-theme="midnight"] .date-input {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid #334155;
+  color: #f8fafc;
+}
+
+body[data-theme="midnight"] .input:focus,
+body[data-theme="midnight"] .date-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+body[data-theme="midnight"] .btn {
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  color: #f8fafc;
+  border: 1px solid #334155;
+}
+
+body[data-theme="midnight"] .btn:hover {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  box-shadow: 0 6px 20px rgba(30, 64, 175, 0.4);
+}
+
+body[data-theme="midnight"] .wizard-overlay {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+body[data-theme="midnight"] .wizard-card {
+  background: #0f172a;
+  border: 1px solid #334155;
+}
+
+body[data-theme="midnight"] .nav-item {
+  color: #cbd5e1;
+}
+
+body[data-theme="midnight"] .nav-label {
+  color: #cbd5e1;
+}
+
+body[data-theme="midnight"] .bottom-nav {
+  background: rgba(15, 15, 35, 0.95);
+  border-top: 1px solid #334155;
+}
+
+body[data-theme="midnight"] .activity-filter-section {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 64, 175, 0.8) 0%,
+    rgba(59, 130, 246, 0.6) 100%
+  );
+  border: 1px solid #334155;
+  box-shadow:
+    0 8px 32px rgba(30, 64, 175, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+body[data-theme="midnight"] .activity-filter-section h3 {
+  color: #f8fafc;
+}
+
+/* Font Family Applications - Override ALL fonts */
+body[data-font="roboto"] *,
+body[data-font="roboto"] {
+  font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+}
+
+body[data-font="mono"] *,
+body[data-font="mono"] {
+  font-family: "Roboto Mono", "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace !important;
+}
+
+body[data-font="lora"] *,
+body[data-font="lora"] {
+  font-family: "Lora", Georgia, "Times New Roman", serif !important;
+}
+
+body[data-font="inter"] *,
+body[data-font="inter"] {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+}
+
+body[data-font="creepster"] *,
+body[data-font="creepster"] {
+  font-family: "Creepster", display, cursive !important;
+}
+
+/* Keep code blocks monospace regardless of font selection */
+body[data-font="roboto"] code,
+body[data-font="roboto"] pre,
+body[data-font="mono"] code,
+body[data-font="mono"] pre,
+body[data-font="lora"] code,
+body[data-font="lora"] pre,
+body[data-font="inter"] code,
+body[data-font="inter"] pre,
+body[data-font="creepster"] code,
+body[data-font="creepster"] pre {
+  font-family: "SF Mono", Monaco, Menlo, Consolas, "Courier New", monospace !important;
+}
+
+/* Font Demo Previews - Override global font selection for demos */
+.font-demo[data-font="roboto"] {
+  font-family: "Roboto", sans-serif !important;
+}
+
+.font-demo[data-font="mono"] {
+  font-family: "Roboto Mono", monospace !important;
+}
+
+.font-demo[data-font="lora"] {
+  font-family: "Lora", serif !important;
+}
+
+.font-demo[data-font="inter"] {
+  font-family: "Inter", sans-serif !important;
+}
+
+.font-demo[data-font="creepster"] {
+  font-family: "Creepster", display !important;
+}
+
+/* Font Options */
+.font-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.font-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.font-option:has(input:checked) {
+  border-color: var(--accent);
+  background: linear-gradient(
+    135deg,
+    rgba(155, 135, 245, 0.08),
+    rgba(255, 139, 167, 0.08)
+  );
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.font-option input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.font-name {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.font-demo {
+  font-size: var(--text-base);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* Font Family Applications */
+body[data-font="default"] {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body[data-font="roboto"] {
+  font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body[data-font="mono"] {
+  font-family: "Roboto Mono", "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
+}
+
+body[data-font="lora"] {
+  font-family: "Lora", Georgia, "Times New Roman", serif;
+}
+
+body[data-font="inter"] {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -202,14 +559,6 @@ body {
 }
 
 body {
-  font-family:
-    "Inter",
-    -apple-system,
-    BlinkMacSystemFont,
-    "SF Pro Display",
-    "Segoe UI",
-    Roboto,
-    sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.5;
@@ -232,7 +581,7 @@ body {
 .screen-modal {
   z-index: 100;
   transform: translateX(100%);
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .screen-modal:not([hidden]) {
@@ -788,13 +1137,22 @@ body {
   letter-spacing: -0.2px;
 }
 
-/* Log Summary Card */
+/* Log Summary Card - Match today-summary styling */
 .log-summary-card {
-  background: linear-gradient(135deg, var(--accent), #ff8ba7);
-  border-radius: 16px;
-  padding: 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(33, 37, 41, 0.7) 0%,
+    rgba(52, 58, 64, 0.75) 100%
+  );
+  backdrop-filter: blur(30px) saturate(250%);
+  -webkit-backdrop-filter: blur(30px) saturate(250%);
+  border-radius: 20px;
+  padding: 18px;
   margin-bottom: 16px;
-  box-shadow: 0 6px 20px var(--shadow-lg);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6);
+  border: 2px solid rgba(255, 255, 255, 0.5);
   color: white;
 }
 
@@ -1086,11 +1444,20 @@ body {
 
 /* Activity Filter Section */
 .activity-filter-section {
-  background: linear-gradient(135deg, var(--accent), #ff8ba7);
-  border-radius: 16px;
-  padding: 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(33, 37, 41, 0.7) 0%,
+    rgba(52, 58, 64, 0.75) 100%
+  );
+  backdrop-filter: blur(30px) saturate(250%);
+  -webkit-backdrop-filter: blur(30px) saturate(250%);
+  border-radius: 20px;
+  padding: 18px;
   margin-bottom: 16px;
-  box-shadow: 0 6px 20px var(--shadow-lg);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6);
+  border: 2px solid rgba(255, 255, 255, 0.5);
   color: white;
 }
 
@@ -1587,32 +1954,40 @@ body {
   justify-content: center;
   gap: 4px;
   color: var(--text-muted);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   padding: 8px 4px;
+  opacity: 0.7;
 }
 
 .nav-item.active {
   color: var(--accent);
   background: linear-gradient(
     135deg,
-    rgba(33, 37, 41, 0.7),
-    rgba(52, 58, 64, 0.75)
+    rgba(33, 37, 41, 0.6),
+    rgba(52, 58, 64, 0.65)
   );
-  backdrop-filter: blur(30px) saturate(250%);
-  -webkit-backdrop-filter: blur(30px) saturate(250%);
-  border-radius: 18px;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: 16px;
   margin: 0 4px;
   box-shadow:
-    0 6px 20px rgba(0, 0, 0, 0.3),
-    inset 0 1px 1px rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  transform: translateY(-2px);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    0 4px 20px rgba(0, 0, 0, 0.15),
+    0 1px 4px rgba(255, 255, 255, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transform: scale(1.02) translateY(-1px);
+  opacity: 1;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .nav-item.active .nav-icon,
 .nav-item.active .nav-label {
   color: white;
+}
+
+.nav-item:not(.active):hover {
+  opacity: 0.9;
+  transform: translateY(-0.5px);
 }
 
 .nav-icon {
@@ -1627,8 +2002,8 @@ body {
 }
 
 .nav-item:active {
-  transform: scale(0.95);
-  background: rgba(0, 0, 0, 0.03);
+  transform: scale(0.99);
+  opacity: 0.8;
 }
 
 /* Toast */
@@ -1943,7 +2318,7 @@ body {
   border-radius: 4px;
   padding: 2px 6px;
   font-size: var(--text-sm);
-  font-family: "SF Mono", Monaco, Menlo, Consolas, monospace;
+  font-family: "SF Mono", Monaco, Menlo, Consolas, "Courier New", monospace;
   color: var(--accent);
 }
 
@@ -2263,32 +2638,31 @@ body {
 .emoji-picker {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 12px;
-  margin-top: 10px;
-  padding: 16px;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 12px;
   background: var(--bg-primary);
-  border-radius: 16px;
+  border-radius: 12px;
   border: 1px solid var(--border);
 }
 
 .emoji-option {
   width: 100%;
   aspect-ratio: 1;
-  font-size: 32px;
+  font-size: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: white;
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s;
 }
 
 .emoji-option:hover {
-  background: var(--primary-light);
   border-color: var(--primary);
-  transform: scale(1.05);
+  transform: scale(1.08);
 }
 
 /* Color Presets */
@@ -2702,7 +3076,7 @@ body {
   background: var(--bg-secondary);
   padding: 2px 6px;
   border-radius: 4px;
-  font-family: "Courier New", monospace;
+  font-family: "SF Mono", Monaco, Menlo, Consolas, "Courier New", monospace;
   font-size: 13px;
 }
 
