@@ -1557,7 +1557,7 @@
         const id = String(r.id || r.ID || "");
         const type = String(r.type || r.Type || "");
         const note = String(r.note || r.Note || "");
-        
+
         // Handle timestamp from multiple possible formats
         let timestamp = 0;
         if (r.timestamp) {
@@ -1569,7 +1569,7 @@
           // Parse from ISO string
           timestamp = Date.parse(r.iso || r.ISO);
         }
-        
+
         return {
           id,
           type,
