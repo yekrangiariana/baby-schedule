@@ -2498,7 +2498,7 @@ body {
 /* Desktop enhancements */
 @media (min-width: 769px) {
   .screen-content {
-    max-width: 600px;
+    width: 600px;
     margin: 0 auto;
     padding-left: 32px;
     padding-right: 32px;
