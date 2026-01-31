@@ -1734,7 +1734,8 @@
       },
       {
         title: "Google Sheets Sync",
-        description: "Sync across devices with Google Sheets. Check the Setup Guide for instructions.",
+        description:
+          "Sync across devices with Google Sheets. Check the Setup Guide for instructions.",
         target: "#googleSheetsSection",
         screen: "settings",
       },
@@ -1785,7 +1786,7 @@
           if (targetEl) {
             // Scroll element into view
             targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
-            
+
             // Wait a bit for scroll to complete before positioning spotlight
             setTimeout(() => {
               const rect = targetEl.getBoundingClientRect();
