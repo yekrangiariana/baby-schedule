@@ -1552,13 +1552,32 @@
 
   function normalizeRemote(arr) {
     return arr
-      .map((r) => ({
-        id: String(r.id || ""),
-        type: String(r.type || ""),
-        note: String(r.note || ""),
-        timestamp: Number(r.timestamp || (r.iso ? Date.parse(r.iso) : 0)) || 0,
-        synced: true,
-      }))
+      .map((r) => {
+        // Handle both uppercase (Google Sheets format) and lowercase property names
+        const id = String(r.id || r.ID || "");
+        const type = String(r.type || r.Type || "");
+        const note = String(r.note || r.Note || "");
+        
+        // Handle timestamp from multiple possible formats
+        let timestamp = 0;
+        if (r.timestamp) {
+          timestamp = Number(r.timestamp);
+        } else if (r.Timestamp) {
+          // Google Sheets date object - convert to timestamp
+          timestamp = new Date(r.Timestamp).getTime();
+        } else if (r.iso || r.ISO) {
+          // Parse from ISO string
+          timestamp = Date.parse(r.iso || r.ISO);
+        }
+        
+        return {
+          id,
+          type,
+          note,
+          timestamp: timestamp || 0,
+          synced: true,
+        };
+      })
       .filter((e) => e.id && e.timestamp)
       .sort((a, b) => b.timestamp - a.timestamp);
   }
