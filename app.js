@@ -47,6 +47,7 @@
 
   const openSettingsBtn = $("#openSettingsBtn");
   const appsScriptUrl = $("#appsScriptUrl");
+  const pasteUrlBtn = $("#pasteUrlBtn");
   const saveSettingsBtn = $("#saveSettingsBtn");
   const exportCSVBtn = $("#exportCSVBtn");
   const importCSVBtn = $("#importCSVBtn");
@@ -74,6 +75,9 @@
   // Legacy elements for compatibility
   const logPanel = { hidden: true };
   const graphsPanel = { hidden: true };
+
+  // Selected activities for filtering graphs (default: all selected)
+  let selectedActivityTypes = new Set();
 
   const haptics = (ms) => {
     if (navigator.vibrate) navigator.vibrate(ms || 10);
@@ -751,12 +755,14 @@
 
   function renderGraphLegends() {
     const legendIds = ["todayLegend", "weekLegend", "hourlyLegend"];
+    const filteredTypes = getFilteredActivityTypes();
+    
     legendIds.forEach((legendId) => {
       const legend = document.getElementById(legendId);
       if (!legend) return;
 
       legend.innerHTML = "";
-      actionTypes.forEach((type) => {
+      filteredTypes.forEach((type) => {
         const item = document.createElement("div");
         item.className = "legend-item";
         item.innerHTML = `
@@ -768,9 +774,69 @@
     });
   }
 
+  function getFilteredActivityTypes() {
+    if (selectedActivityTypes.size === 0) {
+      // Default: all activities selected
+      return actionTypes;
+    }
+    return actionTypes.filter(type => selectedActivityTypes.has(type.id));
+  }
+
+  function renderActivityFilter() {
+    const filterGrid = document.getElementById('activityFilterGrid');
+    if (!filterGrid) return;
+
+    // Initialize selectedActivityTypes if empty (first time)
+    if (selectedActivityTypes.size === 0) {
+      actionTypes.forEach(type => selectedActivityTypes.add(type.id));
+    }
+
+    filterGrid.innerHTML = '';
+    actionTypes.forEach(type => {
+      const isSelected = selectedActivityTypes.has(type.id);
+      const item = document.createElement('div');
+      item.className = `activity-filter-item ${isSelected ? 'selected' : ''}`;
+      item.dataset.typeId = type.id;
+      
+      item.innerHTML = `
+        <div class="activity-filter-checkbox"></div>
+        <div class="activity-filter-icon" style="background-color: ${type.color}">${type.emoji}</div>
+        <div class="activity-filter-label">${type.name}</div>
+      `;
+      
+      item.addEventListener('click', () => {
+        haptics(5);
+        toggleActivityFilter(type.id);
+      });
+      
+      filterGrid.appendChild(item);
+    });
+  }
+
+  function toggleActivityFilter(typeId) {
+    if (selectedActivityTypes.has(typeId)) {
+      selectedActivityTypes.delete(typeId);
+    } else {
+      selectedActivityTypes.add(typeId);
+    }
+    
+    // Update UI
+    renderActivityFilter();
+    
+    // Re-render graphs with new filter
+    if (!insightsScreen.hidden) {
+      renderGraphs();
+    }
+  }
+
   function renderGraphs() {
     const graphsContainer = document.querySelector(".graphs-container");
     if (!graphsContainer) return;
+
+    // Render activity filter
+    renderActivityFilter();
+    
+    const filteredTypes = getFilteredActivityTypes();
 
     if (!entries || !entries.length) {
       graphsContainer.innerHTML = `
@@ -830,10 +896,10 @@
     const last24h = Date.now() - 24 * 60 * 60 * 1000;
     const last7days = Date.now() - 7 * 24 * 60 * 60 * 1000;
 
-    // Today's totals - dynamic
-    const todayEntries = entries.filter((e) => e.timestamp >= todayStart);
+    // Today's totals - filtered by selected activities
+    const todayEntries = entries.filter((e) => e.timestamp >= todayStart && selectedActivityTypes.has(e.type));
     const todayCounts = {};
-    actionTypes.forEach((type) => {
+    filteredTypes.forEach((type) => {
       todayCounts[type.id] = 0;
     });
     todayEntries.forEach((e) => {
@@ -841,25 +907,25 @@
     });
     drawBarChart(
       "todayChart",
-      actionTypes.map((type) => ({
+      filteredTypes.map((type) => ({
         label: type.name,
         value: todayCounts[type.id],
         color: type.color,
       })),
     );
 
-    // Last 24 hours by hour - dynamic
+    // Last 24 hours by hour - filtered by selected activities
     const hourlyData = Array(24)
       .fill(0)
       .map((_, i) => {
         const obj = { hour: i };
-        actionTypes.forEach((type) => {
+        filteredTypes.forEach((type) => {
           obj[type.id] = 0;
         });
         return obj;
       });
     entries
-      .filter((e) => e.timestamp >= last24h)
+      .filter((e) => e.timestamp >= last24h && selectedActivityTypes.has(e.type))
       .forEach((e) => {
         const h = new Date(e.timestamp).getHours();
         if (hourlyData[h][e.type] !== undefined) {
@@ -868,16 +934,16 @@
       });
     drawLineChart("hourlyChart", hourlyData);
 
-    // 7-day trend - dynamic
+    // 7-day trend - filtered by selected activities
     const dailyData = [];
     for (let i = 6; i >= 0; i--) {
       const dayStart = todayStart - i * 24 * 60 * 60 * 1000;
       const dayEnd = dayStart + 24 * 60 * 60 * 1000;
       const dayEntries = entries.filter(
-        (e) => e.timestamp >= dayStart && e.timestamp < dayEnd,
+        (e) => e.timestamp >= dayStart && e.timestamp < dayEnd && selectedActivityTypes.has(e.type),
       );
       const counts = {};
-      actionTypes.forEach((type) => {
+      filteredTypes.forEach((type) => {
         counts[type.id] = 0;
       });
       dayEntries.forEach((e) => {
@@ -890,11 +956,11 @@
     }
     drawStackedBarChart("weekChart", dailyData);
 
-    // Feed-to-Diaper Ratio (only if feed/pee/poop exist)
-    const hasFeed = actionTypes.some((t) => t.id === "feed");
+    // Feed-to-Diaper Ratio (only if feed/pee/poop exist and are selected)
+    const hasFeed = filteredTypes.some((t) => t.id === "feed");
     const hasDiaper =
-      actionTypes.some((t) => t.id === "pee") ||
-      actionTypes.some((t) => t.id === "poop");
+      filteredTypes.some((t) => t.id === "pee") ||
+      filteredTypes.some((t) => t.id === "poop");
 
     if (hasFeed && hasDiaper) {
       const feedCount = todayCounts.feed || 0;
@@ -907,6 +973,22 @@
         target: 1.5,
       });
     }
+  }
+
+  // Helper function to draw rounded rectangles
+  function drawRoundedRect(ctx, x, y, width, height, radius = 8) {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+    ctx.fill();
   }
 
   function drawBarChart(canvasId, data) {
@@ -938,7 +1020,7 @@
       const y = h - barHeight - 30;
 
       ctx.fillStyle = d.color;
-      ctx.fillRect(x, y, barWidth, barHeight);
+      drawRoundedRect(ctx, x, y, barWidth, barHeight, 6);
 
       ctx.fillStyle = "#1f2937";
       ctx.font = "12px sans-serif";
@@ -967,10 +1049,11 @@
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, w, h);
 
-    // Find max value across all types dynamically
-    const allTypeIds = actionTypes.map((t) => t.id);
+    // Find max value across filtered types only
+    const filteredTypes = getFilteredActivityTypes();
+    const filteredTypeIds = filteredTypes.map((t) => t.id);
     const max = Math.max(
-      ...data.map((d) => Math.max(...allTypeIds.map((id) => d[id] || 0))),
+      ...data.map((d) => Math.max(...filteredTypeIds.map((id) => d[id] || 0))),
       1,
     );
     const step = w / (data.length - 1 || 1);
@@ -1009,8 +1092,8 @@
       ctx.stroke();
     };
 
-    // Draw lines for each action type dynamically
-    actionTypes.forEach((type) => {
+    // Draw lines for each filtered action type dynamically
+    filteredTypes.forEach((type) => {
       drawLine(type.id, type.color);
     });
 
@@ -1073,7 +1156,7 @@
       [...actionTypes].reverse().forEach((type) => {
         const segmentH = (d[type.id] || 0) * scale;
         ctx.fillStyle = type.color;
-        ctx.fillRect(x, y - segmentH, barWidth, segmentH);
+        drawRoundedRect(ctx, x, y - segmentH, barWidth, segmentH, 4);
         y -= segmentH;
       });
 
@@ -1112,7 +1195,7 @@
     const feedHeight = (data.feeds / maxVal) * (h - 100);
     const x1 = spacing;
     ctx.fillStyle = "#60a5fa";
-    ctx.fillRect(x1, h - feedHeight - 50, barWidth, feedHeight);
+    drawRoundedRect(ctx, x1, h - feedHeight - 50, barWidth, feedHeight, 8);
     ctx.fillStyle = "#1f2937";
     ctx.font = "14px sans-serif";
     ctx.textAlign = "center";
@@ -1124,7 +1207,7 @@
     const diaperHeight = (data.diapers / maxVal) * (h - 100);
     const x2 = spacing * 2 + barWidth;
     ctx.fillStyle = "#fbbf24";
-    ctx.fillRect(x2, h - diaperHeight - 50, barWidth, diaperHeight);
+    drawRoundedRect(ctx, x2, h - diaperHeight - 50, barWidth, diaperHeight, 8);
     ctx.fillStyle = "#1f2937";
     ctx.font = "14px sans-serif";
     ctx.fillText(data.diapers, x2 + barWidth / 2, h - diaperHeight - 60);
@@ -1745,6 +1828,8 @@
     const backBtn = document.getElementById("wizardBack");
     const nextBtn = document.getElementById("wizardNext");
     const skipBtn = document.getElementById("wizardSkip");
+    
+    let currentHighlightedElement = null;
 
     const steps = [
       {
@@ -1807,6 +1892,13 @@
       const step = steps[index];
 
       haptics(5);
+      
+      // Clear previous highlighting
+      if (currentHighlightedElement) {
+        currentHighlightedElement.classList.remove('wizard-highlighted');
+        currentHighlightedElement = null;
+      }
+      wizardOverlay.classList.remove('active');
 
       // Navigate to the correct screen
       if (step.screen) {
@@ -1835,6 +1927,11 @@
         if (step.target) {
           const targetEl = document.querySelector(step.target);
           if (targetEl) {
+            // Add highlighting class to element
+            targetEl.classList.add('wizard-highlighted');
+            currentHighlightedElement = targetEl;
+            wizardOverlay.classList.add('active');
+            
             // Scroll element into view
             targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
 
@@ -1867,6 +1964,14 @@
 
     function closeWizard() {
       haptics(8);
+      
+      // Clear highlighting
+      if (currentHighlightedElement) {
+        currentHighlightedElement.classList.remove('wizard-highlighted');
+        currentHighlightedElement = null;
+      }
+      wizardOverlay.classList.remove('active');
+      
       wizardOverlay.hidden = true;
       spotlight.style.opacity = "0";
     }
@@ -1995,6 +2100,42 @@
     });
   }
 
+  // Paste from clipboard functionality
+  if (pasteUrlBtn && appsScriptUrl) {
+    pasteUrlBtn.addEventListener("click", async () => {
+      const originalText = pasteUrlBtn.textContent;
+      
+      try {
+        const text = await navigator.clipboard.readText();
+        if (text.trim()) {
+          appsScriptUrl.value = text.trim();
+          
+          // Success state
+          pasteUrlBtn.textContent = '✓ Pasted!';
+          pasteUrlBtn.classList.add('copied');
+          
+          // Haptic feedback
+          haptics(5);
+          
+          // Revert after 3 seconds
+          setTimeout(() => {
+            pasteUrlBtn.textContent = originalText;
+            pasteUrlBtn.classList.remove('copied');
+          }, 3000);
+          
+          toast("📋 URL pasted from clipboard");
+        } else {
+          toast("📋 Clipboard is empty");
+        }
+      } catch (err) {
+        // Fallback for browsers that don't support clipboard API
+        toast("📋 Please paste manually (Ctrl+V)");
+        appsScriptUrl.focus();
+        appsScriptUrl.select();
+      }
+    });
+  }
+
   // Help/Documentation
   if (viewHelpBtn) {
     viewHelpBtn.addEventListener("click", () => {
@@ -2115,7 +2256,7 @@
     populateColorPresets();
 
     actionTypeModal.hidden = false;
-    typeNameInput.focus();
+    // Don't auto-focus to prevent keyboard from opening
   }
 
   function populateActivitySuggestions() {
@@ -2128,6 +2269,22 @@
       { name: "Doctor Visit", emoji: "🏥", color: "#d4c4ff" },
       { name: "Walk", emoji: "🚶", color: "#c4ffd4" },
       { name: "Cry", emoji: "😢", color: "#ffd4d4" },
+      { name: "Massage", emoji: "👐", color: "#e8d4ff" },
+      { name: "Story Time", emoji: "📖", color: "#fff4d4" },
+      { name: "Music", emoji: "🎵", color: "#d4fff0" },
+      { name: "Swing", emoji: "🍼", color: "#ffd4e8" },
+      { name: "Car Ride", emoji: "🚗", color: "#d4e8ff" },
+      { name: "Cuddle", emoji: "🤗", color: "#ffeed4" },
+      { name: "Weight Check", emoji: "⚖️", color: "#e0d4ff" },
+      { name: "Temperature", emoji: "🌡️", color: "#ffd4d4" },
+      { name: "Burp", emoji: "👶", color: "#d4ffd4" },
+      { name: "Hiccups", emoji: "😯", color: "#d4f4ff" },
+      { name: "Spit Up", emoji: "💦", color: "#fff0d4" },
+      { name: "Teeth", emoji: "🦷", color: "#f0d4ff" },
+      { name: "Stroller", emoji: "🍼", color: "#d4ffe0" },
+      { name: "Visitor", emoji: "👋", color: "#ffe4d4" },
+      { name: "Photo", emoji: "📸", color: "#d4d4ff" },
+      { name: "Milestone", emoji: "🎉", color: "#ffd4f0" },
     ];
 
     const container = document.getElementById("activitySuggestions");
@@ -2540,10 +2697,13 @@
       const html = simpleMarkdownToHTML(markdown);
 
       helpContent.innerHTML = html;
+      
+      // Add functionality for copy code button
+      setupCodeCopyButtons();
     } catch (error) {
       helpContent.innerHTML = `
         <div style="text-align: center; padding: 2rem;">
-          <p style="color: var(--text-secondary);">📖 User Guide</p>
+          <p style="color: var(--text-secondary);">📖 Google Sheets Sync Setup</p>
           <p style="color: var(--text-muted); margin-top: 1rem;">
             Unable to load user guide. Please check USER_GUIDE.md file.
           </p>
@@ -2557,6 +2717,37 @@
         </div>
       `;
     }
+  }
+
+  function setupCodeCopyButtons() {
+    // Add copy functionality to code copy buttons
+    const copyButtons = document.querySelectorAll('.copy-code-btn');
+    copyButtons.forEach(button => {
+      button.addEventListener('click', async (e) => {
+        const codeBlock = e.target.parentNode.querySelector('pre code') || 
+                          e.target.parentNode.querySelector('details pre code');
+        if (codeBlock) {
+          try {
+            await navigator.clipboard.writeText(codeBlock.textContent);
+            const originalText = e.target.textContent;
+            
+            // Change button to success state
+            e.target.textContent = '✓ Copied!';
+            e.target.classList.add('copied');
+            
+            setTimeout(() => {
+              e.target.textContent = originalText;
+              e.target.classList.remove('copied');
+            }, 3000);
+            
+            toast('📋 Apps Script code copied to clipboard');
+            haptics(5);
+          } catch (err) {
+            toast('❌ Failed to copy to clipboard');
+          }
+        }
+      });
+    });
   }
 
   function initSettingsUI() {

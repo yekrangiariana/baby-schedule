@@ -1,53 +1,38 @@
-// please refer to readme.md for technical documentation 
+# ☁️ Google Sheets Sync Setup
 
-# 👶 Baby Schedule Tracker - User Guide
+This guide shows you how to sync your baby tracking data with Google Sheets so you can share it with family members and access it from multiple devices.
 
-Welcome! This app helps you track your baby's daily activities - feeding, diaper changes, and sleep patterns. All data is stored locally on your device by default, so it's completely private and works offline.
-
-## 🎯 How It Works
-
-The app runs entirely in your web browser - no installation needed! Your data is saved automatically on your device, so you can use it anywhere, anytime, even without internet.
-
-### Quick Actions
-- **🍼 Feed** - Log breastfeeding or bottle feeding
-- **💧 Pee** - Record wet diapers
-- **💩 Poop** - Track bowel movements
-
-Simply tap a button, and it's recorded with a timestamp. You can add notes to any entry if needed.
-
-### Viewing Your Data
-- **Home Tab** - See today's summary and recent activity
-- **Log Tab** - Browse all entries with date filtering
-- **Graphs Tab** - Visualise patterns over the last 7 days
-
-## ☁️ Google Sheets Sync (Optional)
-
-Want to share data with your partner or family? You can optionally sync your data to Google Sheets so everyone stays on the same page.
-
-### Why Use Google Sheets Sync?
+## Why Use Google Sheets Sync?
 - ✅ Share data with family members in real-time
-- ✅ Access from multiple devices
+- ✅ Access from multiple devices  
 - ✅ Automatic backup of your data
 - ✅ View/analyse data in Google Sheets if needed
 
-### Setting Up Sync
+## Setup Instructions
 
-#### Step 1: Create a Google Sheet
+### Step 1: Create a Google Sheet
 
 1. Go to [Google Sheets](https://sheets.google.com)
 2. Create a new blank spreadsheet
 3. Name it something like "Baby Tracker Data"
 4. Add these column headers in row 1:
-   - Column A: `timestamp`
-   - Column B: `type`
-   - Column C: `note`
-   - Column D: `id`
+   - Column A: `Timestamp`
+   - Column B: `ISO` 
+   - Column C: `Type`
+   - Column D: `Note`
+   - Column E: `ID`
+   - Column F: `Source`
 
-#### Step 2: Add the Apps Script
+### Step 2: Add the Apps Script
 
 1. In your Google Sheet, click **Extensions** → **Apps Script**
-2. Delete any code you see
-3. Paste this code:
+2. Delete any existing code
+3. Copy and paste the code below:
+
+<button class="copy-code-btn" onclick="copyCodeToClipboard(this)">Copy Code</button>
+
+<details class="code-snippet">
+<summary>📋 Apps Script Code (Click to expand)</summary>
 
 ```javascript
 function doPost(e) {
@@ -189,6 +174,8 @@ function getOrCreateSheet(ss, sheetName) {
 }
 ```
 
+</details>
+
 4. Click **Save** (💾 icon)
 5. Click **Deploy** → **New deployment**
 6. Click the gear icon ⚙️ → Choose **Web app**
@@ -196,19 +183,19 @@ function getOrCreateSheet(ss, sheetName) {
    - **Execute as:** Me
    - **Who has access:** Anyone
 8. Click **Deploy**
-9. Click **Authorise access** and follow the prompts
+9. Click **Authorize access** and follow the prompts
 10. **Copy the Web App URL** - you'll need this!
 
-#### Step 3: Connect the App
+### Step 3: Connect the App
 
-1. Open the app and go to **⚙️ Settings** tab
-2. Paste your Web App URL in the **Sync URL** field
+1. Open the baby tracker app and go to **⚙️ Settings** tab
+2. Paste your Web App URL in the **Sync URL** field (or click **Paste** if it's in your clipboard)
 3. Click **💾 Connect & Sync**
 4. You'll see "✓ Connected to Google Sheets" when it's working!
 
 That's it! Your data now syncs automatically to Google Sheets.
 
-### Sharing with Family
+## Sharing with Family
 
 To let your partner or family members use the same data:
 
@@ -227,25 +214,11 @@ To let your partner or family members use the same data:
    - Just send them the link to this app
    - They open it, add the sync URL, and you're connected!
 
-## 🎨 Personalisation
+## Troubleshooting
 
-Choose your favorite theme in Settings:
-- 🌸 **Blossom** - Soft pink and purple
-- ☄️ **Comet** - Cool blue and cosmic
-- 🌿 **Meadow** - Fresh green and natural
-
-## 🔒 Privacy & Data
-
-- **Local-only mode:** If you don't set up Google Sheets sync, all data stays on your device only. No one else can access it.
-- **With sync enabled:** Data is stored in YOUR Google Sheet that you control. Only people you explicitly share the sheet with can see the data.
-- **The app itself doesn't store any data** - everything is either on your device or in your own Google Sheet.
-
-## 💡 Tips
-
-- **Multiple devices?** Set up sync and use the same URL on all your devices
-- **Want to start fresh?** Clear your browser data or use the app in a different browser
-- **Need help?** All your entries are timestamped - you can review them anytime in the Log tab
-- **Export your data?** If you have sync enabled, just open your Google Sheet and download it as Excel or CSV
+- **Connection failed?** Double-check that you deployed the Apps Script as a **Web app** with **Anyone** access
+- **No data showing?** Make sure the column headers match exactly as shown in Step 1
+- **Sync not working?** Try disconnecting and reconnecting with the URL
 
 ---
 

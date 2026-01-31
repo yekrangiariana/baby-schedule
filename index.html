@@ -176,6 +176,14 @@
     <div class="screen screen-modal" id="insightsScreen" hidden>
       <div class="screen-indicator">📈 Insights</div>
       <main class="screen-content">
+        <!-- Activity Filter Section -->
+        <div class="activity-filter-section">
+          <h3>📊 Show Activities</h3>
+          <div class="activity-filter-grid" id="activityFilterGrid">
+            <!-- Filter checkboxes will be rendered dynamically -->
+          </div>
+        </div>
+        
         <div class="graphs-container">
           <div class="graph-card">
             <h3>Today's Activity</h3>
@@ -233,8 +241,16 @@
                 type="url"
                 id="appsScriptUrl"
                 class="input"
-                placeholder="https://script.google.com/macros/s/.../exec"
+                placeholder=""
               />
+              <button
+                type="button"
+                id="pasteUrlBtn"
+                class="btn-paste"
+                title="Paste from clipboard"
+              >
+                Paste
+              </button>
             </label>
 
             <div class="settings-actions">
@@ -355,7 +371,7 @@
     <!-- Help/Documentation Screen -->
     <div class="screen screen-modal" id="helpScreen" hidden>
       <header class="screen-header">
-        <button class="back-btn" data-back="settings">← Back</button>
+        <div></div>
         <h1>📖 Setup Guide</h1>
         <div></div>
       </header>
