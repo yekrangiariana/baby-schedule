@@ -59,8 +59,20 @@
         <div class="summary" id="summary"></div>
 
         <div class="screen-toolbar">
+          <label
+            for="dateFilter"
+            style="
+              font-size: 14px;
+              font-weight: 600;
+              color: var(--text-primary);
+              margin-right: 8px;
+            "
+            >📅 Filter by Date:</label
+          >
           <input type="date" id="dateFilter" class="date-input" />
-          <button id="clearFilterBtn" class="btn-small">Clear</button>
+          <button id="clearFilterBtn" class="btn-small" style="display: none">
+            Clear Filter
+          </button>
         </div>
 
         <div class="log-entries" id="logEntries"></div>
@@ -111,7 +123,7 @@
       <main class="screen-content">
         <div class="settings">
           <!-- Google Sheets Sync Section -->
-          <section class="settings-section">
+          <section class="settings-section" id="googleSheetsSection">
             <h2 class="settings-section-title">☁️ Google Sheets Sync</h2>
 
             <div
@@ -157,26 +169,6 @@
             </button>
           </section>
 
-          <!-- Theme Section -->
-          <section class="settings-section">
-            <h2 class="settings-section-title">🎨 Theme</h2>
-
-            <div class="theme-options">
-              <label class="theme-option">
-                <input type="radio" name="theme" value="blossom" checked />
-                <span class="theme-name">🌸 Blossom</span>
-              </label>
-              <label class="theme-option">
-                <input type="radio" name="theme" value="comet" />
-                <span class="theme-name">☄️ Comet</span>
-              </label>
-              <label class="theme-option">
-                <input type="radio" name="theme" value="meadow" />
-                <span class="theme-name">🌿 Meadow</span>
-              </label>
-            </div>
-          </section>
-
           <!-- Action Types Section -->
           <section class="settings-section">
             <h2 class="settings-section-title">📝 Activity Types</h2>
@@ -196,6 +188,26 @@
             >
               ➕ Add New Activity
             </button>
+          </section>
+
+          <!-- Theme Section -->
+          <section class="settings-section">
+            <h2 class="settings-section-title">🎨 Theme</h2>
+
+            <div class="theme-options">
+              <label class="theme-option">
+                <input type="radio" name="theme" value="blossom" checked />
+                <span class="theme-name">🌸 Blossom</span>
+              </label>
+              <label class="theme-option">
+                <input type="radio" name="theme" value="comet" />
+                <span class="theme-name">☄️ Comet</span>
+              </label>
+              <label class="theme-option">
+                <input type="radio" name="theme" value="meadow" />
+                <span class="theme-name">🌿 Meadow</span>
+              </label>
+            </div>
           </section>
 
           <!-- Data Management Section -->
@@ -226,6 +238,22 @@
               accept=".csv"
               style="display: none"
             />
+          </section>
+
+          <!-- Tutorial Section -->
+          <section class="settings-section">
+            <h2 class="settings-section-title">🎓 Tutorial</h2>
+            <p class="settings-section-description">
+              Learn how to use the app with an interactive guided tour.
+            </p>
+
+            <button
+              id="startTutorialBtn"
+              class="btn-rounded btn-secondary"
+              style="width: 100%"
+            >
+              🎓 Start App Tutorial
+            </button>
           </section>
         </div>
       </main>
@@ -265,6 +293,13 @@
               placeholder="e.g., Sleep, Bath, Play"
               maxlength="20"
             />
+            <div
+              id="activitySuggestions"
+              class="suggestions-container"
+              style="display: none"
+            >
+              <!-- Activity suggestions will appear here -->
+            </div>
           </label>
 
           <label class="field">
@@ -276,6 +311,9 @@
               placeholder="😴"
               maxlength="2"
             />
+            <div id="emojiPicker" class="emoji-picker">
+              <!-- Emoji options will appear here -->
+            </div>
           </label>
 
           <label class="field">
@@ -289,6 +327,9 @@
                 value="#a8d5ff"
                 maxlength="7"
               />
+            </div>
+            <div id="colorPresets" class="color-presets">
+              <!-- Color presets will appear here -->
             </div>
           </label>
         </div>
@@ -340,6 +381,34 @@
       <div id="settingsPanel"></div>
       <div id="logPanel"></div>
       <div id="graphsPanel"></div>
+    </div>
+
+    <!-- Tutorial Wizard -->
+    <div id="tutorialWizard" class="wizard-overlay" hidden>
+      <div class="wizard-spotlight"></div>
+      <div class="wizard-card">
+        <div class="wizard-progress">
+          <div class="wizard-progress-bar"></div>
+        </div>
+        <div class="wizard-content">
+          <h2 class="wizard-title"></h2>
+          <p class="wizard-description"></p>
+        </div>
+        <div class="wizard-footer">
+          <div class="wizard-indicators"></div>
+          <div class="wizard-buttons">
+            <button id="wizardSkip" class="wizard-btn wizard-btn-skip">
+              Skip
+            </button>
+            <button id="wizardBack" class="wizard-btn wizard-btn-secondary">
+              Back
+            </button>
+            <button id="wizardNext" class="wizard-btn wizard-btn-primary">
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script src="app.js"></script>

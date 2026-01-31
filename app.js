@@ -235,6 +235,11 @@
     themeRadios.forEach((radio) => {
       radio.checked = radio.value === selectedTheme;
     });
+
+    // Haptic feedback when theme changes
+    if (theme !== "blossom" || document.body.getAttribute("data-theme")) {
+      haptics(5);
+    }
   }
 
   // Load and apply theme on startup
@@ -330,6 +335,7 @@
       settingsScreen.hidden = true;
       if (helpScreen) helpScreen.hidden = true;
       $$(`.nav-item[data-screen="log"]`)[0]?.classList.add("active");
+      renderLogSummary();
       renderLog();
       backgroundSync();
       startRemoteAutoRefresh();
@@ -538,17 +544,18 @@
     const todayEntries = src.filter((e) => isSameDay(e.timestamp, today));
     const todayCounts = countByType(todayEntries);
 
-    // Find most logged activity (all time)
+    // Find most logged activity (all time) - handle ties
     const allCounts = countByType(src);
-    const mostLoggedId =
-      Object.keys(allCounts).length > 0
-        ? Object.keys(allCounts).reduce((a, b) =>
-            allCounts[a] > allCounts[b] ? a : b,
-          )
-        : null;
-    const mostLoggedType = mostLoggedId
-      ? getActionTypeById(mostLoggedId)
-      : null;
+    let mostLoggedTypes = [];
+    if (Object.keys(allCounts).length > 0) {
+      const maxCount = Math.max(...Object.values(allCounts));
+      const topIds = Object.keys(allCounts).filter(
+        (id) => allCounts[id] === maxCount,
+      );
+      mostLoggedTypes = topIds
+        .map((id) => getActionTypeById(id))
+        .filter((t) => t);
+    }
 
     // Calculate streak (consecutive days with at least one entry)
     let streak = 0;
@@ -578,14 +585,19 @@
           <div class="quick-stat-label">Day Streak</div>
         </div>
         ${
-          mostLoggedType
-            ? `
+          mostLoggedTypes.length > 0
+            ? mostLoggedTypes
+                .map((type) => {
+                  const count = allCounts[type.id];
+                  return `
           <div class="quick-stat">
-            <div class="quick-stat-icon" style="background-color: ${mostLoggedType.color}33">${mostLoggedType.emoji}</div>
-            <div class="quick-stat-value">${allCounts[mostLoggedId]}</div>
-            <div class="quick-stat-label">Most: ${mostLoggedType.name}</div>
+            <div class="quick-stat-icon" style="background-color: ${type.color}33">${type.emoji}</div>
+            <div class="quick-stat-value">${count}</div>
+            <div class="quick-stat-label">Most: ${type.name}</div>
           </div>
-        `
+        `;
+                })
+                .join("")
             : ""
         }
       </div>
@@ -738,7 +750,54 @@
   }
 
   function renderGraphs() {
-    if (!entries || !entries.length) return;
+    const graphsContainer = document.querySelector(".graphs-container");
+    if (!graphsContainer) return;
+
+    if (!entries || !entries.length) {
+      graphsContainer.innerHTML = `
+        <div style="
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 60px 20px;
+          text-align: center;
+          color: var(--text-secondary);
+        ">
+          <div style="font-size: 64px; margin-bottom: 16px; opacity: 0.5;">📊</div>
+          <h3 style="font-size: 20px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">No Data Yet</h3>
+          <p style="font-size: 15px; line-height: 1.5; max-width: 300px;">
+            Start logging activities to see insightful graphs and trends about your baby's routine.
+          </p>
+        </div>
+      `;
+      return;
+    }
+
+    // Restore graphs container structure if it was replaced
+    if (!graphsContainer.querySelector(".graph-card")) {
+      graphsContainer.innerHTML = `
+        <div class="graph-card">
+          <h3>Today's Activity</h3>
+          <canvas id="todayChart"></canvas>
+          <div id="todayLegend" class="graph-legend"></div>
+        </div>
+        <div class="graph-card">
+          <h3>24-Hour Timeline</h3>
+          <canvas id="hourlyChart"></canvas>
+          <div id="hourlyLegend" class="graph-legend"></div>
+        </div>
+        <div class="graph-card">
+          <h3>7-Day Trend</h3>
+          <canvas id="weekChart"></canvas>
+          <div id="weekLegend" class="graph-legend"></div>
+        </div>
+        <div class="graph-card">
+          <h3>Feed-to-Diaper Ratio</h3>
+          <canvas id="ratioChart"></canvas>
+        </div>
+      `;
+    }
 
     // Render legends dynamically
     renderGraphLegends();
@@ -1256,7 +1315,10 @@
     updateStatus();
 
     // Update open screens immediately
-    if (!logScreen.hidden) renderLog();
+    if (!logScreen.hidden) {
+      renderLogSummary();
+      renderLog();
+    }
     if (!insightsScreen.hidden) renderGraphs();
 
     // Trigger background sync
@@ -1621,6 +1683,168 @@
     toast("Sync complete");
   }
 
+  // Tutorial Wizard
+  function startTutorialWizard() {
+    const wizardOverlay = document.getElementById("tutorialWizard");
+    const spotlight = wizardOverlay.querySelector(".wizard-spotlight");
+    const title = wizardOverlay.querySelector(".wizard-title");
+    const description = wizardOverlay.querySelector(".wizard-description");
+    const progressBar = wizardOverlay.querySelector(".wizard-progress-bar");
+    const indicators = wizardOverlay.querySelector(".wizard-indicators");
+    const backBtn = document.getElementById("wizardBack");
+    const nextBtn = document.getElementById("wizardNext");
+    const skipBtn = document.getElementById("wizardSkip");
+
+    const steps = [
+      {
+        title: "Welcome! 👶",
+        description: "Quick tour of your baby tracker.",
+        target: null,
+        screen: "home",
+      },
+      {
+        title: "Quick Actions",
+        description: "Tap buttons to log activities instantly.",
+        target: ".quick-actions",
+        screen: "home",
+      },
+      {
+        title: "Today's Summary",
+        description: "View totals and time since last activity.",
+        target: ".today-summary",
+        screen: "home",
+      },
+      {
+        title: "Activity Log",
+        description: "See all entries, filter by date, delete if needed.",
+        target: null,
+        screen: "log",
+      },
+      {
+        title: "Insights",
+        description: "Charts showing patterns and trends.",
+        target: null,
+        screen: "insights",
+      },
+      {
+        title: "Settings",
+        description: "Themes, custom activities, sync & export.",
+        target: null,
+        screen: "settings",
+      },
+      {
+        title: "Google Sheets Sync",
+        description: "Sync across devices with Google Sheets. Check the Setup Guide for instructions.",
+        target: "#googleSheetsSection",
+        screen: "settings",
+      },
+      {
+        title: "All Set! 🎉",
+        description: "Start tracking now. Replay from Settings anytime.",
+        target: ".bottom-nav",
+        screen: "home",
+      },
+    ];
+
+    let currentStep = 0;
+
+    function showStep(index) {
+      if (index < 0 || index >= steps.length) return;
+
+      currentStep = index;
+      const step = steps[index];
+
+      haptics(5);
+
+      // Navigate to the correct screen
+      if (step.screen) {
+        showScreen(step.screen);
+      }
+
+      // Longer delay to ensure screen is fully rendered
+      setTimeout(() => {
+        title.textContent = step.title;
+        description.textContent = step.description;
+        progressBar.style.width = `${((index + 1) / steps.length) * 100}%`;
+
+        // Update indicators
+        indicators.innerHTML = steps
+          .map(
+            (_, i) =>
+              `<div class="wizard-indicator ${i === index ? "active" : ""}"></div>`,
+          )
+          .join("");
+
+        // Update buttons
+        backBtn.style.display = index === 0 ? "none" : "flex";
+        nextBtn.textContent = index === steps.length - 1 ? "Finish" : "Next";
+
+        // Highlight target element
+        if (step.target) {
+          const targetEl = document.querySelector(step.target);
+          if (targetEl) {
+            // Scroll element into view
+            targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
+            
+            // Wait a bit for scroll to complete before positioning spotlight
+            setTimeout(() => {
+              const rect = targetEl.getBoundingClientRect();
+              const viewportHeight = window.innerHeight;
+              const elementCenter = rect.top + rect.height / 2;
+
+              // Position card at top if element is in bottom half of screen
+              if (elementCenter > viewportHeight / 2) {
+                wizardOverlay.classList.add("top");
+              } else {
+                wizardOverlay.classList.remove("top");
+              }
+
+              spotlight.style.top = `${rect.top - 8}px`;
+              spotlight.style.left = `${rect.left - 8}px`;
+              spotlight.style.width = `${rect.width + 16}px`;
+              spotlight.style.height = `${rect.height + 16}px`;
+              spotlight.style.opacity = "1";
+            }, 150);
+          }
+        } else {
+          spotlight.style.opacity = "0";
+          wizardOverlay.classList.remove("top");
+        }
+      }, 200);
+    }
+
+    function closeWizard() {
+      haptics(8);
+      wizardOverlay.hidden = true;
+      spotlight.style.opacity = "0";
+    }
+
+    // Event listeners
+    nextBtn.onclick = () => {
+      if (currentStep === steps.length - 1) {
+        closeWizard();
+      } else {
+        showStep(currentStep + 1);
+      }
+    };
+
+    backBtn.onclick = () => {
+      showStep(currentStep - 1);
+    };
+
+    skipBtn.onclick = closeWizard;
+
+    wizardOverlay.onclick = (e) => {
+      if (e.target === wizardOverlay) {
+        closeWizard();
+      }
+    };
+
+    // Start the wizard
+    wizardOverlay.hidden = false;
+    showStep(0);
+  }
+
   // Wire events (action buttons are wired in renderHomeScreen)
   undoBtn.addEventListener("click", undoLast);
   viewGraphsBtn.addEventListener("click", async () => {
@@ -1631,12 +1855,17 @@
     }
   });
   viewLogBtn.addEventListener("click", openLog);
-  dateFilter.addEventListener("change", renderLog);
+  dateFilter.addEventListener("change", () => {
+    renderLog();
+    // Show/hide clear button based on whether a date is selected
+    clearFilterBtn.style.display = dateFilter.value ? "inline-block" : "none";
+  });
   dateFilter.addEventListener("click", (e) => {
     e.stopPropagation();
   });
   clearFilterBtn.addEventListener("click", () => {
     dateFilter.value = "";
+    clearFilterBtn.style.display = "none";
     renderLog();
   });
 
@@ -1651,6 +1880,7 @@
   // Bottom navigation
   document.querySelectorAll(".nav-item").forEach((item) => {
     item.addEventListener("click", () => {
+      haptics(5);
       const screen = item.dataset.screen;
       if (screen) {
         if (screen === "log") openLog();
@@ -1717,6 +1947,14 @@
   if (viewHelpBtn) {
     viewHelpBtn.addEventListener("click", () => {
       showScreen("help");
+    });
+  }
+
+  // Tutorial Wizard
+  const startTutorialBtn = $("#startTutorialBtn");
+  if (startTutorialBtn) {
+    startTutorialBtn.addEventListener("click", () => {
+      startTutorialWizard();
     });
   }
 
@@ -1804,6 +2042,9 @@
       typeEmojiInput.value = type.emoji;
       typeColorInput.value = type.color;
       typeColorText.value = type.color;
+
+      // Hide suggestions when editing
+      document.getElementById("activitySuggestions").style.display = "none";
     } else {
       modalTitle.textContent = "Add Activity";
       editingTypeId.value = "";
@@ -1811,10 +2052,148 @@
       typeEmojiInput.value = "";
       typeColorInput.value = "#a8d5ff";
       typeColorText.value = "#a8d5ff";
+
+      // Show and populate suggestions
+      populateActivitySuggestions();
+      document.getElementById("activitySuggestions").style.display = "flex";
     }
+
+    // Always populate emoji picker and color presets
+    populateEmojiPicker();
+    populateColorPresets();
 
     actionTypeModal.hidden = false;
     typeNameInput.focus();
+  }
+
+  function populateActivitySuggestions() {
+    const suggestions = [
+      { name: "Sleep", emoji: "😴", color: "#b8b8ff" },
+      { name: "Bath", emoji: "🛁", color: "#a8d5ff" },
+      { name: "Play", emoji: "🧸", color: "#ffd4a8" },
+      { name: "Tummy Time", emoji: "🤸", color: "#c4e7ff" },
+      { name: "Medication", emoji: "💊", color: "#ffc4d4" },
+      { name: "Doctor Visit", emoji: "🏥", color: "#d4c4ff" },
+      { name: "Walk", emoji: "🚶", color: "#c4ffd4" },
+      { name: "Cry", emoji: "😢", color: "#ffd4d4" },
+    ];
+
+    const container = document.getElementById("activitySuggestions");
+    container.innerHTML = suggestions
+      .map(
+        (s) => `
+        <button 
+          type="button" 
+          class="suggestion-chip" 
+          data-name="${s.name}" 
+          data-emoji="${s.emoji}" 
+          data-color="${s.color}"
+        >
+          ${s.emoji} ${s.name}
+        </button>
+      `,
+      )
+      .join("");
+
+    // Add click handlers
+    container.querySelectorAll(".suggestion-chip").forEach((chip) => {
+      chip.addEventListener("click", () => {
+        haptics(8);
+        typeNameInput.value = chip.dataset.name;
+        typeEmojiInput.value = chip.dataset.emoji;
+        typeColorInput.value = chip.dataset.color;
+        typeColorText.value = chip.dataset.color;
+        updateColorPresetSelection(chip.dataset.color);
+      });
+    });
+  }
+
+  function populateEmojiPicker() {
+    const emojis = [
+      "😴",
+      "🛁",
+      "🧸",
+      "🍼",
+      "🚼",
+      "💩",
+      "🤸",
+      "💊",
+      "😊",
+      "🎵",
+      "🧼",
+      "⏰",
+    ];
+
+    const container = document.getElementById("emojiPicker");
+    container.innerHTML = emojis
+      .map(
+        (emoji) => `
+        <button type="button" class="emoji-option" data-emoji="${emoji}">
+          ${emoji}
+        </button>
+      `,
+      )
+      .join("");
+
+    // Add click handlers
+    container.querySelectorAll(".emoji-option").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        haptics(6);
+        typeEmojiInput.value = btn.dataset.emoji;
+      });
+    });
+  }
+
+  function populateColorPresets() {
+    const colors = [
+      "#b8deff",
+      "#ffb8d4",
+      "#b8ffb8",
+      "#ffd4a8",
+      "#d4b8ff",
+      "#ffd4d4",
+      "#b8fff4",
+      "#fff4b8",
+    ];
+
+    const container = document.getElementById("colorPresets");
+    container.innerHTML = colors
+      .map(
+        (color) => `
+        <button 
+          type="button" 
+          class="color-preset" 
+          data-color="${color}" 
+          style="background-color: ${color}"
+        ></button>
+      `,
+      )
+      .join("");
+
+    // Add click handlers
+    container.querySelectorAll(".color-preset").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        haptics(6);
+        const color = btn.dataset.color;
+        typeColorInput.value = color;
+        typeColorText.value = color;
+        updateColorPresetSelection(color);
+      });
+    });
+
+    // Set initial selection
+    updateColorPresetSelection(typeColorInput.value);
+  }
+
+  function updateColorPresetSelection(color) {
+    const presets = document.querySelectorAll(".color-preset");
+    presets.forEach((preset) => {
+      if (preset.dataset.color === color) {
+        preset.classList.add("selected");
+      } else {
+        preset.classList.remove("selected");
+      }
+    });
   }
 
   function closeActionTypeModal() {
@@ -1828,11 +2207,13 @@
     const editId = editingTypeId.value;
 
     if (!name) {
+      haptics(20);
       toast("⚠️ Please enter an activity name");
       return;
     }
 
     if (!emoji) {
+      haptics(20);
       toast("⚠️ Please enter an emoji");
       return;
     }
@@ -1851,6 +2232,7 @@
 
       // Check if ID already exists
       if (getActionTypeById(id)) {
+        haptics(20);
         toast("⚠️ An activity with this name already exists");
         return;
       }
@@ -1862,6 +2244,7 @@
     renderActionTypes();
     renderHomeScreen();
     closeActionTypeModal();
+    haptics(12);
     toast(editId ? "✓ Activity updated" : "✓ Activity added");
 
     // If sync is enabled, sync action types to Google Sheets
@@ -1944,11 +2327,13 @@
   if (typeColorInput && typeColorText) {
     typeColorInput.addEventListener("input", (e) => {
       typeColorText.value = e.target.value;
+      updateColorPresetSelection(e.target.value);
     });
     typeColorText.addEventListener("input", (e) => {
       const value = e.target.value;
       if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
         typeColorInput.value = value;
+        updateColorPresetSelection(value);
       }
     });
   }
