@@ -2138,6 +2138,202 @@ body {
   animation: fadeIn 0.3s ease;
 }
 
+/* Tablet/Desktop Layout */
+@media (min-width: 768px) {
+  :root {
+    --bottom-nav-height: 0px;
+  }
+
+  body {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .screen {
+    margin-left: var(--side-nav-width);
+    flex: 1;
+  }
+
+  .screen-content {
+    padding-bottom: 16px;
+  }
+
+  /* Side Navigation for Tablet */
+  .bottom-nav {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: auto;
+    width: var(--side-nav-width);
+    height: 100vh;
+    flex-direction: column;
+    justify-content: center;
+    padding: 20px 0;
+    padding-bottom: 20px;
+    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.03);
+    border-right: 1px solid rgba(255, 255, 255, 0.5);
+    border-top: none;
+  }
+
+  .nav-item {
+    flex: 0;
+    padding: 16px 8px;
+    margin: 8px 0;
+  }
+
+  .nav-icon {
+    font-size: 20px;
+  }
+
+  .nav-label {
+    font-size: 11px;
+  }
+
+  /* Adjust modals for side nav */
+  .screen-modal {
+    margin-left: 0;
+  }
+
+  /* Adjust toasts and floating elements */
+  .toast {
+    left: calc(var(--side-nav-width) + 20px);
+    right: 20px;
+    transform: none;
+  }
+
+  /* Adjust wizard for tablet */
+  .wizard-overlay {
+    left: var(--side-nav-width);
+    width: calc(100% - var(--side-nav-width));
+  }
+}
+
+/* Desktop enhancements */
+@media (min-width: 768px) {
+  .screen-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+
+  .action-buttons {
+    grid-template-columns: repeat(4, 1fr);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .graphs-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .graph-card {
+    margin: 0;
+  }
+}
+
+/* Tablet/Desktop Layout */
+@media (min-width: 768px) {
+  :root {
+    --bottom-nav-height: 0px;
+  }
+
+  body {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .screen {
+    margin-left: var(--side-nav-width);
+    flex: 1;
+  }
+
+  .screen-content {
+    padding-bottom: 16px;
+  }
+
+  /* Side Navigation for Tablet */
+  .bottom-nav {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: auto;
+    width: var(--side-nav-width);
+    height: 100vh;
+    flex-direction: column;
+    justify-content: center;
+    padding: 20px 0;
+    padding-bottom: 20px;
+    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.03);
+    border-right: 1px solid rgba(255, 255, 255, 0.5);
+    border-top: none;
+  }
+
+  .nav-item {
+    flex: 0;
+    padding: 16px 8px;
+    margin: 8px 0;
+  }
+
+  .nav-icon {
+    font-size: 20px;
+  }
+
+  .nav-label {
+    font-size: 11px;
+  }
+
+  /* Adjust modals for side nav */
+  .screen-modal {
+    margin-left: 0;
+  }
+
+  /* Adjust toasts and floating elements */
+  .toast {
+    left: calc(var(--side-nav-width) + 20px);
+    right: 20px;
+    transform: none;
+  }
+
+  /* Adjust wizard for tablet */
+  .wizard-overlay {
+    left: var(--side-nav-width);
+    width: calc(100% - var(--side-nav-width));
+  }
+}
+
+/* Desktop enhancements */
+@media (min-width: 1024px) {
+  .screen-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+
+  .action-buttons {
+    grid-template-columns: repeat(4, 1fr);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .graphs-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .graph-card {
+    margin: 0;
+  }
+}
+
+/* Tutorial Wizard (continued) */
+
 .wizard-overlay[hidden] {
   display: none;
 }
