@@ -6,7 +6,7 @@ This guide shows you how to sync your baby tracking data with Google Sheets so y
 - ✅ Share data with family members in real-time
 - ✅ Access from multiple devices  
 - ✅ Automatic backup of your data
-- ✅ View/analyse data in Google Sheets if needed
+- ✅ View/analyse data in Google Sheets if needed.
 
 ## Setup Instructions
 
