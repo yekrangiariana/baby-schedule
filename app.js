@@ -1502,8 +1502,11 @@
       // Update UI
       updateStatus();
       renderRecentActivity();
-      if (!logScreen.classList.contains("hidden")) renderLog();
-      if (!insightsScreen.classList.contains("hidden")) renderGraphs();
+      if (!logScreen.hidden) {
+        renderLogSummary();
+        renderLog();
+      }
+      if (!insightsScreen.hidden) renderGraphs();
     }
   }
 
