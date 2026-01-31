@@ -1,0 +1,66 @@
+{
+  "name": "Baby Schedule",
+  "short_name": "Baby Schedule",
+  "description": "Track your baby's activities. Works offline and syncs with Google Sheets.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFF5F7",
+  "theme_color": "#ff85a8",
+  "orientation": "portrait",
+  "scope": "/",
+  "lang": "en-US",
+  "categories": ["lifestyle", "health"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍼</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-mobile.jpg",
+      "sizes": "390x844",
+      "type": "image/jpeg",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshot-desktop.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Log Activity",
+      "short_name": "Log",
+      "description": "Quickly log a baby activity",
+      "url": "/",
+      "icons": [
+        {
+          "src": "/shortcut-log.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "View Insights",
+      "short_name": "Insights",
+      "description": "View baby activity insights and charts",
+      "url": "/?view=insights",
+      "icons": [
+        {
+          "src": "/shortcut-insights.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}
