@@ -253,11 +253,15 @@
 
   // Initialize app and sync with Google Sheets
   async function initializeApp() {
-    // First, pull from Google Sheets to get latest data
+    // Show loading state immediately
+    renderHomeScreen(true);
+    updateStatus();
+    
+    // Pull from Google Sheets to get latest data
     await pullAndMergeRemote();
 
-    // Then render UI with the synced data
-    renderHomeScreen();
+    // Render final UI with synced data
+    renderHomeScreen(false);
     updateStatus();
   }
 
@@ -447,10 +451,25 @@
   }
 
   // Render home screen action buttons dynamically
-  function renderHomeScreen() {
+  function renderHomeScreen(showLoading = false) {
     // Render action buttons
     if (actionButtons) {
       actionButtons.innerHTML = "";
+      
+      if (showLoading) {
+        // Show loading skeletons
+        for (let i = 0; i < 3; i++) {
+          const skeleton = document.createElement("div");
+          skeleton.className = "action action-skeleton";
+          skeleton.innerHTML = `
+            <div class="action-skeleton-emoji"></div>
+            <div class="action-skeleton-label"></div>
+          `;
+          actionButtons.appendChild(skeleton);
+        }
+        return;
+      }
+      
       actionTypes.forEach((type) => {
         const btn = document.createElement("button");
         btn.className = `action action-${type.id}`;
@@ -1434,16 +1453,21 @@
         // New API response format with action types
         if (data.entries && Array.isArray(data.entries)) {
           remoteEntries = normalizeRemote(data.entries);
-          // Update action types if provided
+          // Update action types if provided and different
           if (
             data.actionTypes &&
             Array.isArray(data.actionTypes) &&
             data.actionTypes.length > 0
           ) {
-            actionTypes = data.actionTypes;
-            saveActionTypes(actionTypes);
-            renderHomeScreen();
-            renderActionTypes();
+            const currentTypesJson = JSON.stringify(actionTypes);
+            const newTypesJson = JSON.stringify(data.actionTypes);
+            
+            if (currentTypesJson !== newTypesJson) {
+              actionTypes = data.actionTypes;
+              saveActionTypes(actionTypes);
+              renderHomeScreen();
+              renderActionTypes();
+            }
           }
         } else if (Array.isArray(data)) {
           // Legacy format - just entries array
@@ -1463,10 +1487,15 @@
               Array.isArray(data.actionTypes) &&
               data.actionTypes.length > 0
             ) {
-              actionTypes = data.actionTypes;
-              saveActionTypes(actionTypes);
-              renderHomeScreen();
-              renderActionTypes();
+              const currentTypesJson = JSON.stringify(actionTypes);
+              const newTypesJson = JSON.stringify(data.actionTypes);
+              
+              if (currentTypesJson !== newTypesJson) {
+                actionTypes = data.actionTypes;
+                saveActionTypes(actionTypes);
+                renderHomeScreen();
+                renderActionTypes();
+              }
             }
           } else {
             // Legacy format
