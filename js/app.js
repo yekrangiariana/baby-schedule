@@ -2272,17 +2272,26 @@
     if (!cfg.syncEnabled || !cfg.webAppUrl) return;
 
     try {
-      const response = await fetch(cfg.webAppUrl, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "saveActionTypes",
-          actionTypes: actionTypes,
-        }),
+      // Use URL parameters for GET request
+      const url = new URL(cfg.webAppUrl);
+      url.searchParams.set("action", "saveActionTypes");
+      url.searchParams.set("data", JSON.stringify(actionTypes));
+      
+      const response = await fetch(url.toString(), {
+        method: "GET",
+        mode: "cors",
       });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.status === 'ok') {
+          toast("✓ Activities synced to Google Sheets");
+        }
+      } else {
+        throw new Error("Response not OK");
+      }
     } catch (err) {
-      // Silently fail
+      toast("⚠️ Failed to sync activities to Google Sheets");
     }
   }
 
@@ -2501,6 +2510,7 @@
 
     async function sendOne(e) {
       const payload = {
+        action: "create",
         id: e.id,
         type: e.type,
         note: e.note || "",
@@ -3047,16 +3057,26 @@
   });
 
   // Disconnect from Google Sheets functionality
-  if (disconnectBtn && disconnectModal) {
-    disconnectBtn.addEventListener("click", () => {
-      // Add to browser history
-      const currentHash = window.location.hash.slice(1) || "home";
-      history.pushState(
-        { screen: currentHash, modal: "disconnect" },
-        "",
-        "#disconnect",
+  if (disconnectBtn) {
+    disconnectBtn.addEventListener("click", async () => {
+      const confirmed = confirm(
+        "Disconnect from Google Sheets?\n\nYour data will be kept locally on this device."
       );
-      disconnectModal.hidden = false;
+      
+      if (confirmed) {
+        // Keep data locally, just remove the Google Sheets connection
+        settings.webAppUrl = "";
+        settings.syncEnabled = false;
+        saveSettings(settings);
+
+        // Clear the URL input
+        if (appsScriptUrl) appsScriptUrl.value = "";
+
+        // Update UI
+        await updateStatus();
+
+        toast("📱 Disconnected - Data kept locally");
+      }
     });
   }
 
@@ -3072,51 +3092,6 @@
 
   if (closeDisconnectModalBtn && disconnectModal) {
     closeDisconnectModalBtn.addEventListener("click", closeDisconnectModal);
-  }
-
-  if (keepDataBtn && disconnectModal) {
-    keepDataBtn.addEventListener("click", async () => {
-      // Keep data locally, just remove the Google Sheets connection
-      settings.webAppUrl = "";
-      settings.syncEnabled = false;
-      saveSettings(settings);
-
-      // Clear the URL input
-      if (appsScriptUrl) appsScriptUrl.value = "";
-
-      // Update UI
-      await updateStatus();
-      closeDisconnectModal();
-
-      toast("📱 Disconnected - Data kept locally");
-    });
-  }
-
-  if (deleteDataBtn && disconnectModal) {
-    deleteDataBtn.addEventListener("click", async () => {
-      // Remove Google Sheets connection AND clear all data
-      settings.webAppUrl = "";
-      settings.syncEnabled = false;
-      saveSettings(settings);
-
-      // Clear the URL input
-      if (appsScriptUrl) appsScriptUrl.value = "";
-
-      // Clear all activity data
-      activities.length = 0;
-      saveActivities();
-
-      // Re-render all views
-      render();
-      renderLog();
-      renderGraphs();
-
-      // Update UI
-      await updateStatus();
-      closeDisconnectModal();
-
-      toast("🗑️ Disconnected - All data deleted");
-    });
   }
 
   // Close disconnect modal when clicking outside
@@ -3519,7 +3494,8 @@
     toast(editId ? "✓ Activity updated" : "✓ Activity added");
 
     // If sync is enabled, sync action types to Google Sheets
-    if (settings.syncEnabled && settings.webAppUrl) {
+    const cfg = loadSettings();
+    if (cfg.syncEnabled && cfg.webAppUrl) {
       syncActionTypesToSheet();
     }
   }
@@ -3548,7 +3524,8 @@
     toast("✓ Activity deleted");
 
     // Sync to sheet if enabled
-    if (settings.syncEnabled && settings.webAppUrl) {
+    const cfg = loadSettings();
+    if (cfg.syncEnabled && cfg.webAppUrl) {
       syncActionTypesToSheet();
     }
   }
@@ -3571,7 +3548,8 @@
     renderHomeScreen();
 
     // Sync to sheet if enabled
-    if (settings.syncEnabled && settings.webAppUrl) {
+    const cfg = loadSettings();
+    if (cfg.syncEnabled && cfg.webAppUrl) {
       syncActionTypesToSheet();
     }
   }

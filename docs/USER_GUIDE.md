@@ -67,7 +67,7 @@ function doPost(e) {
     if (data.action === 'delete') {
       const allData = sheet1.getDataRange().getValues();
       for (let i = allData.length - 1; i >= 1; i--) {
-        if (allData[i][4] === data.id) {  // id is in column E (index 4)
+        if (allData[i][4] === data.id) {
           sheet1.deleteRow(i + 1);
           break;
         }
@@ -77,16 +77,15 @@ function doPost(e) {
     
     // DEFAULT: append new entry to Sheet1
     if (data.id && data.type && data.timestamp) {
-      // Convert timestamp to Date object
       const dateObj = new Date(data.timestamp);
       
       sheet1.appendRow([
-        dateObj,                    // Column A: Date/time (Google Sheets will format it)
-        data.iso || dateObj.toISOString(),  // Column B: ISO string
-        data.type,                  // Column C: type
-        data.note || '',            // Column D: note
-        data.id,                    // Column E: id
-        data.source || 'babylog-web'  // Column F: source
+        dateObj,
+        data.iso || dateObj.toISOString(),
+        data.type,
+        data.note || '',
+        data.id,
+        data.source || 'babylog-web'
       ]);
       
       Logger.log('Added to Sheet1: ' + data.type);
@@ -104,6 +103,27 @@ function doPost(e) {
 function doGet(e) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
+    
+    // Handle saveActionTypes via GET request
+    if (e.parameter.action === 'saveActionTypes' && e.parameter.data) {
+      const actionTypes = JSON.parse(e.parameter.data);
+      const configSheet = getOrCreateSheet(ss, 'Config');
+      
+      if (configSheet.getLastRow() > 1) {
+        configSheet.getRange(2, 1, configSheet.getLastRow() - 1, 4).clear();
+      }
+      
+      if (configSheet.getLastRow() === 0) {
+        configSheet.appendRow(['id', 'name', 'emoji', 'color']);
+      }
+      
+      actionTypes.forEach(function(type) {
+        configSheet.appendRow([type.id, type.name, type.emoji, type.color]);
+      });
+      
+      return ContentService.createTextOutput(JSON.stringify({status: 'ok'}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
     
     // Read from Sheet1
     const sheet1 = getOrCreateSheet(ss, 'Sheet1');
