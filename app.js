@@ -2374,6 +2374,9 @@
   document.querySelectorAll('input[name="theme"]').forEach((radio) => {
     radio.addEventListener("change", (e) => {
       applyTheme(e.target.value);
+      // Save theme setting immediately
+      settings.theme = e.target.value;
+      saveSettings(settings);
     });
   });
 
@@ -2381,6 +2384,9 @@
   document.querySelectorAll('input[name="font"]').forEach((radio) => {
     radio.addEventListener("change", (e) => {
       applyFont(e.target.value);
+      // Save font setting immediately
+      settings.font = e.target.value;
+      saveSettings(settings);
     });
   });
 
