@@ -234,9 +234,10 @@
   // Get translated action type name
   function getActionTypeName(actionType) {
     if (!actionType) return "";
-    // For default types, use translation if available
+    // For all default activity types, use translation if available
+    const defaultActivityIds = ["feed", "pee", "poop", "sleep", "bath", "play", "walk", "medicine"];
     if (
-      ["feed", "pee", "poop"].includes(actionType.id) &&
+      defaultActivityIds.includes(actionType.id) &&
       typeof t === "function"
     ) {
       return t(actionType.id);
@@ -655,7 +656,7 @@
 
   function getTypeName(type) {
     const actionType = getActionTypeById(type);
-    return actionType ? actionType.name : type;
+    return actionType ? getActionTypeName(actionType) : type;
   }
 
   // Undo last - instant local delete with background sync
@@ -752,7 +753,7 @@
         stat.innerHTML = `
           <div class="stat-mini-icon">${type.emoji}</div>
           <div class="stat-mini-content">
-            <div class="stat-mini-label">Last ${type.name}</div>
+            <div class="stat-mini-label">Last ${getActionTypeName(type)}</div>
             <div class="stat-mini-value" id="last${capitalize(type.id)}">—</div>
           </div>
         `;
@@ -784,7 +785,7 @@
       stat.innerHTML = `
         <div class="stat-icon" style="background-color: ${type.color}">${type.emoji}</div>
         <div class="stat-info">
-          <div class="stat-label">Last ${type.name}</div>
+          <div class="stat-label">Last ${getActionTypeName(type)}</div>
           <div class="stat-value">${lastTime}</div>
         </div>
       `;
