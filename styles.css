@@ -2591,16 +2591,27 @@ body {
   user-select: none;
 }
 
-.action-type-item:hover {
-  border-color: var(--accent);
+.action-type-item.moved {
+  animation: moveHighlight 0.6s ease-out;
 }
 
-.action-type-item.selected {
-  border-color: var(--primary);
-  border-width: 3px;
-  box-shadow: 0 0 0 2px var(--primary-light);
-  background: var(--bg-tertiary);
-  transform: translateY(-1px);
+@keyframes moveHighlight {
+  0% {
+    transform: scale(1);
+    background-color: var(--card-bg);
+  }
+  25% {
+    transform: scale(1.02);
+    background-color: var(--primary-light);
+  }
+  75% {
+    transform: scale(1.01);
+    background-color: var(--primary-light);
+  }
+  100% {
+    transform: scale(1);
+    background-color: var(--card-bg);
+  }
 }
 
 .action-type-color {

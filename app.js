@@ -2695,29 +2695,20 @@
   }
 
   // Action Types Manager
-  let selectedActivityItem = null;
 
-  function selectActivityItem(itemElement, typeId) {
-    // Remove selection from previously selected item
-    if (selectedActivityItem) {
-      selectedActivityItem.classList.remove("selected");
-    }
-
-    // Select new item
-    selectedActivityItem = itemElement;
-    itemElement.classList.add("selected");
-
+  function animateMovedItem(itemElement) {
     // Add haptic feedback on mobile
     if (typeof haptics === "function") {
-      haptics(10);
+      haptics(15);
     }
-  }
 
-  function deselectActivityItem() {
-    if (selectedActivityItem) {
-      selectedActivityItem.classList.remove("selected");
-      selectedActivityItem = null;
-    }
+    // Add move animation class
+    itemElement.classList.add("moved");
+
+    // Remove animation class after animation completes
+    setTimeout(() => {
+      itemElement.classList.remove("moved");
+    }, 600);
   }
 
   function renderActionTypes() {
@@ -2745,21 +2736,6 @@
         </div>
       `;
       actionTypesList.appendChild(item);
-
-      // Add click listener to select item (but not on buttons)
-      item.addEventListener("click", (e) => {
-        // Don't select if clicking on action buttons
-        if (e.target.classList.contains("action-type-btn")) {
-          return;
-        }
-
-        // Toggle selection
-        if (selectedActivityItem === item) {
-          deselectActivityItem();
-        } else {
-          selectActivityItem(item, type.id);
-        }
-      });
     });
 
     // Add event listeners for buttons
@@ -2783,20 +2759,17 @@
       btn.addEventListener("click", (e) => {
         e.stopPropagation(); // Prevent item selection
         const id = btn.getAttribute("data-move-up");
-        const wasSelected =
-          selectedActivityItem &&
-          selectedActivityItem.getAttribute("data-type-id") === id;
+
+        // Move the item first
         moveActionType(id, -1);
 
-        // Maintain selection after move
-        if (wasSelected) {
-          setTimeout(() => {
-            const newItem = document.querySelector(`[data-type-id="${id}"]`);
-            if (newItem) {
-              selectActivityItem(newItem, id);
-            }
-          }, 50);
-        }
+        // Animate the moved item in its new position
+        setTimeout(() => {
+          const movedItem = document.querySelector(`[data-type-id="${id}"]`);
+          if (movedItem) {
+            animateMovedItem(movedItem);
+          }
+        }, 10);
       });
     });
 
@@ -2804,33 +2777,19 @@
       btn.addEventListener("click", (e) => {
         e.stopPropagation(); // Prevent item selection
         const id = btn.getAttribute("data-move-down");
-        const wasSelected =
-          selectedActivityItem &&
-          selectedActivityItem.getAttribute("data-type-id") === id;
+
+        // Move the item first
         moveActionType(id, 1);
 
-        // Maintain selection after move
-        if (wasSelected) {
-          setTimeout(() => {
-            const newItem = document.querySelector(`[data-type-id="${id}"]`);
-            if (newItem) {
-              selectActivityItem(newItem, id);
-            }
-          }, 50);
-        }
+        // Animate the moved item in its new position
+        setTimeout(() => {
+          const movedItem = document.querySelector(`[data-type-id="${id}"]`);
+          if (movedItem) {
+            animateMovedItem(movedItem);
+          }
+        }, 10);
       });
     });
-
-    // Add global click handler to deselect when clicking outside
-    if (!document.body.hasAttribute("data-activity-click-handler")) {
-      document.body.setAttribute("data-activity-click-handler", "true");
-      document.addEventListener("click", (e) => {
-        // Deselect if clicking outside action types list
-        if (!e.target.closest("#actionTypesList") && selectedActivityItem) {
-          deselectActivityItem();
-        }
-      });
-    }
   }
 
   function openActionTypeModal(editId = null) {
