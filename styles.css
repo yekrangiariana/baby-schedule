@@ -2587,10 +2587,20 @@ body {
   border: 2px solid var(--border);
   border-radius: 12px;
   transition: all 0.2s;
+  cursor: pointer;
+  user-select: none;
 }
 
 .action-type-item:hover {
   border-color: var(--accent);
+}
+
+.action-type-item.selected {
+  border-color: var(--primary);
+  border-width: 3px;
+  box-shadow: 0 0 0 2px var(--primary-light);
+  background: var(--bg-tertiary);
+  transform: translateY(-1px);
 }
 
 .action-type-color {

@@ -433,6 +433,7 @@
       if (helpScreen) helpScreen.hidden = true;
       if (aboutAppScreen) aboutAppScreen.hidden = true;
       $$(`.nav-item[data-screen="settings"]`)[0]?.classList.add("active");
+      renderActionTypes();
     } else if (screen === "help") {
       homeScreen.hidden = true;
       logScreen.hidden = true;
@@ -2694,6 +2695,31 @@
   }
 
   // Action Types Manager
+  let selectedActivityItem = null;
+
+  function selectActivityItem(itemElement, typeId) {
+    // Remove selection from previously selected item
+    if (selectedActivityItem) {
+      selectedActivityItem.classList.remove("selected");
+    }
+
+    // Select new item
+    selectedActivityItem = itemElement;
+    itemElement.classList.add("selected");
+
+    // Add haptic feedback on mobile
+    if (typeof haptics === "function") {
+      haptics(10);
+    }
+  }
+
+  function deselectActivityItem() {
+    if (selectedActivityItem) {
+      selectedActivityItem.classList.remove("selected");
+      selectedActivityItem = null;
+    }
+  }
+
   function renderActionTypes() {
     if (!actionTypesList) return;
 
@@ -2702,6 +2728,7 @@
     actionTypes.forEach((type, index) => {
       const item = document.createElement("div");
       item.className = "action-type-item";
+      item.setAttribute("data-type-id", type.id);
       item.innerHTML = `
         <div class="action-type-color" style="background-color: ${type.color}">
           ${type.emoji}
@@ -2718,36 +2745,92 @@
         </div>
       `;
       actionTypesList.appendChild(item);
+
+      // Add click listener to select item (but not on buttons)
+      item.addEventListener("click", (e) => {
+        // Don't select if clicking on action buttons
+        if (e.target.classList.contains("action-type-btn")) {
+          return;
+        }
+
+        // Toggle selection
+        if (selectedActivityItem === item) {
+          deselectActivityItem();
+        } else {
+          selectActivityItem(item, type.id);
+        }
+      });
     });
 
-    // Add event listeners
+    // Add event listeners for buttons
     $$("[data-edit]").forEach((btn) => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
         const id = btn.getAttribute("data-edit");
         openActionTypeModal(id);
       });
     });
 
     $$("[data-delete]").forEach((btn) => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
         const id = btn.getAttribute("data-delete");
         deleteActionType(id);
       });
     });
 
     $$("[data-move-up]").forEach((btn) => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent item selection
         const id = btn.getAttribute("data-move-up");
+        const wasSelected =
+          selectedActivityItem &&
+          selectedActivityItem.getAttribute("data-type-id") === id;
         moveActionType(id, -1);
+
+        // Maintain selection after move
+        if (wasSelected) {
+          setTimeout(() => {
+            const newItem = document.querySelector(`[data-type-id="${id}"]`);
+            if (newItem) {
+              selectActivityItem(newItem, id);
+            }
+          }, 50);
+        }
       });
     });
 
     $$("[data-move-down]").forEach((btn) => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent item selection
         const id = btn.getAttribute("data-move-down");
+        const wasSelected =
+          selectedActivityItem &&
+          selectedActivityItem.getAttribute("data-type-id") === id;
         moveActionType(id, 1);
+
+        // Maintain selection after move
+        if (wasSelected) {
+          setTimeout(() => {
+            const newItem = document.querySelector(`[data-type-id="${id}"]`);
+            if (newItem) {
+              selectActivityItem(newItem, id);
+            }
+          }, 50);
+        }
       });
     });
+
+    // Add global click handler to deselect when clicking outside
+    if (!document.body.hasAttribute("data-activity-click-handler")) {
+      document.body.setAttribute("data-activity-click-handler", "true");
+      document.addEventListener("click", (e) => {
+        // Deselect if clicking outside action types list
+        if (!e.target.closest("#actionTypesList") && selectedActivityItem) {
+          deselectActivityItem();
+        }
+      });
+    }
   }
 
   function openActionTypeModal(editId = null) {
@@ -3099,11 +3182,10 @@
     });
   }
 
-  // Render action types on settings screen open
+  // Settings button event listener
   if (openSettingsBtn) {
     openSettingsBtn.addEventListener("click", () => {
       showScreen("settings");
-      renderActionTypes();
     });
   }
 
