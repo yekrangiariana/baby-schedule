@@ -1366,10 +1366,10 @@
       currentCalendarYear = new Date().getFullYear();
     }
 
-    // Populate activity selector
-    const filteredTypes = getFilteredActivityTypes();
-    if (filteredTypes.length === 0) {
-      calendarDiv.innerHTML = `<div style="text-align: center; padding: 40px; color: var(--text-secondary);">${typeof t === "function" ? t("noDataYet") : "No activities selected"}</div>`;
+    // Populate activity selector - use ALL activities, not filtered ones
+    const allTypes = actionTypes || [];
+    if (allTypes.length === 0) {
+      calendarDiv.innerHTML = `<div style="text-align: center; padding: 40px; color: var(--text-secondary);">${typeof t === "function" ? t("noDataYet") : "No activities available"}</div>`;
       return;
     }
 
@@ -1380,11 +1380,11 @@
       );
       selectedTypeId = currentSelected
         ? currentSelected.dataset.typeId
-        : filteredTypes[0].id;
+        : allTypes[0].id;
     }
 
     // Build activity selector (always rebuild to ensure translations are current)
-    activityGrid.innerHTML = filteredTypes
+    activityGrid.innerHTML = allTypes
       .map(
         (type) =>
           `<div class="habit-activity-option ${type.id === selectedTypeId ? "selected" : ""}" data-type-id="${type.id}" onclick="renderMonthlyCalendar(undefined, '${type.id}')">
@@ -1396,7 +1396,7 @@
 
     if (!selectedTypeId) return;
 
-    const selectedType = filteredTypes.find((t) => t.id === selectedTypeId);
+    const selectedType = allTypes.find((t) => t.id === selectedTypeId);
 
     // Use current calendar month/year
     const year = currentCalendarYear;
@@ -2983,9 +2983,25 @@
   const restartWelcomeBtn = $("#restartWelcomeBtn");
   if (restartWelcomeBtn) {
     restartWelcomeBtn.addEventListener("click", () => {
-      if (window.WelcomeSystem) {
-        window.WelcomeSystem.reset();
-        window.location.reload(); // Reload to show welcome screen
+      const confirmMessage =
+        typeof t === "function"
+          ? t("restartAppConfirm")
+          : "This will delete ALL activity data and restart the app. This cannot be undone. Are you sure?";
+      
+      if (confirm(confirmMessage)) {
+        // Clear all data
+        localStorage.removeItem(STORE_KEY);
+        localStorage.removeItem(DELETE_QUEUE_KEY);
+        localStorage.removeItem(SYNC_QUEUE_KEY);
+        localStorage.removeItem(LAST_SYNC_KEY);
+        
+        // Reset welcome
+        if (window.WelcomeSystem) {
+          window.WelcomeSystem.reset();
+        }
+        
+        // Reload
+        window.location.reload();
       }
     });
   }

@@ -106,7 +106,12 @@ const translations = {
     tutorial: "🎓 Tutorial",
     tutorialDesc: "Learn how to use the app with an interactive guided tour.",
     startTutorial: "🎓 Start App Tutorial",
-    restartWelcome: "👋 Restart Welcome Setup",
+    restartWelcome: "� Restart App & Remove Data",
+    resetApp: "🔄 Reset App",
+    resetAppDesc:
+      "Restart the welcome setup and clear all activity data. This cannot be undone.",
+    restartAppConfirm:
+      "This will delete ALL activity data and restart the app. This cannot be undone. Are you sure?",
     finish: "Finish",
     undo: "Undo",
     undid: "Undid",
@@ -380,7 +385,12 @@ const translations = {
     tutorialDesc:
       "Opi käyttämään sovellusta interaktiivisen ohjatun kierroksen avulla.",
     startTutorial: "🎓 Aloita Sovelluksen Opastus",
-    restartWelcome: "👋 Aloita Tervetuloa-Asennus Uudelleen",
+    restartWelcome: "🔄 Käynnistä Sovellus Uudelleen & Poista Tiedot",
+    resetApp: "🔄 Nollaa Sovellus",
+    resetAppDesc:
+      "Käynnistä tervetuloasetukset uudelleen ja poista kaikki toimintatiedot. Tätä ei voi kumota.",
+    restartAppConfirm:
+      "Tämä poistaa KAIKKI toimintatiedot ja käynnistää sovelluksen uudelleen. Tätä ei voi kumota. Oletko varma?",
     finish: "Valmis",
     undo: "Kumoa",
     undid: "Kumottiin",

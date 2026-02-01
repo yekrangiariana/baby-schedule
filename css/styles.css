@@ -2252,6 +2252,22 @@ body {
   color: var(--primary);
 }
 
+.btn-danger {
+  background: #ff4757;
+  color: white;
+  border: 2px solid #ff4757;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-danger:hover {
+  background: #ff3838;
+  border-color: #ff3838;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+}
+
 .btn-danger-link {
   background: #ff4757;
   color: white;
