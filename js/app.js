@@ -92,6 +92,10 @@
   // Selected activities for filtering graphs (default: all selected)
   let selectedActivityTypes = new Set();
 
+  // State for calendar navigation
+  let currentCalendarMonth = new Date().getMonth();
+  let currentCalendarYear = new Date().getFullYear();
+
   const haptics = (ms) => {
     if (navigator.vibrate) navigator.vibrate(ms || 10);
   };
@@ -685,7 +689,10 @@
     // Immediate UI update
     haptics(10);
     updateStatus();
-    toast(`Undid ${last.type} at ${formatTime(last.timestamp)}`);
+    const undidLabel = typeof t === "function" ? t("undid") : "Undid";
+    const actionType = getActionTypeById(last.type);
+    const typeName = actionType ? getActionTypeName(actionType) : last.type;
+    toast(`${undidLabel} ${typeName} at ${formatTime(last.timestamp)}`);
 
     // Update open screens immediately
     if (!logScreen.hidden) renderLog();
@@ -1144,6 +1151,18 @@
         typeof t === "function"
           ? t("timeBetweenActivitiesTitle")
           : "Time Between Activities";
+      const monthlyTitle =
+        typeof t === "function"
+          ? t("monthlyHabit")
+          : "📅 Monthly Activity Tracker";
+      const monthlyDesc =
+        typeof t === "function"
+          ? t("monthlyHabitDesc")
+          : "Track a single activity across the month to visualize patterns and build consistent habits";
+      const selectActivityLabel =
+        typeof t === "function"
+          ? t("selectActivityToTrack")
+          : "Select activity to track:";
 
       graphsContainer.innerHTML = `
         <div class="graph-card">
@@ -1165,6 +1184,17 @@
           <h3>${intervalTitle}</h3>
           <canvas id="intervalChart"></canvas>
           <div id="intervalLegend" class="graph-legend"></div>
+        </div>
+        <div class="graph-card">
+          <h3>${monthlyTitle}</h3>
+          <div class="graph-guide">${monthlyDesc}</div>
+          <div class="habit-activity-selector">
+            <label>${selectActivityLabel}</label>
+            <div id="habitActivityGrid" class="habit-activity-grid">
+            </div>
+          </div>
+          <div id="monthlyCalendar" class="monthly-calendar">
+          </div>
         </div>
       `;
     }
@@ -1305,7 +1335,197 @@
     });
 
     drawIntervalChart("intervalChart", intervalData);
+
+    // Render monthly calendar
+    renderMonthlyCalendar();
   }
+
+  // Render monthly habit tracker calendar
+  function renderMonthlyCalendar(navigateMonth, selectedTypeId) {
+    const activityGrid = document.getElementById("habitActivityGrid");
+    const calendarDiv = document.getElementById("monthlyCalendar");
+
+    if (!activityGrid || !calendarDiv) return;
+
+    // Handle month navigation
+    if (navigateMonth === "prev") {
+      currentCalendarMonth--;
+      if (currentCalendarMonth < 0) {
+        currentCalendarMonth = 11;
+        currentCalendarYear--;
+      }
+    } else if (navigateMonth === "next") {
+      currentCalendarMonth++;
+      if (currentCalendarMonth > 11) {
+        currentCalendarMonth = 0;
+        currentCalendarYear++;
+      }
+    } else if (navigateMonth === undefined) {
+      // Reset to current month on initial load or activity change
+      currentCalendarMonth = new Date().getMonth();
+      currentCalendarYear = new Date().getFullYear();
+    }
+
+    // Populate activity selector
+    const filteredTypes = getFilteredActivityTypes();
+    if (filteredTypes.length === 0) {
+      calendarDiv.innerHTML = `<div style="text-align: center; padding: 40px; color: var(--text-secondary);">${typeof t === "function" ? t("noDataYet") : "No activities selected"}</div>`;
+      return;
+    }
+
+    // Get selected activity (or default to first)
+    if (!selectedTypeId) {
+      const currentSelected = activityGrid.querySelector(
+        ".habit-activity-option.selected",
+      );
+      selectedTypeId = currentSelected
+        ? currentSelected.dataset.typeId
+        : filteredTypes[0].id;
+    }
+
+    // Build activity selector (always rebuild to ensure translations are current)
+    activityGrid.innerHTML = filteredTypes
+      .map(
+        (type) =>
+          `<div class="habit-activity-option ${type.id === selectedTypeId ? "selected" : ""}" data-type-id="${type.id}" onclick="renderMonthlyCalendar(undefined, '${type.id}')">
+            <span class="habit-activity-icon">${type.emoji}</span>
+            <span>${getActionTypeName(type)}</span>
+          </div>`,
+      )
+      .join("");
+
+    if (!selectedTypeId) return;
+
+    const selectedType = filteredTypes.find((t) => t.id === selectedTypeId);
+
+    // Use current calendar month/year
+    const year = currentCalendarYear;
+    const month = currentCalendarMonth;
+
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay(); // 0 = Sunday
+
+    // Get entries for this activity in current month
+    const monthStart = firstDay.getTime();
+    const monthEnd = new Date(year, month + 1, 0, 23, 59, 59).getTime();
+
+    const monthEntries = entries.filter(
+      (e) =>
+        e.type === selectedTypeId &&
+        e.timestamp >= monthStart &&
+        e.timestamp <= monthEnd,
+    );
+
+    // Count entries per day
+    const dayCounts = {};
+    monthEntries.forEach((e) => {
+      const day = new Date(e.timestamp).getDate();
+      dayCounts[day] = (dayCounts[day] || 0) + 1;
+    });
+
+    // Calculate max count for scaling
+    const maxCount = Math.max(...Object.values(dayCounts), 1);
+
+    // Calculate stats
+    const totalCount = monthEntries.length;
+    const daysWithActivity = Object.keys(dayCounts).length;
+
+    // Get locale for month name
+    const locale =
+      typeof getCurrentLanguage === "function" && getCurrentLanguage() === "fi"
+        ? "fi-FI"
+        : "en";
+    const monthName = firstDay.toLocaleDateString(locale, {
+      month: "long",
+      year: "numeric",
+    });
+
+    // Get weekday names
+    const weekdayNames = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(2024, 0, i); // Start from a Sunday
+      weekdayNames.push(date.toLocaleDateString(locale, { weekday: "narrow" }));
+    }
+
+    // Check if we can navigate forward (not beyond current month)
+    const today = new Date();
+    const isCurrentMonth =
+      month === today.getMonth() && year === today.getFullYear();
+    const isFutureMonth =
+      year > today.getFullYear() ||
+      (year === today.getFullYear() && month > today.getMonth());
+
+    // Build calendar HTML
+    let calendarHTML = `
+      <div class="calendar-header">
+        <div class="calendar-nav">
+          <button class="calendar-nav-btn" onclick="renderMonthlyCalendar('prev')">←</button>
+          <div class="calendar-month">${monthName}</div>
+          <button class="calendar-nav-btn" ${isFutureMonth || isCurrentMonth ? "disabled" : ""} onclick="renderMonthlyCalendar('next')">→</button>
+        </div>
+        <div class="calendar-stats">${totalCount} × ${daysWithActivity}d</div>
+      </div>
+      <div class="calendar-weekdays">
+        ${weekdayNames.map((name) => `<div class="calendar-weekday">${name}</div>`).join("")}
+      </div>
+      <div class="calendar-grid">
+    `;
+
+    // Add empty cells for days before month starts
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      calendarHTML += `<div class="calendar-day empty"></div>`;
+    }
+
+    // Add days of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+      const count = dayCounts[day] || 0;
+      const dayDate = new Date(year, month, day);
+      const isToday = dayDate.toDateString() === today.toDateString();
+      const isFuture = dayDate > today;
+
+      // Calculate intensity level (0-5)
+      let level = 0;
+      if (count > 0) {
+        level = Math.min(5, Math.ceil((count / maxCount) * 5));
+      }
+
+      const classes = [
+        "calendar-day",
+        `level-${level}`,
+        isToday ? "today" : "",
+        isFuture ? "future" : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
+
+      calendarHTML += `
+        <div class="${classes}" title="${selectedType.emoji} ${getActionTypeName(selectedType)}: ${count}"></div>
+      `;
+    }
+
+    calendarHTML += `
+      </div>
+      <div class="calendar-legend">
+        <span class="calendar-legend-label">${typeof t === "function" ? (getCurrentLanguage() === "fi" ? "Vähemmän" : "Less") : "Less"}</span>
+        <div class="calendar-legend-scale">
+          <div class="calendar-legend-box level-0"></div>
+          <div class="calendar-legend-box level-1"></div>
+          <div class="calendar-legend-box level-2"></div>
+          <div class="calendar-legend-box level-3"></div>
+          <div class="calendar-legend-box level-4"></div>
+          <div class="calendar-legend-box level-5"></div>
+        </div>
+        <span class="calendar-legend-label">${typeof t === "function" ? (getCurrentLanguage() === "fi" ? "Enemmän" : "More") : "More"}</span>
+      </div>
+    `;
+
+    calendarDiv.innerHTML = calendarHTML;
+  }
+
+  // Expose renderMonthlyCalendar to window for onclick handlers
+  window.renderMonthlyCalendar = renderMonthlyCalendar;
 
   // Helper function to get chart colors based on current theme
   function getChartColors() {
@@ -2505,7 +2725,10 @@
 
         // Update buttons
         backBtn.style.display = index === 0 ? "none" : "flex";
-        nextBtn.textContent = index === steps.length - 1 ? "Finish" : "Next";
+        const finishLabel = typeof t === "function" ? t("finish") : "Finish";
+        const nextLabel = typeof t === "function" ? t("next") : "Next";
+        nextBtn.textContent =
+          index === steps.length - 1 ? finishLabel : nextLabel;
 
         // Highlight target element
         if (step.target) {
@@ -3538,7 +3761,8 @@
       // Load language-specific guide
       const lang =
         typeof getCurrentLanguage === "function" ? getCurrentLanguage() : "en";
-      const guideFile = lang === "fi" ? "USER_GUIDE_FI.md" : "USER_GUIDE.md";
+      const guideFile =
+        lang === "fi" ? "docs/USER_GUIDE_FI.md" : "docs/USER_GUIDE.md";
 
       const response = await fetch(guideFile);
       if (!response.ok) throw new Error("Failed to load user guide");
@@ -3612,7 +3836,9 @@
             const originalText = e.target.textContent;
 
             // Change button to success state
-            e.target.textContent = "✓ Copied!";
+            const copiedLabel =
+              typeof t === "function" ? t("copied") : "✓ Copied!";
+            e.target.textContent = copiedLabel;
             e.target.classList.add("copied");
 
             setTimeout(() => {

@@ -353,16 +353,16 @@
       });
     });
 
-    // Select "Skip Tutorial" by default
-    const skipOption = document.querySelector(
-      '.welcome-tutorial-choice[data-tutorial="no"]',
+    // Select "Yes, Show Me Around" by default
+    const yesOption = document.querySelector(
+      '.welcome-tutorial-choice[data-tutorial="yes"]',
     );
     if (
-      skipOption &&
+      yesOption &&
       !document.querySelector(".welcome-tutorial-choice.selected")
     ) {
-      skipOption.classList.add("selected");
-      welcomeSettings.startTutorial = false;
+      yesOption.classList.add("selected");
+      welcomeSettings.startTutorial = true;
     }
   }
 

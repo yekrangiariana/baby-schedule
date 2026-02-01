@@ -181,6 +181,9 @@
         <!-- Activity Filter Section -->
         <div class="activity-filter-section">
           <h3 data-i18n="showActivities">📊 Show Activities</h3>
+          <div class="activity-filter-desc" data-i18n="showActivitiesDesc">
+            Select activities to include in the graphs below
+          </div>
           <div class="activity-filter-grid" id="activityFilterGrid">
             <!-- Filter checkboxes will be rendered dynamically -->
           </div>
@@ -225,6 +228,21 @@
             <canvas id="intervalChart" width="300" height="200"></canvas>
             <div class="graph-legend" id="intervalLegend">
               <!-- Legend will be rendered dynamically -->
+            </div>
+          </div>
+          <div class="graph-card">
+            <h3 data-i18n="monthlyHabit">📅 Monthly Activity Tracker</h3>
+            <div class="graph-guide" data-i18n="monthlyHabitDesc">
+              Track a single activity across the month to visualize patterns and build consistent habits
+            </div>
+            <div class="habit-activity-selector">
+              <label data-i18n="selectActivityToTrack">Select activity to track:</label>
+              <div id="habitActivityGrid" class="habit-activity-grid">
+                <!-- Activity options will be rendered dynamically -->
+              </div>
+            </div>
+            <div id="monthlyCalendar" class="monthly-calendar">
+              <!-- Calendar will be rendered dynamically -->
             </div>
           </div>
         </div>
@@ -697,7 +715,7 @@
     <!-- Floating Undo Button -->
     <button id="undoBtn" class="floating-undo" hidden>
       <span class="undo-icon">↩️</span>
-      <span class="undo-text">Undo</span>
+      <span class="undo-text" data-i18n="undo">Undo</span>
     </button>
 
     <!-- Hidden elements for legacy compatibility -->

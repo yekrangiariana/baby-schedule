@@ -577,9 +577,11 @@
     font-size: var(--text-2xl);
   }
 
+  /* Keep language and theme grids in 2 columns for space efficiency */
   .welcome-language-grid,
   .welcome-theme-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
   }
 
   .welcome-activities-grid {

@@ -31,6 +31,7 @@ const translations = {
     // Insights Screen
     insightsTitle: "📈 Insights",
     showActivities: "📊 Show Activities",
+    showActivitiesDesc: "Select activities to include in the graphs below",
     todayActivity: "📅 Today's Activity",
     todayActivityDesc:
       "Shows activity breakdown for today with a quick overview of what's been logged so far",
@@ -47,6 +48,10 @@ const translations = {
     timeBetweenActivitiesTitle: "Time Between Activities",
     timeBetweenActivitiesDesc:
       "Shows average time between same activities to help track feeding intervals, diaper timing, and sleep patterns",
+    monthlyHabit: "📅 Monthly Activity Tracker",
+    monthlyHabitDesc:
+      "Track a single activity across the month to visualize patterns and build consistent habits",
+    selectActivityToTrack: "Select activity to track:",
     noDataYet: "No Data Yet",
     noDataYetDesc:
       "Start logging activities to see insightful graphs and trends about your baby's routine.",
@@ -102,6 +107,9 @@ const translations = {
     tutorialDesc: "Learn how to use the app with an interactive guided tour.",
     startTutorial: "🎓 Start App Tutorial",
     restartWelcome: "👋 Restart Welcome Setup",
+    finish: "Finish",
+    undo: "Undo",
+    undid: "Undid",
 
     // About & Legal Section
     aboutLegal: "📋 About & Legal",
@@ -238,6 +246,7 @@ const translations = {
     setupStep4: "4. Paste URL in Settings and click Connect & Sync",
     appsScriptCopied: "📋 Apps Script code copied to clipboard",
     failedToCopy: "❌ Failed to copy to clipboard",
+    copied: "✓ Copied!",
 
     // Default Activity Types
     feed: "Feed",
@@ -295,6 +304,7 @@ const translations = {
     // Insights Screen
     insightsTitle: "📈 Tilastot",
     showActivities: "📊 Näytä Toiminnot",
+    showActivitiesDesc: "Valitse kaavioihin sisällytettävät toiminnot",
     todayActivity: "📅 Tämän Päivän Toiminta",
     todayActivityDesc:
       "Näyttää tämän päivän toimintojen jakauman ja nopean yleiskatsauksen kirjatuista toiminnoista",
@@ -311,6 +321,10 @@ const translations = {
     timeBetweenActivitiesTitle: "Aika Toimintojen Välillä",
     timeBetweenActivitiesDesc:
       "Näyttää keskimääräisen ajan samojen toimintojen välillä ruokailuväliaikojen, vaipan vaihtojen ja unirytmien seuraamiseksi",
+    monthlyHabit: "📅 Kuukauden Aktiviteettiseuranta",
+    monthlyHabitDesc:
+      "Seuraa yhtä toimintoa koko kuukauden ajan visualisoidaksesi kaavoja ja rakentaaksesi johdonmukaisia tapoja",
+    selectActivityToTrack: "Valitse seurattava toiminto:",
     noDataYet: "Ei Vielä Tietoja",
     noDataYetDesc:
       "Aloita toimintojen kirjaaminen nähdäksesi oivaltavia kaavioita ja trendejä vauvasi rutiineista.",
@@ -367,6 +381,9 @@ const translations = {
       "Opi käyttämään sovellusta interaktiivisen ohjatun kierroksen avulla.",
     startTutorial: "🎓 Aloita Sovelluksen Opastus",
     restartWelcome: "👋 Aloita Tervetuloa-Asennus Uudelleen",
+    finish: "Valmis",
+    undo: "Kumoa",
+    undid: "Kumottiin",
 
     // About & Legal Section
     aboutLegal: "📋 Tietoa & Laki",
@@ -507,6 +524,7 @@ const translations = {
     setupStep4: "4. Liitä URL Asetuksiin ja klikkaa Yhdistä & Synkronoi",
     appsScriptCopied: "📋 Apps Script koodi kopioitu leikepöydälle",
     failedToCopy: "❌ Kopiointi leikepöydälle epäonnistui",
+    copied: "✓ Kopioitu!",
 
     // Default Activity Types
     feed: "Ruokailu",
