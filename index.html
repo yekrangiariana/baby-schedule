@@ -118,8 +118,14 @@
             id="syncNoticeWarning"
             hidden
           >
-            <span data-i18n="dataStoredLocally">💡 Data stored locally only.</span>
-            <button class="sync-notice-link" id="syncNoticeLink" data-i18n="connectGoogleSheets">
+            <span data-i18n="dataStoredLocally"
+              >💡 Data stored locally only.</span
+            >
+            <button
+              class="sync-notice-link"
+              id="syncNoticeLink"
+              data-i18n="connectGoogleSheets"
+            >
               Connect Google Sheets
             </button>
           </div>
@@ -165,7 +171,12 @@
             >📅 Filter by Date:</label
           >
           <input type="date" id="dateFilter" class="date-input" />
-          <button id="clearFilterBtn" class="btn-small" style="display: none" data-i18n="clearFilter">
+          <button
+            id="clearFilterBtn"
+            class="btn-small"
+            style="display: none"
+            data-i18n="clearFilter"
+          >
             Clear Filter
           </button>
         </div>
@@ -193,7 +204,8 @@
           <div class="graph-card">
             <h3 data-i18n="todayActivity">📅 Today's Activity</h3>
             <div class="graph-guide" data-i18n="todayActivityDesc">
-              Shows activity breakdown for today with a quick overview of what's been logged so far
+              Shows activity breakdown for today with a quick overview of what's
+              been logged so far
             </div>
             <canvas id="todayChart" width="300" height="200"></canvas>
             <div class="graph-legend" id="todayLegend">
@@ -203,7 +215,8 @@
           <div class="graph-card">
             <h3 data-i18n="sevenDayTrend">📈 7-Day Trend</h3>
             <div class="graph-guide" data-i18n="sevenDayTrendDesc">
-              Shows weekly patterns and changes to track how routines develop over the past week
+              Shows weekly patterns and changes to track how routines develop
+              over the past week
             </div>
             <canvas id="weekChart" width="300" height="200"></canvas>
             <div class="graph-legend" id="weekLegend">
@@ -213,7 +226,8 @@
           <div class="graph-card">
             <h3 data-i18n="last24Hours">🕑 Last 24 Hours</h3>
             <div class="graph-guide" data-i18n="last24HoursDesc">
-              Shows hour-by-hour timeline to see exactly when activities happened throughout the day
+              Shows hour-by-hour timeline to see exactly when activities
+              happened throughout the day
             </div>
             <canvas id="hourlyChart" width="300" height="200"></canvas>
             <div class="graph-legend" id="hourlyLegend">
@@ -221,9 +235,12 @@
             </div>
           </div>
           <div class="graph-card">
-            <h3 data-i18n="timeBetweenActivities">⏱️ Time Between Activities</h3>
+            <h3 data-i18n="timeBetweenActivities">
+              ⏱️ Time Between Activities
+            </h3>
             <div class="graph-guide" data-i18n="timeBetweenActivitiesDesc">
-              Shows average time between same activities to help track feeding intervals, diaper timing, and sleep patterns
+              Shows average time between same activities to help track feeding
+              intervals, diaper timing, and sleep patterns
             </div>
             <canvas id="intervalChart" width="300" height="200"></canvas>
             <div class="graph-legend" id="intervalLegend">
@@ -233,10 +250,13 @@
           <div class="graph-card">
             <h3 data-i18n="monthlyHabit">📅 Monthly Activity Tracker</h3>
             <div class="graph-guide" data-i18n="monthlyHabitDesc">
-              Track a single activity across the month to visualize patterns and build consistent habits
+              Track a single activity across the month to visualize patterns and
+              build consistent habits
             </div>
             <div class="habit-activity-selector">
-              <label data-i18n="selectActivityToTrack">Select activity to track:</label>
+              <label data-i18n="selectActivityToTrack"
+                >Select activity to track:</label
+              >
               <div id="habitActivityGrid" class="habit-activity-grid">
                 <!-- Activity options will be rendered dynamically -->
               </div>
@@ -256,22 +276,32 @@
         <div class="settings">
           <!-- Google Sheets Sync Section -->
           <section class="settings-section" id="googleSheetsSection">
-            <h2 class="settings-section-title" data-i18n="googleSheetsSync">☁️ Google Sheets Sync</h2>
-            
+            <h2 class="settings-section-title" data-i18n="googleSheetsSync">
+              ☁️ Google Sheets Sync
+            </h2>
+
             <!-- Connected State -->
             <div
               class="sync-notice sync-notice-success"
               id="syncNoticeSuccess"
               hidden
             >
-              <span data-i18n="connectedToSheets">✓ Connected to Google Sheets</span>
+              <span data-i18n="connectedToSheets"
+                >✓ Connected to Google Sheets</span
+              >
             </div>
 
             <!-- Setup State -->
             <div id="syncSetupState">
               <label class="field">
-                <span class="field-label" data-i18n="webAppUrl">Web App URL</span>
-                <small class="hint" style="margin: 0 0 8px 0;" data-i18n="webAppUrlHint">
+                <span class="field-label" data-i18n="webAppUrl"
+                  >Web App URL</span
+                >
+                <small
+                  class="hint"
+                  style="margin: 0 0 8px 0"
+                  data-i18n="webAppUrlHint"
+                >
                   Leave blank for local-only storage.
                 </small>
                 <div class="field-inline">
@@ -298,13 +328,17 @@
               <button
                 id="saveSettingsBtn"
                 class="btn-rounded btn-primary"
-                style="width: 100%; margin-bottom: 1rem;"
+                style="width: 100%; margin-bottom: 1rem"
               >
-                <span class="btn-text" data-i18n="connectAndSync">Connect & Sync</span>
-                <span class="btn-loading" hidden data-i18n="syncing">Syncing...</span>
+                <span class="btn-text" data-i18n="connectAndSync"
+                  >Connect & Sync</span
+                >
+                <span class="btn-loading" hidden data-i18n="syncing"
+                  >Syncing...</span
+                >
               </button>
             </div>
-            
+
             <div class="settings-secondary-actions">
               <button
                 id="viewHelpBtn"
@@ -316,7 +350,7 @@
               <button
                 id="disconnectBtn"
                 class="btn-secondary-link btn-danger-link"
-                style="display: none;"
+                style="display: none"
                 data-i18n="disconnect"
               >
                 Disconnect
@@ -326,8 +360,13 @@
 
           <!-- Action Types Section -->
           <section class="settings-section">
-            <h2 class="settings-section-title" data-i18n="activityTypes">📝 Activity Types</h2>
-            <p class="settings-section-description" data-i18n="activityTypesDesc">
+            <h2 class="settings-section-title" data-i18n="activityTypes">
+              📝 Activity Types
+            </h2>
+            <p
+              class="settings-section-description"
+              data-i18n="activityTypesDesc"
+            >
               Customize the activities you want to track. Each activity has a
               name, emoji, and color.
             </p>
@@ -353,7 +392,9 @@
             <div class="theme-options">
               <label class="theme-option">
                 <input type="radio" name="theme" value="blossom" checked />
-                <span class="theme-name" data-i18n="themeBlossom">🌸 Blossom</span>
+                <span class="theme-name" data-i18n="themeBlossom"
+                  >🌸 Blossom</span
+                >
               </label>
               <label class="theme-option">
                 <input type="radio" name="theme" value="comet" />
@@ -361,11 +402,15 @@
               </label>
               <label class="theme-option">
                 <input type="radio" name="theme" value="meadow" />
-                <span class="theme-name" data-i18n="themeMeadow">🌿 Meadow</span>
+                <span class="theme-name" data-i18n="themeMeadow"
+                  >🌿 Meadow</span
+                >
               </label>
               <label class="theme-option">
                 <input type="radio" name="theme" value="midnight" />
-                <span class="theme-name" data-i18n="themeMidnight">🌙 Midnight</span>
+                <span class="theme-name" data-i18n="themeMidnight"
+                  >🌙 Midnight</span
+                >
               </label>
             </div>
           </section>
@@ -407,7 +452,9 @@
 
           <!-- Language Section -->
           <section class="settings-section">
-            <h2 class="settings-section-title" data-i18n="language">🌐 Language</h2>
+            <h2 class="settings-section-title" data-i18n="language">
+              🌐 Language
+            </h2>
             <p class="settings-section-description" data-i18n="languageDesc">
               Choose your preferred language for the app.
             </p>
@@ -415,21 +462,35 @@
             <div class="language-options">
               <label class="language-option">
                 <input type="radio" name="language" value="en" checked />
-                <span class="language-name" data-i18n="languageEnglish">English</span>
+                <span class="language-name" data-i18n="languageEnglish"
+                  >English</span
+                >
               </label>
               <label class="language-option">
                 <input type="radio" name="language" value="fi" />
-                <span class="language-name" data-i18n="languageFinnish">Suomi (Finnish)</span>
+                <span class="language-name" data-i18n="languageFinnish"
+                  >Suomi (Finnish)</span
+                >
               </label>
             </div>
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;" data-i18n="languageNote">
-              Note: Custom activities keep their creation name. Edit anytime in Activity Types above.
+            <p
+              style="
+                font-size: 0.8rem;
+                color: var(--text-muted);
+                margin-top: 8px;
+              "
+              data-i18n="languageNote"
+            >
+              Note: Custom activities keep their creation name. Edit anytime in
+              Activity Types above.
             </p>
           </section>
 
           <!-- Tutorial Section -->
           <section class="settings-section">
-            <h2 class="settings-section-title" data-i18n="tutorial">🎓 Tutorial</h2>
+            <h2 class="settings-section-title" data-i18n="tutorial">
+              🎓 Tutorial
+            </h2>
             <p class="settings-section-description" data-i18n="tutorialDesc">
               Learn how to use the app with an interactive guided tour.
             </p>
@@ -446,8 +507,13 @@
 
           <!-- Data Management Section -->
           <section class="settings-section">
-            <h2 class="settings-section-title" data-i18n="dataManagement">💾 Data Management</h2>
-            <p class="settings-section-description" data-i18n="dataManagementDesc">
+            <h2 class="settings-section-title" data-i18n="dataManagement">
+              💾 Data Management
+            </h2>
+            <p
+              class="settings-section-description"
+              data-i18n="dataManagementDesc"
+            >
               Export or import your complete data including settings.
             </p>
 
@@ -487,9 +553,12 @@
 
           <!-- Reset App Section -->
           <section class="settings-section">
-            <h2 class="settings-section-title" data-i18n="resetApp">🔄 Reset App</h2>
+            <h2 class="settings-section-title" data-i18n="resetApp">
+              🔄 Reset App
+            </h2>
             <p class="settings-section-desc" data-i18n="resetAppDesc">
-              Restart the welcome setup and clear all activity data. This cannot be undone.
+              Restart the welcome setup and clear all activity data. This cannot
+              be undone.
             </p>
             <button
               id="restartWelcomeBtn"
@@ -503,19 +572,22 @@
 
           <!-- About & Legal Section -->
           <section class="settings-section">
-            <h2 class="settings-section-title" data-i18n="aboutLegal">📋 About & Legal</h2>
+            <h2 class="settings-section-title" data-i18n="aboutLegal">
+              📋 About & Legal
+            </h2>
             <p class="settings-section-description" data-i18n="aboutDesc">
-            I had to check my baby's bowel movements for a week, and I 
-            couldn't be bothered to pay three euros to buy an app. Which, in hindsight, I should have. 
-            So I spent an ungodly amount of time making this instead.
-            Anyway, if you find yourself in a situation like this, you are welcome to use it, 
-            fork it, or adopt it in whatever way you like.
-          </p>
-            
+              I had to check my baby's bowel movements for a week, and I
+              couldn't be bothered to pay three euros to buy an app. Which, in
+              hindsight, I should have. So I spent an ungodly amount of time
+              making this instead. Anyway, if you find yourself in a situation
+              like this, you are welcome to use it, fork it, or adopt it in
+              whatever way you like.
+            </p>
+
             <button
               id="aboutAppBtn"
               class="btn-rounded btn-secondary"
-              style="width: 100%; margin-bottom: 0.75rem;"
+              style="width: 100%; margin-bottom: 0.75rem"
               data-i18n="privacyPolicy"
             >
               Privacy Policy
@@ -523,7 +595,7 @@
             <button
               id="githubRepoBtn"
               class="btn-rounded btn-secondary"
-              style="width: 100%;"
+              style="width: 100%"
               data-i18n="githubRepo"
             >
               GitHub Repository
@@ -542,7 +614,11 @@
       </header>
 
       <main class="screen-content" style="padding: 1rem">
-        <div id="helpContent" class="help-content" data-i18n="loadingDocumentation">
+        <div
+          id="helpContent"
+          class="help-content"
+          data-i18n="loadingDocumentation"
+        >
           Loading documentation...
         </div>
       </main>
@@ -559,7 +635,9 @@
           <input type="hidden" id="editingTypeId" />
 
           <label class="field">
-            <span class="field-label" data-i18n="activityName">Activity Name</span>
+            <span class="field-label" data-i18n="activityName"
+              >Activity Name</span
+            >
             <input
               type="text"
               id="typeNameInput"
@@ -610,10 +688,20 @@
           </label>
         </div>
         <div class="modal-footer">
-          <button id="cancelModalBtn" class="btn-rounded btn-secondary" data-i18n="cancel">
+          <button
+            id="cancelModalBtn"
+            class="btn-rounded btn-secondary"
+            data-i18n="cancel"
+          >
             Cancel
           </button>
-          <button id="saveTypeBtn" class="btn-rounded btn-primary" data-i18n="save">Save</button>
+          <button
+            id="saveTypeBtn"
+            class="btn-rounded btn-primary"
+            data-i18n="save"
+          >
+            Save
+          </button>
         </div>
       </div>
     </div>
@@ -626,22 +714,51 @@
           <button class="modal-close" id="closeDisconnectModalBtn">✕</button>
         </div>
         <div class="modal-body">
-          <p style="margin-bottom: 2rem; line-height: 1.5;" data-i18n="disconnectQuestion">
+          <p
+            style="margin-bottom: 2rem; line-height: 1.5"
+            data-i18n="disconnectQuestion"
+          >
             What would you like to do with your activity data?
           </p>
-          
+
           <div class="disconnect-options">
-            <button id="keepDataBtn" class="btn-rounded btn-primary" style="width: 100%; margin-bottom: 1rem;" data-i18n="keepDataLocally">
+            <button
+              id="keepDataBtn"
+              class="btn-rounded btn-primary"
+              style="width: 100%; margin-bottom: 1rem"
+              data-i18n="keepDataLocally"
+            >
               Keep Data Locally
             </button>
-            <small style="display: block; margin-bottom: 1.5rem; opacity: 0.7; line-height: 1.4;" data-i18n="keepDataLocallyDesc">
+            <small
+              style="
+                display: block;
+                margin-bottom: 1.5rem;
+                opacity: 0.7;
+                line-height: 1.4;
+              "
+              data-i18n="keepDataLocallyDesc"
+            >
               Your activities will remain on this device only
             </small>
-            
-            <button id="deleteDataBtn" class="btn-rounded btn-secondary btn-danger-link" style="width: 100%;" data-i18n="deleteAllData">
+
+            <button
+              id="deleteDataBtn"
+              class="btn-rounded btn-secondary btn-danger-link"
+              style="width: 100%"
+              data-i18n="deleteAllData"
+            >
               Delete All Data
             </button>
-            <small style="display: block; margin-top: 0.5rem; opacity: 0.7; line-height: 1.4;" data-i18n="deleteAllDataDesc">
+            <small
+              style="
+                display: block;
+                margin-top: 0.5rem;
+                opacity: 0.7;
+                line-height: 1.4;
+              "
+              data-i18n="deleteAllDataDesc"
+            >
               Remove all activities and start fresh
             </small>
           </div>
@@ -661,34 +778,54 @@
         <div class="help-content">
           <h2 data-i18n="whatIsThis">What This App Is</h2>
           <p data-i18n="whatIsThisDesc">
-            This is a completely static baby activity tracking app. No servers, no databases, 
-            no cloud services—everything runs locally in your browser.
+            This is a completely static baby activity tracking app. No servers,
+            no databases, no cloud services—everything runs locally in your
+            browser.
           </p>
 
           <h2 data-i18n="yourDataPrivacy">Your Data & Privacy</h2>
-          <p><strong data-i18n="yourDataPrivacyDesc">Your data never leaves your device.</strong> Everything is stored locally using your browser's storage.</p>
-          
+          <p>
+            <strong data-i18n="yourDataPrivacyDesc"
+              >Your data never leaves your device.</strong
+            >
+            Everything is stored locally using your browser's storage.
+          </p>
+
           <ul>
-            <li data-i18n="noTracking">No tracking, no analytics, no telemetry</li>
+            <li data-i18n="noTracking">
+              No tracking, no analytics, no telemetry
+            </li>
             <li data-i18n="noAccounts">No user accounts or login required</li>
-            <li data-i18n="noDataSent">No data is sent to any servers (unless you connect Google Sheets sync)</li>
-            <li data-i18n="worksOffline">You can use this app completely offline</li>
+            <li data-i18n="noDataSent">
+              No data is sent to any servers (unless you connect Google Sheets
+              sync)
+            </li>
+            <li data-i18n="worksOffline">
+              You can use this app completely offline
+            </li>
           </ul>
 
-          <h2 data-i18n="googleSheetsSyncOptional">Google Sheets Sync (Optional)</h2>
+          <h2 data-i18n="googleSheetsSyncOptional">
+            Google Sheets Sync (Optional)
+          </h2>
           <p data-i18n="googleSheetsSyncDesc">
-            If you choose to connect Google Sheets sync, your data will be sent to Google's servers 
-            through your own Google Apps Script. This is entirely optional and controlled by you.
+            If you choose to connect Google Sheets sync, your data will be sent
+            to Google's servers through your own Google Apps Script. This is
+            entirely optional and controlled by you.
           </p>
 
           <h2 data-i18n="openSource">Open Source</h2>
           <p data-i18n="openSourceDesc">
-            This app is open source. You can view the code, contribute, or run your own copy.
+            This app is open source. You can view the code, contribute, or run
+            your own copy.
           </p>
           <p>
-            <a href="https://github.com/yekrangiariana/baby-schedule" target="_blank" 
-               style="color: var(--primary); text-decoration: underline;"
-               data-i18n="viewOnGithub">
+            <a
+              href="https://github.com/yekrangiariana/baby-schedule"
+              target="_blank"
+              style="color: var(--primary); text-decoration: underline"
+              data-i18n="viewOnGithub"
+            >
               View on GitHub →
             </a>
           </p>
@@ -759,13 +896,15 @@
             <div class="welcome-slide-content">
               <div class="welcome-icon">👋</div>
               <h1 class="welcome-title">
-                <span data-i18n="welcomeTitle">Welcome to</span><br>
-                <span style="color: var(--primary); font-size: 1.1em;">Baby Schedule</span>
+                <span data-i18n="welcomeTitle">Welcome to</span><br />
+                <span style="color: var(--primary); font-size: 1.1em"
+                  >Baby Schedule</span
+                >
               </h1>
               <p class="welcome-description" data-i18n="welcomeLanguageDesc">
                 Let's start by choosing your preferred language
               </p>
-              
+
               <div class="welcome-language-grid">
                 <div class="welcome-language-option" data-lang="en">
                   <span class="welcome-language-flag">🇬🇧</span>
@@ -783,15 +922,20 @@
           <div class="welcome-slide">
             <div class="welcome-slide-content">
               <div class="welcome-icon">📝</div>
-              <h1 class="welcome-title" data-i18n="welcomeActivitiesTitle">Choose Activities to Track</h1>
+              <h1 class="welcome-title" data-i18n="welcomeActivitiesTitle">
+                Choose Activities to Track
+              </h1>
               <p class="welcome-description" data-i18n="welcomeActivitiesDesc">
-                Select activities to track. Add more or customize in Settings anytime.
+                Select activities to track. Add more or customize in Settings
+                anytime.
               </p>
-              
+
               <div class="welcome-activities-grid">
                 <div class="welcome-activity-option" data-activity="feed">
                   <span class="welcome-activity-emoji">🍼</span>
-                  <span class="welcome-activity-name" data-i18n="feed">Feed</span>
+                  <span class="welcome-activity-name" data-i18n="feed"
+                    >Feed</span
+                  >
                 </div>
                 <div class="welcome-activity-option" data-activity="pee">
                   <span class="welcome-activity-emoji">💧</span>
@@ -799,27 +943,39 @@
                 </div>
                 <div class="welcome-activity-option" data-activity="poop">
                   <span class="welcome-activity-emoji">💩</span>
-                  <span class="welcome-activity-name" data-i18n="poop">Poop</span>
+                  <span class="welcome-activity-name" data-i18n="poop"
+                    >Poop</span
+                  >
                 </div>
                 <div class="welcome-activity-option" data-activity="sleep">
                   <span class="welcome-activity-emoji">😴</span>
-                  <span class="welcome-activity-name" data-i18n="sleep">Sleep</span>
+                  <span class="welcome-activity-name" data-i18n="sleep"
+                    >Sleep</span
+                  >
                 </div>
                 <div class="welcome-activity-option" data-activity="bath">
                   <span class="welcome-activity-emoji">🛁</span>
-                  <span class="welcome-activity-name" data-i18n="bath">Bath</span>
+                  <span class="welcome-activity-name" data-i18n="bath"
+                    >Bath</span
+                  >
                 </div>
                 <div class="welcome-activity-option" data-activity="play">
                   <span class="welcome-activity-emoji">🎮</span>
-                  <span class="welcome-activity-name" data-i18n="play">Play</span>
+                  <span class="welcome-activity-name" data-i18n="play"
+                    >Play</span
+                  >
                 </div>
                 <div class="welcome-activity-option" data-activity="walk">
                   <span class="welcome-activity-emoji">🚶</span>
-                  <span class="welcome-activity-name" data-i18n="walk">Walk</span>
+                  <span class="welcome-activity-name" data-i18n="walk"
+                    >Walk</span
+                  >
                 </div>
                 <div class="welcome-activity-option" data-activity="medicine">
                   <span class="welcome-activity-emoji">💊</span>
-                  <span class="welcome-activity-name" data-i18n="medicine">Medicine</span>
+                  <span class="welcome-activity-name" data-i18n="medicine"
+                    >Medicine</span
+                  >
                 </div>
               </div>
             </div>
@@ -829,27 +985,37 @@
           <div class="welcome-slide">
             <div class="welcome-slide-content">
               <div class="welcome-icon">🎨</div>
-              <h1 class="welcome-title" data-i18n="welcomeThemeTitle">Choose Your Theme</h1>
+              <h1 class="welcome-title" data-i18n="welcomeThemeTitle">
+                Choose Your Theme
+              </h1>
               <p class="welcome-description" data-i18n="welcomeThemeDesc">
                 Pick a color scheme that suits your style
               </p>
-              
+
               <div class="welcome-theme-grid">
                 <div class="welcome-theme-option" data-theme="blossom">
                   <div class="welcome-theme-emoji">🌸</div>
-                  <div class="welcome-theme-name" data-i18n="themeBlossom">Blossom</div>
+                  <div class="welcome-theme-name" data-i18n="themeBlossom">
+                    Blossom
+                  </div>
                 </div>
                 <div class="welcome-theme-option" data-theme="comet">
                   <div class="welcome-theme-emoji">☄️</div>
-                  <div class="welcome-theme-name" data-i18n="themeComet">Comet</div>
+                  <div class="welcome-theme-name" data-i18n="themeComet">
+                    Comet
+                  </div>
                 </div>
                 <div class="welcome-theme-option" data-theme="meadow">
                   <div class="welcome-theme-emoji">🌿</div>
-                  <div class="welcome-theme-name" data-i18n="themeMeadow">Meadow</div>
+                  <div class="welcome-theme-name" data-i18n="themeMeadow">
+                    Meadow
+                  </div>
                 </div>
                 <div class="welcome-theme-option" data-theme="midnight">
                   <div class="welcome-theme-emoji">🌙</div>
-                  <div class="welcome-theme-name" data-i18n="themeMidnight">Midnight</div>
+                  <div class="welcome-theme-name" data-i18n="themeMidnight">
+                    Midnight
+                  </div>
                 </div>
               </div>
             </div>
@@ -859,17 +1025,21 @@
           <div class="welcome-slide">
             <div class="welcome-slide-content">
               <div class="welcome-icon">🔤</div>
-              <h1 class="welcome-title" data-i18n="welcomeFontTitle">Choose Your Font</h1>
+              <h1 class="welcome-title" data-i18n="welcomeFontTitle">
+                Choose Your Font
+              </h1>
               <p class="welcome-description" data-i18n="welcomeFontDesc">
                 Select a font that's comfortable for you to read
               </p>
-              
+
               <div class="welcome-font-grid">
                 <div class="welcome-font-option" data-font="roboto">
                   <div class="welcome-font-demo" data-font="roboto">Roboto</div>
                 </div>
                 <div class="welcome-font-option" data-font="mono">
-                  <div class="welcome-font-demo" data-font="mono">Roboto Mono</div>
+                  <div class="welcome-font-demo" data-font="mono">
+                    Roboto Mono
+                  </div>
                 </div>
                 <div class="welcome-font-option" data-font="lora">
                   <div class="welcome-font-demo" data-font="lora">Lora</div>
@@ -878,7 +1048,9 @@
                   <div class="welcome-font-demo" data-font="inter">Inter</div>
                 </div>
                 <div class="welcome-font-option" data-font="creepster">
-                  <div class="welcome-font-demo" data-font="creepster">Creepster</div>
+                  <div class="welcome-font-demo" data-font="creepster">
+                    Creepster
+                  </div>
                 </div>
               </div>
             </div>
@@ -888,27 +1060,40 @@
           <div class="welcome-slide">
             <div class="welcome-slide-content">
               <div class="welcome-icon">🎓</div>
-              <h1 class="welcome-title" data-i18n="welcomeTutorialTitle">Would You Like a Tutorial?</h1>
+              <h1 class="welcome-title" data-i18n="welcomeTutorialTitle">
+                Would You Like a Tutorial?
+              </h1>
               <p class="welcome-description" data-i18n="welcomeTutorialDesc">
-                Take a quick tour to learn the features, or explore on your own. All settings can be changed in Settings anytime.
+                Take a quick tour to learn the features, or explore on your own.
+                All settings can be changed in Settings anytime.
               </p>
-              
+
               <div class="welcome-tutorial-options">
                 <div class="welcome-tutorial-choice" data-tutorial="yes">
                   <div class="welcome-tutorial-choice-title">
                     <span class="welcome-tutorial-choice-emoji">✨</span>
-                    <span data-i18n="welcomeTutorialYes">Yes, Show Me Around</span>
+                    <span data-i18n="welcomeTutorialYes"
+                      >Yes, Show Me Around</span
+                    >
                   </div>
-                  <div class="welcome-tutorial-choice-desc" data-i18n="welcomeTutorialYesDesc">
+                  <div
+                    class="welcome-tutorial-choice-desc"
+                    data-i18n="welcomeTutorialYesDesc"
+                  >
                     Take a quick tour to learn all the features
                   </div>
                 </div>
                 <div class="welcome-tutorial-choice" data-tutorial="no">
                   <div class="welcome-tutorial-choice-title">
                     <span class="welcome-tutorial-choice-emoji">🚀</span>
-                    <span data-i18n="welcomeTutorialNo">No, I'll Explore Myself</span>
+                    <span data-i18n="welcomeTutorialNo"
+                      >No, I'll Explore Myself</span
+                    >
                   </div>
-                  <div class="welcome-tutorial-choice-desc" data-i18n="welcomeTutorialNoDesc">
+                  <div
+                    class="welcome-tutorial-choice-desc"
+                    data-i18n="welcomeTutorialNoDesc"
+                  >
                     Jump right in and start tracking
                   </div>
                 </div>
@@ -943,13 +1128,25 @@
         <div class="wizard-footer">
           <div class="wizard-indicators"></div>
           <div class="wizard-buttons">
-            <button id="wizardSkip" class="wizard-btn wizard-btn-skip" data-i18n="skip">
+            <button
+              id="wizardSkip"
+              class="wizard-btn wizard-btn-skip"
+              data-i18n="skip"
+            >
               Skip
             </button>
-            <button id="wizardBack" class="wizard-btn wizard-btn-secondary" data-i18n="back">
+            <button
+              id="wizardBack"
+              class="wizard-btn wizard-btn-secondary"
+              data-i18n="back"
+            >
               Back
             </button>
-            <button id="wizardNext" class="wizard-btn wizard-btn-primary" data-i18n="next">
+            <button
+              id="wizardNext"
+              class="wizard-btn wizard-btn-primary"
+              data-i18n="next"
+            >
               Next
             </button>
           </div>

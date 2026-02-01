@@ -2987,19 +2987,19 @@
         typeof t === "function"
           ? t("restartAppConfirm")
           : "This will delete ALL activity data and restart the app. This cannot be undone. Are you sure?";
-      
+
       if (confirm(confirmMessage)) {
         // Clear all data
         localStorage.removeItem(STORE_KEY);
         localStorage.removeItem(DELETE_QUEUE_KEY);
         localStorage.removeItem(SYNC_QUEUE_KEY);
         localStorage.removeItem(LAST_SYNC_KEY);
-        
+
         // Reset welcome
         if (window.WelcomeSystem) {
           window.WelcomeSystem.reset();
         }
-        
+
         // Reload
         window.location.reload();
       }
