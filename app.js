@@ -349,6 +349,9 @@
 
   // Screen Navigation
   function showScreen(screen) {
+    // Always scroll to top when switching tabs
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
     // Update nav buttons
     $$(`.nav-item`).forEach((btn) => btn.classList.remove("active"));
 
@@ -2141,7 +2144,7 @@
             // Scroll element into view
             targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
 
-            // Wait a bit for scroll to complete before positioning spotlight
+            // Wait a bit for scroll to complete
             setTimeout(() => {
               const rect = targetEl.getBoundingClientRect();
               const viewportHeight = window.innerHeight;
@@ -2154,15 +2157,14 @@
                 wizardOverlay.classList.remove("top");
               }
 
+              // Position spotlight using viewport coordinates
               spotlight.style.top = `${rect.top - 8}px`;
               spotlight.style.left = `${rect.left - 8}px`;
               spotlight.style.width = `${rect.width + 16}px`;
               spotlight.style.height = `${rect.height + 16}px`;
-              spotlight.style.opacity = "1";
             }, 100);
           }
         } else {
-          spotlight.style.opacity = "0";
           wizardOverlay.classList.remove("top");
         }
       }, 100);
@@ -2179,7 +2181,6 @@
       wizardOverlay.classList.remove("active");
 
       wizardOverlay.hidden = true;
-      spotlight.style.opacity = "0";
     }
 
     // Event listeners

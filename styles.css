@@ -8,6 +8,7 @@
   --text-primary: #2d2d2d;
   --text-secondary: #787878;
   --text-muted: #a8a8a8;
+  --side-nav-width: 10%;
 
   --pastel-feed: #b8deff;
   --pastel-feed-light: #e8f4ff;
@@ -2816,11 +2817,16 @@ body {
   position: fixed;
   inset: 0;
   z-index: 300;
-  background: rgba(0, 0, 0, 0.3);
+  background: transparent;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   animation: fadeIn 0.3s ease;
+  /* Always cover full screen on all devices */
+  left: 0 !important;
+  width: 100% !important;
+  /* Allow pointer events for the modal content */
+  pointer-events: auto;
 }
 
 /* Tablet/Desktop Layout */
@@ -2975,11 +2981,7 @@ body {
     transform: none;
   }
 
-  /* Adjust wizard for tablet */
-  .wizard-overlay {
-    left: var(--side-nav-width);
-    width: calc(100% - var(--side-nav-width));
-  }
+  /* Remove wizard constraints - let it cover full screen */
 }
 
 /* Desktop enhancements */
@@ -3014,16 +3016,23 @@ body {
 }
 
 .wizard-spotlight {
-  position: absolute;
+  position: fixed;
   border: 3px solid var(--primary);
   border-radius: 16px;
   pointer-events: none;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow:
-    0 0 0 9999px rgba(0, 0, 0, 0.4),
-    0 0 40px var(--primary),
-    inset 0 0 20px rgba(255, 255, 255, 0.1);
+  background: transparent;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.7);
   z-index: 301;
+  opacity: 0;
+  /* Ensure content inside is completely unaffected by the overlay */
+  backdrop-filter: none;
+  mix-blend-mode: normal;
+}
+
+/* Position spotlight around highlighted element */
+.wizard-overlay.active .wizard-spotlight {
+  opacity: 1;
 }
 
 /* Ensure highlighted elements appear on top with normal opacity */
@@ -3032,6 +3041,9 @@ body {
   z-index: 305 !important;
   opacity: 1 !important;
   pointer-events: auto;
+  /* Ensure element appears with full brightness */
+  filter: none !important;
+  backdrop-filter: none !important;
 }
 
 /* Override any transforms or filters that might affect visibility */
@@ -3041,7 +3053,7 @@ body {
   backdrop-filter: none !important;
 }
 
-/* Make sure highlighted element content is fully visible */
+/* Make sure highlighted element content is fully visible and bright */
 .wizard-overlay.active .wizard-highlighted,
 .wizard-overlay.active .wizard-highlighted > *,
 .wizard-overlay.active .wizard-highlighted button,
@@ -3050,6 +3062,20 @@ body {
   opacity: 1 !important;
   visibility: visible !important;
   transform: none !important;
+  filter: brightness(1) !important;
+  backdrop-filter: none !important;
+}
+
+/* Create a bright cutout effect for highlighted elements */
+.wizard-overlay.active .wizard-highlighted::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  background: white;
+  z-index: -1;
+  border-radius: inherit;
+  opacity: 0.1;
+  pointer-events: none;
 }
 
 .wizard-card {
@@ -3062,6 +3088,67 @@ body {
   box-shadow: 0 -10px 60px rgba(0, 0, 0, 0.5);
   animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
+}
+
+/* Tablet wizard adjustments */
+@media (min-width: 768px) {
+  .wizard-overlay {
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .wizard-card {
+    border-radius: 20px;
+    max-width: 420px;
+    animation: fadeInScale 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 20px 80px rgba(0, 0, 0, 0.3);
+  }
+
+  .wizard-overlay.top .wizard-card {
+    border-radius: 20px;
+    animation: fadeInScale 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 20px 80px rgba(0, 0, 0, 0.3);
+  }
+
+  @keyframes fadeInScale {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .wizard-content {
+    padding: 24px 28px;
+    min-height: 100px;
+  }
+
+  .wizard-title {
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+
+  .wizard-description {
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .wizard-footer {
+    padding: 20px 28px;
+  }
+
+  .wizard-buttons {
+    gap: 12px;
+  }
+
+  .wizard-btn {
+    padding: 12px 20px;
+    font-size: 15px;
+  }
 }
 
 .wizard-overlay.top {
