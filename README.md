@@ -1,8 +1,8 @@
-# 👶 Baby Tracker
+# Baby Schedule
 
-A beautiful, mobile-first web app to track your baby's feed, pee, and poop activities. Features instant local storage with optional cloud sync to Google Sheets.
+A simple, mobile-first web app to track your baby's daily activities. Features instant local storage with optional cloud sync to Google Sheets.
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 baby-schedule/
@@ -10,68 +10,89 @@ baby-schedule/
 ├── manifest.json        # PWA manifest
 ├── robots.txt          # Search engine directives
 ├── sitemap.xml         # Sitemap for SEO
-├── js/
-│   ├── app.js          # Main application logic
-│   └── translations.js # Translation system (EN/FI)
+├── styles.css          # Root styles (legacy)
+├── assets/
+│   └── favicon.svg     # App icon
 ├── css/
-│   └── styles.css      # Application styles
+│   ├── styles.css      # Application styles
+│   └── welcome.css     # Welcome screen styles
 ├── docs/
 │   ├── USER_GUIDE.md   # Setup guide (English)
 │   └── USER_GUIDE_FI.md # Setup guide (Finnish)
-└── assets/
-    └── favicon.svg     # App icon
+└── js/
+    ├── app.js          # Main application logic
+    ├── translations.js # Translation system (EN/FI)
+    └── welcome.js      # Welcome screen
 ```
 
-## 🌍 Languages
+## Languages
 
-The app is fully available in:
-- **English** (default)
-- **Finnish** (Suomi)
+The app is available in:
+- English (default)
+- Finnish (Suomi)
 
 Language can be changed in the Settings tab. Your preference is saved automatically.
 
-## ✨ Features
+## Features
 
-### 🎯 Quick Logging
-- **One-tap buttons**: Feed 🍼, Pee 💧, Poop 💩 with automatic timestamps
-- **Instant response**: All data stored locally first, syncs in background
-- **Undo button**: Appears for 5 seconds after logging to quickly reverse mistakes
+### Quick Logging
+- One-tap buttons with automatic timestamps
+- Customizable activity types (Feed, Pee, Poop, and more)
+- Instant response with local-first storage
+- Undo button appears for 5 seconds after logging
 
-### 📊 Smart Insights
-- **Today's Summary**: Real-time stats for current day activity
-- **Recent Activity**: Animated list of your latest entries
-- **Visual Charts**:
-  - Today's Activity (bar chart showing feed, pee, poop counts)
-  - 7-Day Trend (stacked bars showing patterns over the week)
-  - Last 24 Hours (multi-line chart showing hourly activity patterns)
-  - Feed to Diaper Ratio (pie chart)
-- **Color-coded**: Consistent colors across all charts (blue=feed, yellow=pee, red=poop)
+### Calendar View
+- Monthly calendar with color-coded activity indicators
+- Visual overview of daily activity patterns
+- Quick navigation between months
+- Activity type filtering
 
-### 📝 Full Log
+### Smart Insights
+- Today's Summary with real-time stats
+- Recent Activity list with latest entries
+- Visual Charts:
+  - Today's Activity (bar chart)
+  - 7-Day Trend (stacked bars)
+  - Last 24 Hours (line chart showing hourly patterns)
+  - Activity Distribution (pie chart)
+- Activity type filtering for all charts
+
+### Full Activity Log
 - View all entries organized by date
-- Filter by day using date picker
+- Filter by specific day using date picker
 - Delete individual entries
-- Export to CSV for backup or sharing
+- Search and filter functionality
+- Export to CSV or JSON for backup
 
-### ⚙️ Settings
+### Customization
+- Add custom activity types with name, emoji, and color
+- Edit or delete existing activity types
+- Activity types sync across devices when using Google Sheets
+- Custom types stored locally and in the cloud
+
+### Settings
 - Optional Google Sheets sync configuration
-- Manual sync control
+- Manual sync control with status indicators
+- Import/Export data (CSV and JSON formats)
 - Cloud backup for cross-device access
+- Language selection
 
-### 📱 Mobile-Optimized
-- **Native app feel**: Screen-based navigation with bottom tab bar
-- **Thumb-friendly**: Action buttons placed at bottom for easy reach
-- **Professional design**: Clean pastel colors, emoji icons, Inter font
-- **PWA-ready**: Add to your home screen for app-like experience
+### Mobile-Optimized
+- Screen-based navigation with bottom tab bar
+- Thumb-friendly button placement
+- Professional design with clean pastel colors
+- PWA-ready: Add to home screen for app-like experience
+- Offline-first architecture
 
-## 🚀 Quick Start
+## Quick Start
 
-1. **Open the app**: Double-click `index.html` or serve with a local web server
-2. **Start logging**: Tap Feed, Pee, or Poop buttons on the home screen
-3. **View insights**: Check the Insights tab for charts and patterns
-4. **Browse history**: Use the Log tab to see all entries
+1. Open `index.html` in your browser or serve with a local web server
+2. Start logging activities using the quick action buttons
+3. View insights and charts in the Insights tab
+4. Browse complete history in the Log tab
+5. Customize activity types in Settings
 
-### 💡 Install as App (iPhone/Android)
+### Install as App
 
 **iPhone (Safari)**:
 1. Open the app in Safari
@@ -85,7 +106,7 @@ Language can be changed in the Settings tab. Your preference is saved automatica
 3. Select "Add to Home Screen" or "Install App"
 4. Tap "Add"
 
-## ☁️ Optional: Google Sheets Sync
+## Optional: Google Sheets Sync
 
 The app works 100% offline by default. Enable cloud sync to backup data and access across multiple devices.
 
@@ -93,10 +114,10 @@ The app works 100% offline by default. Enable cloud sync to backup data and acce
 
 1. Create a new Google Sheet
 2. Create TWO sheets (tabs):
-   - **Data** (or "Log" for backward compatibility): For storing activity entries
+   - **Data**: For storing activity entries
      - Add headers in row 1: `Timestamp`, `ISO`, `Type`, `Note`, `ID`, `Source`
-   - **Config**: For storing custom activity types (will be auto-created by the script)
-3. Make sure your first sheet is named "Data" or "Log"
+   - **Config**: For storing custom activity types (auto-created by the script)
+3. Make sure your first sheet is named "Data"
 
 ### Step 2: Add the Apps Script
 
@@ -258,13 +279,13 @@ function doGet(e) {
 }
 ```
 
-4. Click **Save** (💾 icon)
-5. Name your project (e.g., "Baby Tracker Sync")
+4. Click **Save**
+5. Name your project (e.g., "Baby Schedule Sync")
 
 ### Step 3: Deploy the Web App
 
 1. Click **Deploy → New deployment**
-2. Click the gear icon ⚙️ next to "Select type"
+2. Click the gear icon next to "Select type"
 3. Choose **Web app**
 4. Configure:
    - **Execute as**: Me
@@ -281,7 +302,7 @@ You have two options:
 
 #### Option A: Settings UI (Recommended for beginners)
 
-1. Open the Baby Tracker app
+1. Open the Baby Schedule app
 2. Tap **Settings** tab at the bottom
 3. Paste your Web App URL
 4. Toggle **Enable Sync** on
@@ -311,7 +332,7 @@ You have two options:
 - **On startup**: App syncs any pending changes when you open it
 - **Deletions**: Deleting entries also removes them from Google Sheets
 
-## 🔒 Data & Privacy
+## Data & Privacy
 
 - **Local Storage**: All entries stored in your browser's `localStorage` under `babylog.entries.v1`
 - **No tracking**: Zero analytics, no external services (except optional Google Sheets)
@@ -319,7 +340,7 @@ You have two options:
 - **No secrets**: The Web App URL is like a webhook - functional but not private
 - **Browser-specific**: Data tied to browser/profile (use sync for multi-device)
 
-## 💾 Export & Backup
+## Export & Backup
 
 ### Export CSV
 1. Go to **Log** tab
@@ -331,7 +352,7 @@ You have two options:
 2. Select "Save as PDF" as the destination
 3. Clean, printer-friendly layout automatically applied
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Entries Not Showing Up
 - **Check browser/profile**: localStorage is per-browser. Use the same browser where you logged entries.
@@ -364,7 +385,7 @@ Check your Google Sheet - a test row should appear.
 2. Set correct **Locale** and **Time zone**
 3. Format Timestamp column as **Date time**
 
-## 🛠️ Technical Details
+## Technical Details
 
 ### Architecture
 - **Local-first**: All operations write to localStorage first (instant)
@@ -391,7 +412,7 @@ Check your Google Sheet - a test row should appear.
 - Mobile Safari (iOS 14+)
 - Chrome Android
 
-## 🧪 Development
+## Development
 
 ### Running Locally
 
@@ -420,18 +441,16 @@ baby-schedule/
 
 No build process, no package.json, no dependencies. Just open and run.
 
-## 🌐 Deployment & Sharing
+## Deployment & Sharing
 
-## 🌐 Deployment & Sharing
-
-### Safe Public Deployment ✅
+### Safe Public Deployment
 
 The app is designed to be safely deployed publicly! The Google Sheets URL is **never hardcoded** in your deployed app - instead, users enter it in Settings. This means:
 
-- ✅ Your data URL is NOT visible in the public source code
-- ✅ Safe to deploy to any free hosting platform
-- ✅ Easy to share with family members
-- ✅ Each family member can access the same shared data
+- Your data URL is NOT visible in the public source code
+- Safe to deploy to any free hosting platform
+- Easy to share with family members
+- Each family member can access the same shared data
 
 ### How It Works
 
@@ -468,7 +487,7 @@ const FIXED_WEB_APP_URL = "";
 - Import repo at [vercel.com](https://vercel.com)
 - Live at: `https://your-project.vercel.app`
 
-### 🔐 Family Sharing Setup
+### Family Sharing Setup
 
 **Step-by-step for co-parents:**
 
@@ -482,7 +501,7 @@ const FIXED_WEB_APP_URL = "";
    - Goes to Settings tab
    - Pastes the Google Sheets URL
    - Clicks "Connect & Sync"
-   - Sees "✓ Connected to Google Sheets" confirmation
+   - Sees "Connected to Google Sheets" confirmation
 5. **Done!** Everyone now shares the same baby log
 
 **Security notes:**
@@ -506,15 +525,15 @@ If you prefer to use the app alone without sharing:
 - Most hosts (Netlify, Vercel) offer password protection
 - Adds extra security layer before accessing the app
 
-## 📝 License
+## License
 
 This is a personal project. Feel free to use and modify for your own needs.
 
-## 🤝 Contributing
+## Contributing
 
 This is a personal baby tracking app, but suggestions and improvements are welcome!
 
 ---
 
-**Made with ❤️ for new parents who need simple, fast baby tracking**
+Made for new parents who need simple, fast baby tracking.
 

@@ -72,7 +72,7 @@ const translations = {
     // Activity Types Section
     activityTypes: "📝 Activity Types",
     activityTypesDesc:
-      "Customize the activities you want to track. Each activity has a name, emoji, and color.",
+      "Customise the activities you want to track. Each activity has a name, emoji, and colour.",
     addNewActivity: "➕ Add New Activity",
 
     // Theme Section
@@ -129,7 +129,7 @@ const translations = {
     activityName: "Activity Name",
     activityNamePlaceholder: "e.g., Sleep, Bath, Play",
     emoji: "Emoji",
-    color: "Color",
+    color: "Colour",
     cancel: "Cancel",
     save: "Save",
 
@@ -263,9 +263,9 @@ const translations = {
     welcomeLanguageDesc: "Let's start by choosing your preferred language",
     welcomeActivitiesTitle: "Choose Activities to Track",
     welcomeActivitiesDesc:
-      "Select activities to track. Add more or customize in Settings anytime.",
+      "Select activities to track. Add more or customise in Settings anytime.",
     welcomeThemeTitle: "Choose Your Theme",
-    welcomeThemeDesc: "Pick a color scheme that suits your style",
+    welcomeThemeDesc: "Pick a colour scheme that suits your style",
     welcomeFontTitle: "Choose Your Font",
     welcomeFontDesc: "Select a font that's comfortable for you to read",
     welcomeTutorialTitle: "Would You Like a Tutorial?",
