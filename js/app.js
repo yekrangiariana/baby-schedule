@@ -235,11 +235,17 @@
   function getActionTypeName(actionType) {
     if (!actionType) return "";
     // For all default activity types, use translation if available
-    const defaultActivityIds = ["feed", "pee", "poop", "sleep", "bath", "play", "walk", "medicine"];
-    if (
-      defaultActivityIds.includes(actionType.id) &&
-      typeof t === "function"
-    ) {
+    const defaultActivityIds = [
+      "feed",
+      "pee",
+      "poop",
+      "sleep",
+      "bath",
+      "play",
+      "walk",
+      "medicine",
+    ];
+    if (defaultActivityIds.includes(actionType.id) && typeof t === "function") {
       return t(actionType.id);
     }
     // For custom types, use the stored name
