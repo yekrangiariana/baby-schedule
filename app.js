@@ -312,6 +312,9 @@
   // Start initialization
   initializeApp();
 
+  // Initialize screen based on URL hash after app loads
+  initializeScreen();
+
   // Render clock
   setInterval(() => {
     const now = new Date();
@@ -375,10 +378,18 @@
     return s.charAt(0).toUpperCase() + s.slice(1);
   }
 
-  // Screen Navigation
-  function showScreen(screen) {
+  // Screen Navigation with Browser History Support
+  function showScreen(screen, updateHistory = true) {
     // Always scroll to top when switching tabs
     window.scrollTo({ top: 0, behavior: "smooth" });
+
+    // Update browser history if not called from popstate event
+    if (updateHistory) {
+      const currentHash = window.location.hash.slice(1) || 'home';
+      if (currentHash !== screen) {
+        history.pushState({ screen: screen }, '', `#${screen}`);
+      }
+    }
 
     // Update nav buttons
     $$(`.nav-item`).forEach((btn) => btn.classList.remove("active"));
@@ -447,6 +458,54 @@
   function goHome() {
     showScreen("home");
     stopRemoteAutoRefresh();
+  }
+
+  // Browser History Support
+  function handleBrowserNavigation() {
+    const hash = window.location.hash.slice(1) || 'home';
+    const validScreens = ['home', 'log', 'insights', 'settings', 'help', 'about'];
+    
+    // Handle modal states
+    if (hash === 'add-activity') {
+      // Don't change underlying screen, just show modal
+      if (actionTypeModal && actionTypeModal.hidden) {
+        // Show modal without adding to history again
+        actionTypeModal.hidden = false;
+      }
+      return;
+    } else if (hash === 'disconnect') {
+      // Don't change underlying screen, just show disconnect modal
+      if (disconnectModal && disconnectModal.hidden) {
+        disconnectModal.hidden = false;
+      }
+      return;
+    } else {
+      // Close any open modals when navigating to screens
+      if (actionTypeModal && !actionTypeModal.hidden) {
+        actionTypeModal.hidden = true;
+      }
+      if (disconnectModal && !disconnectModal.hidden) {
+        disconnectModal.hidden = true;
+      }
+    }
+    
+    if (validScreens.includes(hash)) {
+      // Don't update history when handling browser navigation
+      showScreen(hash, false);
+    } else {
+      // Default to home for invalid hashes
+      showScreen('home', false);
+    }
+  }
+
+  // Listen for browser back/forward button
+  window.addEventListener('popstate', (event) => {
+    handleBrowserNavigation();
+  });
+
+  // Initialize app with correct screen based on URL hash
+  function initializeScreen() {
+    handleBrowserNavigation();
   }
 
   // Render recent activity on home screen
@@ -2337,12 +2396,20 @@
   undoBtn.addEventListener("click", undoLast);
   viewGraphsBtn.addEventListener("click", async () => {
     try {
-      await openGraphs();
+      showScreen("insights");
+      renderGraphs();
+      backgroundSync();
     } catch (err) {
       // Silently fail
     }
   });
-  viewLogBtn.addEventListener("click", openLog);
+  viewLogBtn.addEventListener("click", () => {
+    showScreen("log");
+    renderLogSummary();
+    renderLog();
+    backgroundSync();
+    startRemoteAutoRefresh();
+  });
   dateFilter.addEventListener("change", () => {
     renderLog();
     // Show/hide clear button based on whether a date is selected
@@ -2371,17 +2438,26 @@
       haptics(5);
       const screen = item.dataset.screen;
       if (screen) {
-        if (screen === "log") openLog();
-        else if (screen === "insights") openGraphs();
-        else if (screen === "settings") openSettings();
-        else showScreen(screen);
+        if (screen === "log") {
+          showScreen("log");
+          renderLogSummary();
+          renderLog();
+          backgroundSync();
+          startRemoteAutoRefresh();
+        } else if (screen === "insights") {
+          showScreen("insights");
+          renderGraphs();
+          backgroundSync();
+        } else if (screen === "settings") {
+          showScreen("settings");
+        } else {
+          showScreen(screen);
+        }
       }
     });
   });
 
-  if (openSettingsBtn && settingsPanel) {
-    openSettingsBtn.addEventListener("click", openSettings);
-  }
+  // Settings button event listener is handled below with renderActionTypes
   if (saveSettingsBtn && appsScriptUrl) {
     saveSettingsBtn.addEventListener("click", async () => {
       const url = appsScriptUrl.value.trim();
@@ -2518,14 +2594,25 @@
   // Disconnect from Google Sheets functionality
   if (disconnectBtn && disconnectModal) {
     disconnectBtn.addEventListener("click", () => {
+      // Add to browser history
+      const currentHash = window.location.hash.slice(1) || 'home';
+      history.pushState({ screen: currentHash, modal: 'disconnect' }, '', '#disconnect');
       disconnectModal.hidden = false;
     });
   }
 
+  function closeDisconnectModal() {
+    if (disconnectModal) disconnectModal.hidden = true;
+    
+    // Handle browser history - go back to the previous screen
+    const currentHash = window.location.hash.slice(1);
+    if (currentHash === 'disconnect') {
+      history.back();
+    }
+  }
+
   if (closeDisconnectModalBtn && disconnectModal) {
-    closeDisconnectModalBtn.addEventListener("click", () => {
-      disconnectModal.hidden = true;
-    });
+    closeDisconnectModalBtn.addEventListener("click", closeDisconnectModal);
   }
 
   if (keepDataBtn && disconnectModal) {
@@ -2540,7 +2627,7 @@
 
       // Update UI
       await updateStatus();
-      disconnectModal.hidden = true;
+      closeDisconnectModal();
 
       toast("📱 Disconnected - Data kept locally");
     });
@@ -2567,7 +2654,7 @@
 
       // Update UI
       await updateStatus();
-      disconnectModal.hidden = true;
+      closeDisconnectModal();
 
       toast("🗑️ Disconnected - All data deleted");
     });
@@ -2577,7 +2664,7 @@
   if (disconnectModal) {
     disconnectModal.addEventListener("click", (e) => {
       if (e.target === disconnectModal) {
-        disconnectModal.hidden = true;
+        closeDisconnectModal();
       }
     });
   }
@@ -2654,6 +2741,10 @@
 
   function openActionTypeModal(editId = null) {
     if (!actionTypeModal) return;
+
+    // Add to browser history
+    const currentHash = window.location.hash.slice(1) || 'home';
+    history.pushState({ screen: currentHash, modal: 'add-activity' }, '', '#add-activity');
 
     if (editId) {
       const type = getActionTypeById(editId);
@@ -2837,6 +2928,13 @@
 
   function closeActionTypeModal() {
     if (actionTypeModal) actionTypeModal.hidden = true;
+    
+    // Handle browser history - go back to the previous screen
+    const currentHash = window.location.hash.slice(1);
+    if (currentHash === 'add-activity') {
+      // Go back in history instead of manually changing hash
+      history.back();
+    }
   }
 
   function saveActionType() {
@@ -2988,11 +3086,10 @@
 
   // Render action types on settings screen open
   if (openSettingsBtn) {
-    const originalOpenSettings = openSettings;
-    openSettings = function () {
-      originalOpenSettings();
+    openSettingsBtn.addEventListener("click", () => {
+      showScreen("settings");
       renderActionTypes();
-    };
+    });
   }
 
   // Export CSV button
