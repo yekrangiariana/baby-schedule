@@ -2276,15 +2276,15 @@
       const url = new URL(cfg.webAppUrl);
       url.searchParams.set("action", "saveActionTypes");
       url.searchParams.set("data", JSON.stringify(actionTypes));
-      
+
       const response = await fetch(url.toString(), {
         method: "GET",
         mode: "cors",
       });
-      
+
       if (response.ok) {
         const result = await response.json();
-        if (result.status === 'ok') {
+        if (result.status === "ok") {
           toast("✓ Activities synced to Google Sheets");
         }
       } else {
@@ -3060,9 +3060,9 @@
   if (disconnectBtn) {
     disconnectBtn.addEventListener("click", async () => {
       const confirmed = confirm(
-        "Disconnect from Google Sheets?\n\nYour data will be kept locally on this device."
+        "Disconnect from Google Sheets?\n\nYour data will be kept locally on this device.",
       );
-      
+
       if (confirmed) {
         // Keep data locally, just remove the Google Sheets connection
         settings.webAppUrl = "";
