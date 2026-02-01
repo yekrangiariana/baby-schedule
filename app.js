@@ -218,7 +218,13 @@
 
   function formatDate(ts) {
     const d = new Date(ts);
-    return d.toLocaleDateString();
+    const options = {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    };
+    return d.toLocaleDateString("en-US", options);
   }
   function formatTime(ts) {
     const d = new Date(ts);
@@ -309,7 +315,19 @@
   // Render clock
   setInterval(() => {
     const now = new Date();
-    if (nowText) nowText.textContent = now.toLocaleString();
+    const options = {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    };
+    if (nowText)
+      nowText.textContent =
+        now.toLocaleDateString("en-US", options) +
+        " " +
+        now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   }, 1000);
 
   // Show/hide undo button temporarily
@@ -833,6 +851,21 @@
         legend.appendChild(item);
       });
     });
+
+    // Interval chart legend - show activity types
+    const intervalLegend = document.getElementById("intervalLegend");
+    if (intervalLegend) {
+      intervalLegend.innerHTML = "";
+      filteredTypes.forEach((type) => {
+        const item = document.createElement("div");
+        item.className = "legend-item";
+        item.innerHTML = `
+          <span class="legend-color" style="background: ${type.color}"></span>
+          <span class="legend-label">${type.name} intervals</span>
+        `;
+        intervalLegend.appendChild(item);
+      });
+    }
   }
 
   function getFilteredActivityTypes() {
@@ -939,8 +972,9 @@
           <div id="weekLegend" class="graph-legend"></div>
         </div>
         <div class="graph-card">
-          <h3>Feed-to-Diaper Ratio</h3>
-          <canvas id="ratioChart"></canvas>
+          <h3>Time Between Activities</h3>
+          <canvas id="intervalChart"></canvas>
+          <div id="intervalLegend" class="graph-legend"></div>
         </div>
       `;
     }
@@ -1024,23 +1058,54 @@
     }
     drawStackedBarChart("weekChart", dailyData);
 
-    // Feed-to-Diaper Ratio (only if feed/pee/poop exist and are selected)
-    const hasFeed = filteredTypes.some((t) => t.id === "feed");
-    const hasDiaper =
-      filteredTypes.some((t) => t.id === "pee") ||
-      filteredTypes.some((t) => t.id === "poop");
+    // Time Between Activities - show average intervals for each activity type
+    const intervalData = [];
+    filteredTypes.forEach((type) => {
+      const typeEntries = entries
+        .filter((e) => e.type === type.id && selectedActivityTypes.has(e.type))
+        .sort((a, b) => a.timestamp - b.timestamp);
 
-    if (hasFeed && hasDiaper) {
-      const feedCount = todayCounts.feed || 0;
-      const diaperCount = (todayCounts.pee || 0) + (todayCounts.poop || 0);
-      const ratio = feedCount > 0 ? (diaperCount / feedCount).toFixed(1) : 0;
-      drawRatioChart("ratioChart", {
-        feeds: feedCount,
-        diapers: diaperCount,
-        ratio: ratio,
-        target: 1.5,
+      if (typeEntries.length < 2) {
+        intervalData.push({
+          type: type,
+          avgInterval: 0,
+          intervalCount: 0,
+          label: "Not enough data",
+        });
+        return;
+      }
+
+      const intervals = [];
+      for (let i = 1; i < typeEntries.length; i++) {
+        const interval =
+          typeEntries[i].timestamp - typeEntries[i - 1].timestamp;
+        intervals.push(interval);
+      }
+
+      const avgInterval =
+        intervals.reduce((sum, interval) => sum + interval, 0) /
+        intervals.length;
+      const hours = Math.floor(avgInterval / (1000 * 60 * 60));
+      const minutes = Math.floor(
+        (avgInterval % (1000 * 60 * 60)) / (1000 * 60),
+      );
+
+      let label;
+      if (hours > 0) {
+        label = `${hours}h ${minutes}m`;
+      } else {
+        label = `${minutes}m`;
+      }
+
+      intervalData.push({
+        type: type,
+        avgInterval: avgInterval,
+        intervalCount: intervals.length,
+        label: label,
       });
-    }
+    });
+
+    drawIntervalChart("intervalChart", intervalData);
   }
 
   // Helper function to get chart colors based on current theme
@@ -1181,18 +1246,30 @@
       ctx.stroke();
     };
 
+    // Draw subtle grid lines for each hour to show all 24 hours are represented
+    ctx.strokeStyle = chartColors.muted + "20"; // Very subtle grid lines
+    ctx.lineWidth = 1;
+    data.forEach((d, i) => {
+      const x = i * step;
+      ctx.beginPath();
+      ctx.moveTo(x, 30);
+      ctx.lineTo(x, h - 40);
+      ctx.stroke();
+    });
+
     // Draw lines for each filtered action type dynamically
     filteredTypes.forEach((type) => {
       drawLine(type.id, type.color);
     });
 
-    // Draw time labels
-    ctx.fillStyle = "#6b7280";
+    // Draw time labels - show more hours to make it clearer all 24 are included
+    ctx.fillStyle = chartColors.muted;
     ctx.font = "10px sans-serif";
     ctx.textAlign = "center";
-    const showEvery = Math.ceil(data.length / 6);
+    const showEvery = Math.max(1, Math.ceil(data.length / 8)); // Show more labels
     data.forEach((d, i) => {
-      if (i % showEvery === 0) {
+      if (i % showEvery === 0 || i === data.length - 1) {
+        // Always show first and last
         const x = i * step;
         const hour = d.hour;
         const timeLabel =
@@ -1258,7 +1335,7 @@
       ctx.fillText(d.day, x + barWidth / 2, h - 10);
     });
   }
-  function drawRatioChart(canvasId, data) {
+  function drawIntervalChart(canvasId, data) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
 
@@ -1279,48 +1356,61 @@
     ctx.fillStyle = chartColors.background;
     ctx.fillRect(0, 0, w, h);
 
-    // Draw comparison bars
-    const barWidth = 60;
-    const spacing = (w - barWidth * 2) / 3;
+    const padding = { top: 40, right: 30, bottom: 50, left: 30 };
+    const chartWidth = w - padding.left - padding.right;
+    const chartHeight = h - padding.top - padding.bottom;
 
-    // Feeds bar
-    const maxVal = Math.max(data.feeds, data.diapers, 1);
-    const feedHeight = (data.feeds / maxVal) * (h - 100);
-    const x1 = spacing;
-    ctx.fillStyle = "#60a5fa";
-    drawRoundedRect(ctx, x1, h - feedHeight - 50, barWidth, feedHeight, 8);
-    ctx.fillStyle = chartColors.text;
-    ctx.font = "14px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(data.feeds, x1 + barWidth / 2, h - feedHeight - 60);
-    ctx.font = "12px sans-serif";
-    ctx.fillText("Feeds", x1 + barWidth / 2, h - 30);
+    // Filter out activities with no data
+    const validData = data.filter((d) => d.intervalCount > 0);
 
-    // Diapers bar
-    const diaperHeight = (data.diapers / maxVal) * (h - 100);
-    const x2 = spacing * 2 + barWidth;
-    ctx.fillStyle = "#fbbf24";
-    drawRoundedRect(ctx, x2, h - diaperHeight - 50, barWidth, diaperHeight, 8);
-    ctx.fillStyle = chartColors.text;
-    ctx.font = "14px sans-serif";
-    ctx.fillText(data.diapers, x2 + barWidth / 2, h - diaperHeight - 60);
-    ctx.font = "12px sans-serif";
-    ctx.fillText("Diapers", x2 + barWidth / 2, h - 30);
+    if (validData.length === 0) {
+      ctx.fillStyle = chartColors.text;
+      ctx.font = "14px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("Need more activities to show intervals", w / 2, h / 2);
+      return;
+    }
 
-    // Ratio display
-    ctx.fillStyle = chartColors.text;
-    ctx.font = "bold 24px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(data.ratio + ":1", w / 2, 40);
-    ctx.font = "11px sans-serif";
-    ctx.fillStyle = "#6b7280";
-    const status =
-      data.ratio >= 1 && data.ratio <= 2
-        ? "Healthy range"
-        : data.ratio > 2
-          ? "Great hydration"
-          : "Monitor intake";
-    ctx.fillText(status + " (target: 1-2:1)", w / 2, 58);
+    // Find max interval for scaling
+    const maxInterval = Math.max(...validData.map((d) => d.avgInterval));
+
+    // Draw bars for each activity type
+    const barWidth = chartWidth / validData.length;
+    validData.forEach((item, index) => {
+      const x = padding.left + index * barWidth;
+      const barHeight = (item.avgInterval / maxInterval) * chartHeight;
+      const y = padding.top + chartHeight - barHeight;
+
+      // Draw bar with activity type color
+      ctx.fillStyle = item.type.color;
+      drawRoundedRect(
+        ctx,
+        x + barWidth * 0.15,
+        y,
+        barWidth * 0.7,
+        barHeight,
+        4,
+      );
+
+      // Activity label (horizontal, under bar)
+      ctx.fillStyle = chartColors.text;
+      ctx.font = "11px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(item.type.name, x + barWidth / 2, h - padding.bottom + 15);
+
+      // Interval time label above bar
+      ctx.font = "12px sans-serif";
+      ctx.fillText(item.label, x + barWidth / 2, y - 10);
+
+      // Activity emoji in center of bar
+      ctx.font = "18px sans-serif";
+      if (barHeight > 30) {
+        ctx.fillText(item.type.emoji, x + barWidth / 2, y + barHeight / 2 + 6);
+      }
+    });
+
+    // Title
+    // Removed for cleaner appearance
   }
   function renderLog() {
     const source = entries;
@@ -2612,16 +2702,16 @@
       { name: "Massage", emoji: "👐", color: "#e8d4ff" },
       { name: "Story Time", emoji: "📖", color: "#fff4d4" },
       { name: "Music", emoji: "🎵", color: "#d4fff0" },
-      { name: "Swing", emoji: "🍼", color: "#ffd4e8" },
       { name: "Car Ride", emoji: "🚗", color: "#d4e8ff" },
       { name: "Cuddle", emoji: "🤗", color: "#ffeed4" },
       { name: "Weight Check", emoji: "⚖️", color: "#e0d4ff" },
       { name: "Temperature", emoji: "🌡️", color: "#ffd4d4" },
-      { name: "Burp", emoji: "👶", color: "#d4ffd4" },
-      { name: "Hiccups", emoji: "😯", color: "#d4f4ff" },
-      { name: "Spit Up", emoji: "💦", color: "#fff0d4" },
+      { name: "Bob 💩", emoji: "👶", color: "#d4ffd4" },
+      { name: "Rowan 💩", emoji: "👶", color: "#d4f4ff" },
+      { name: "Bob Feed", emoji: "🍼", color: "#fff0d4" },
+      { name: "Rowan Feed", emoji: "🍼", color: "#f0d4ff" },
       { name: "Teeth", emoji: "🦷", color: "#f0d4ff" },
-      { name: "Stroller", emoji: "🍼", color: "#d4ffe0" },
+      { name: "Stroller", emoji: "🚼", color: "#d4ffe0" },
       { name: "Visitor", emoji: "👋", color: "#ffe4d4" },
       { name: "Photo", emoji: "📸", color: "#d4d4ff" },
       { name: "Milestone", emoji: "🎉", color: "#ffd4f0" },

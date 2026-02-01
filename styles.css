@@ -1734,8 +1734,7 @@ body {
 
 .graph-guide {
   margin-top: 14px;
-  padding-top: 14px;
-  border-top: 2px solid var(--border);
+  padding-bottom: 14px;
   font-size: var(--text-sm);
   color: var(--text-secondary);
   line-height: 1.6;
