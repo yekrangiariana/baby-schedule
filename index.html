@@ -74,6 +74,7 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/welcome.css" />
 
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -460,10 +461,19 @@
             <button
               id="startTutorialBtn"
               class="btn-rounded btn-secondary"
-              style="width: 100%"
+              style="width: 100%; margin-bottom: 12px"
               data-i18n="startTutorial"
             >
               🎓 Start App Tutorial
+            </button>
+
+            <button
+              id="restartWelcomeBtn"
+              class="btn-rounded btn-secondary"
+              style="width: 100%"
+              data-i18n="restartWelcome"
+            >
+              👋 Restart Welcome Setup
             </button>
           </section>
 
@@ -703,6 +713,198 @@
       <div id="graphsPanel"></div>
     </div>
 
+    <!-- Welcome/Onboarding Overlay -->
+    <div id="welcomeOverlay" class="hidden">
+      <div class="welcome-container">
+        <!-- Header with Skip Button -->
+        <div class="welcome-header">
+          <div class="welcome-progress">
+            <div class="welcome-progress-dot"></div>
+            <div class="welcome-progress-dot"></div>
+            <div class="welcome-progress-dot"></div>
+            <div class="welcome-progress-dot"></div>
+            <div class="welcome-progress-dot"></div>
+          </div>
+          <button class="welcome-skip-btn" data-i18n="skip">Skip</button>
+        </div>
+
+        <!-- Slides Container -->
+        <div class="welcome-slides">
+          <!-- Slide 1: Language Selection -->
+          <div class="welcome-slide">
+            <div class="welcome-slide-content">
+              <div class="welcome-icon">👋</div>
+              <h1 class="welcome-title">
+                <span data-i18n="welcomeTitle">Welcome to</span><br>
+                <span style="color: var(--primary); font-size: 1.1em;">Baby Schedule</span>
+              </h1>
+              <p class="welcome-description" data-i18n="welcomeLanguageDesc">
+                Let's start by choosing your preferred language
+              </p>
+              
+              <div class="welcome-language-grid">
+                <div class="welcome-language-option" data-lang="en">
+                  <span class="welcome-language-flag">🇬🇧</span>
+                  <span class="welcome-language-name">English</span>
+                </div>
+                <div class="welcome-language-option" data-lang="fi">
+                  <span class="welcome-language-flag">🇫🇮</span>
+                  <span class="welcome-language-name">Suomi</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 2: Activities Selection -->
+          <div class="welcome-slide">
+            <div class="welcome-slide-content">
+              <div class="welcome-icon">📝</div>
+              <h1 class="welcome-title" data-i18n="welcomeActivitiesTitle">Choose Activities to Track</h1>
+              <p class="welcome-description" data-i18n="welcomeActivitiesDesc">
+                Select activities to track. Add more or customize in Settings anytime.
+              </p>
+              
+              <div class="welcome-activities-grid">
+                <div class="welcome-activity-option" data-activity="feed">
+                  <span class="welcome-activity-emoji">🍼</span>
+                  <span class="welcome-activity-name" data-i18n="feed">Feed</span>
+                </div>
+                <div class="welcome-activity-option" data-activity="pee">
+                  <span class="welcome-activity-emoji">💧</span>
+                  <span class="welcome-activity-name" data-i18n="pee">Pee</span>
+                </div>
+                <div class="welcome-activity-option" data-activity="poop">
+                  <span class="welcome-activity-emoji">💩</span>
+                  <span class="welcome-activity-name" data-i18n="poop">Poop</span>
+                </div>
+                <div class="welcome-activity-option" data-activity="sleep">
+                  <span class="welcome-activity-emoji">😴</span>
+                  <span class="welcome-activity-name" data-i18n="sleep">Sleep</span>
+                </div>
+                <div class="welcome-activity-option" data-activity="bath">
+                  <span class="welcome-activity-emoji">🛁</span>
+                  <span class="welcome-activity-name" data-i18n="bath">Bath</span>
+                </div>
+                <div class="welcome-activity-option" data-activity="play">
+                  <span class="welcome-activity-emoji">🎮</span>
+                  <span class="welcome-activity-name" data-i18n="play">Play</span>
+                </div>
+                <div class="welcome-activity-option" data-activity="walk">
+                  <span class="welcome-activity-emoji">🚶</span>
+                  <span class="welcome-activity-name" data-i18n="walk">Walk</span>
+                </div>
+                <div class="welcome-activity-option" data-activity="medicine">
+                  <span class="welcome-activity-emoji">💊</span>
+                  <span class="welcome-activity-name" data-i18n="medicine">Medicine</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 3: Theme Selection -->
+          <div class="welcome-slide">
+            <div class="welcome-slide-content">
+              <div class="welcome-icon">🎨</div>
+              <h1 class="welcome-title" data-i18n="welcomeThemeTitle">Choose Your Theme</h1>
+              <p class="welcome-description" data-i18n="welcomeThemeDesc">
+                Pick a color scheme that suits your style
+              </p>
+              
+              <div class="welcome-theme-grid">
+                <div class="welcome-theme-option" data-theme="blossom">
+                  <div class="welcome-theme-emoji">🌸</div>
+                  <div class="welcome-theme-name" data-i18n="themeBlossom">Blossom</div>
+                </div>
+                <div class="welcome-theme-option" data-theme="comet">
+                  <div class="welcome-theme-emoji">☄️</div>
+                  <div class="welcome-theme-name" data-i18n="themeComet">Comet</div>
+                </div>
+                <div class="welcome-theme-option" data-theme="meadow">
+                  <div class="welcome-theme-emoji">🌿</div>
+                  <div class="welcome-theme-name" data-i18n="themeMeadow">Meadow</div>
+                </div>
+                <div class="welcome-theme-option" data-theme="midnight">
+                  <div class="welcome-theme-emoji">🌙</div>
+                  <div class="welcome-theme-name" data-i18n="themeMidnight">Midnight</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 4: Font Selection -->
+          <div class="welcome-slide">
+            <div class="welcome-slide-content">
+              <div class="welcome-icon">🔤</div>
+              <h1 class="welcome-title" data-i18n="welcomeFontTitle">Choose Your Font</h1>
+              <p class="welcome-description" data-i18n="welcomeFontDesc">
+                Select a font that's comfortable for you to read
+              </p>
+              
+              <div class="welcome-font-grid">
+                <div class="welcome-font-option" data-font="roboto">
+                  <div class="welcome-font-demo" data-font="roboto">Roboto</div>
+                </div>
+                <div class="welcome-font-option" data-font="mono">
+                  <div class="welcome-font-demo" data-font="mono">Roboto Mono</div>
+                </div>
+                <div class="welcome-font-option" data-font="lora">
+                  <div class="welcome-font-demo" data-font="lora">Lora</div>
+                </div>
+                <div class="welcome-font-option" data-font="inter">
+                  <div class="welcome-font-demo" data-font="inter">Inter</div>
+                </div>
+                <div class="welcome-font-option" data-font="creepster">
+                  <div class="welcome-font-demo" data-font="creepster">Creepster</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 5: Tutorial Choice -->
+          <div class="welcome-slide">
+            <div class="welcome-slide-content">
+              <div class="welcome-icon">🎓</div>
+              <h1 class="welcome-title" data-i18n="welcomeTutorialTitle">Would You Like a Tutorial?</h1>
+              <p class="welcome-description" data-i18n="welcomeTutorialDesc">
+                Take a quick tour to learn the features, or explore on your own. All settings can be changed in Settings anytime.
+              </p>
+              
+              <div class="welcome-tutorial-options">
+                <div class="welcome-tutorial-choice" data-tutorial="yes">
+                  <div class="welcome-tutorial-choice-title">
+                    <span class="welcome-tutorial-choice-emoji">✨</span>
+                    <span data-i18n="welcomeTutorialYes">Yes, Show Me Around</span>
+                  </div>
+                  <div class="welcome-tutorial-choice-desc" data-i18n="welcomeTutorialYesDesc">
+                    Take a quick tour to learn all the features
+                  </div>
+                </div>
+                <div class="welcome-tutorial-choice" data-tutorial="no">
+                  <div class="welcome-tutorial-choice-title">
+                    <span class="welcome-tutorial-choice-emoji">🚀</span>
+                    <span data-i18n="welcomeTutorialNo">No, I'll Explore Myself</span>
+                  </div>
+                  <div class="welcome-tutorial-choice-desc" data-i18n="welcomeTutorialNoDesc">
+                    Jump right in and start tracking
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="welcome-navigation">
+          <button class="welcome-nav-btn welcome-back-btn" disabled>
+            <span data-i18n="back">← Back</span>
+          </button>
+          <button class="welcome-nav-btn welcome-next-btn">
+            <span data-i18n="next">Next →</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Tutorial Wizard -->
     <div id="tutorialWizard" class="wizard-overlay" hidden>
       <div class="wizard-spotlight"></div>
@@ -732,6 +934,7 @@
     </div>
 
     <script src="js/translations.js"></script>
+    <script src="js/welcome.js"></script>
     <script src="js/app.js"></script>
   </body>
 </html>

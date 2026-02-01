@@ -101,6 +101,7 @@ const translations = {
     tutorial: "🎓 Tutorial",
     tutorialDesc: "Learn how to use the app with an interactive guided tour.",
     startTutorial: "🎓 Start App Tutorial",
+    restartWelcome: "👋 Restart Welcome Setup",
 
     // About & Legal Section
     aboutLegal: "📋 About & Legal",
@@ -242,6 +243,27 @@ const translations = {
     feed: "Feed",
     pee: "Pee",
     poop: "Poop",
+
+    // Welcome/Onboarding
+    welcomeTitle: "Welcome to",
+    welcomeLanguageDesc: "Let's start by choosing your preferred language",
+    welcomeActivitiesTitle: "Choose Activities to Track",
+    welcomeActivitiesDesc:
+      "Select activities to track. Add more or customize in Settings anytime.",
+    welcomeThemeTitle: "Choose Your Theme",
+    welcomeThemeDesc: "Pick a color scheme that suits your style",
+    welcomeFontTitle: "Choose Your Font",
+    welcomeFontDesc: "Select a font that's comfortable for you to read",
+    welcomeTutorialTitle: "Would You Like a Tutorial?",
+    welcomeTutorialDesc:
+      "Take a quick tour to learn the features, or explore on your own. All settings can be changed in Settings anytime.",
+    welcomeTutorialYes: "Yes, Show Me Around",
+    welcomeTutorialYesDesc: "Take a quick tour to learn all the features",
+    welcomeTutorialNo: "I'll Explore Myself",
+    welcomeTutorialNoDesc: "Jump right in and start tracking",
+    welcomeSettingsReminder:
+      "💡 You can change all these settings anytime in the Settings tab",
+    welcomeGetStarted: "🚀 Get Started!",
   },
 
   fi: {
@@ -344,6 +366,7 @@ const translations = {
     tutorialDesc:
       "Opi käyttämään sovellusta interaktiivisen ohjatun kierroksen avulla.",
     startTutorial: "🎓 Aloita Sovelluksen Opastus",
+    restartWelcome: "👋 Aloita Tervetuloa-Asennus Uudelleen",
 
     // About & Legal Section
     aboutLegal: "📋 Tietoa & Laki",
@@ -489,6 +512,27 @@ const translations = {
     feed: "Ruokailu",
     pee: "Pissa",
     poop: "Kakka",
+
+    // Welcome/Onboarding
+    welcomeTitle: "Tervetuloa",
+    welcomeLanguageDesc: "Aloitetaan valitsemalla haluamasi kieli",
+    welcomeActivitiesTitle: "Valitse Seurattavat Toiminnot",
+    welcomeActivitiesDesc:
+      "Valitse toiminnot. Lisää tai muokkaa Asetuksissa milloin tahansa.",
+    welcomeThemeTitle: "Valitse Teemasi",
+    welcomeThemeDesc: "Valitse värimaailma, joka sopii tyyliisi",
+    welcomeFontTitle: "Valitse Fonttisi",
+    welcomeFontDesc: "Valitse fontti, joka on sinulle mukava lukea",
+    welcomeTutorialTitle: "Haluatko Opastuksen?",
+    welcomeTutorialDesc:
+      "Tee pikakierros oppiaksesi ominaisuudet tai tutki itse. Kaikki asetukset voi muuttaa Asetuksissa.",
+    welcomeTutorialYes: "Kyllä, Näytä Minulle",
+    welcomeTutorialYesDesc: "Tee pikakierros oppiaksesi kaikki ominaisuudet",
+    welcomeTutorialNo: "En, Tutkin Itse",
+    welcomeTutorialNoDesc: "Hyppää suoraan sisään ja aloita seuranta",
+    welcomeSettingsReminder:
+      "💡 Voit muuttaa kaikkia näitä asetuksia milloin tahansa Asetukset-välilehdessä",
+    welcomeGetStarted: "🚀 Aloita!",
   },
 };
 

@@ -2749,6 +2749,17 @@
     });
   }
 
+  // Restart Welcome Setup
+  const restartWelcomeBtn = $("#restartWelcomeBtn");
+  if (restartWelcomeBtn) {
+    restartWelcomeBtn.addEventListener("click", () => {
+      if (window.WelcomeSystem) {
+        window.WelcomeSystem.reset();
+        window.location.reload(); // Reload to show welcome screen
+      }
+    });
+  }
+
   // Sync notice link
   if (syncNoticeLink) {
     syncNoticeLink.addEventListener("click", () => {
@@ -3661,4 +3672,130 @@
   }
 
   // (auto-refresh hooks are called from openLog/closeLog above)
+
+  // ========================================
+  // Welcome/Onboarding Integration
+  // ========================================
+
+  // Check if tutorial should start after welcome (on page reload)
+  function checkStartTutorialAfterWelcome() {
+    const shouldStart = localStorage.getItem(
+      "babylog.startTutorialAfterWelcome",
+    );
+    if (shouldStart === "true") {
+      // Remove the flag
+      localStorage.removeItem("babylog.startTutorialAfterWelcome");
+
+      // Start tutorial with a small delay to ensure everything is loaded
+      setTimeout(() => {
+        if (typeof startTutorialWizard === "function") {
+          startTutorialWizard();
+        }
+      }, 800);
+    }
+  }
+
+  // Call this after app initialization
+  checkStartTutorialAfterWelcome();
+
+  window.addEventListener("welcomeCompleted", (event) => {
+    const welcomeSettings = event.detail;
+
+    // Apply language
+    if (welcomeSettings.language) {
+      settings.language = welcomeSettings.language;
+      saveSettings(settings);
+      if (typeof updatePageTranslations === "function") {
+        updatePageTranslations();
+      }
+    }
+
+    // Apply theme
+    if (welcomeSettings.theme) {
+      settings.theme = welcomeSettings.theme;
+      saveSettings(settings);
+      applyTheme(welcomeSettings.theme);
+    }
+
+    // Apply font
+    if (welcomeSettings.font) {
+      settings.font = welcomeSettings.font;
+      saveSettings(settings);
+      applyFont(welcomeSettings.font);
+    }
+
+    // Apply selected activities (only keep selected ones)
+    if (welcomeSettings.activities && welcomeSettings.activities.length > 0) {
+      // Define all available activities
+      const allAvailableActivities = [
+        {
+          id: "feed",
+          name: typeof t === "function" ? t("feed") : "Feed",
+          emoji: "🍼",
+          color: "#a8d5ff",
+        },
+        {
+          id: "pee",
+          name: typeof t === "function" ? t("pee") : "Pee",
+          emoji: "💧",
+          color: "#ffe4a8",
+        },
+        {
+          id: "poop",
+          name: typeof t === "function" ? t("poop") : "Poop",
+          emoji: "💩",
+          color: "#ffb3ba",
+        },
+        {
+          id: "sleep",
+          name: typeof t === "function" ? t("sleep") : "Sleep",
+          emoji: "😴",
+          color: "#c7b8ea",
+        },
+        {
+          id: "bath",
+          name: typeof t === "function" ? t("bath") : "Bath",
+          emoji: "🛁",
+          color: "#a8e6ff",
+        },
+        {
+          id: "play",
+          name: typeof t === "function" ? t("play") : "Play",
+          emoji: "🎮",
+          color: "#ffcba8",
+        },
+        {
+          id: "walk",
+          name: typeof t === "function" ? t("walk") : "Walk",
+          emoji: "🚶",
+          color: "#b8ffb8",
+        },
+        {
+          id: "medicine",
+          name: typeof t === "function" ? t("medicine") : "Medicine",
+          emoji: "💊",
+          color: "#ffb8e6",
+        },
+      ];
+
+      const selectedTypes = allAvailableActivities.filter((type) =>
+        welcomeSettings.activities.includes(type.id),
+      );
+
+      // Update action types to only include selected ones
+      actionTypes = selectedTypes;
+      saveActionTypes(actionTypes);
+
+      // Re-render action buttons and types list
+      renderActionButtons();
+      renderActionTypesList();
+      renderActionTypesInsights();
+    }
+
+    // Refresh all displays with new settings
+    renderHome();
+    renderLog();
+    updateStatus();
+    updateAllGraphs();
+  });
 })();
