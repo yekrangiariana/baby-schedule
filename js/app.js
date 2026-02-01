@@ -193,9 +193,24 @@
   // Default action types
   function getDefaultActionTypes() {
     return [
-      { id: "feed", name: "Feed", emoji: "🍼", color: "#a8d5ff" },
-      { id: "pee", name: "Pee", emoji: "💧", color: "#ffe4a8" },
-      { id: "poop", name: "Poop", emoji: "💩", color: "#ffb3ba" },
+      {
+        id: "feed",
+        name: typeof t === "function" ? t("feed") : "Feed",
+        emoji: "🍼",
+        color: "#a8d5ff",
+      },
+      {
+        id: "pee",
+        name: typeof t === "function" ? t("pee") : "Pee",
+        emoji: "💧",
+        color: "#ffe4a8",
+      },
+      {
+        id: "poop",
+        name: typeof t === "function" ? t("poop") : "Poop",
+        emoji: "💩",
+        color: "#ffb3ba",
+      },
     ];
   }
 
@@ -216,15 +231,33 @@
     return actionTypes.find((t) => t.id === id) || null;
   }
 
+  // Get translated action type name
+  function getActionTypeName(actionType) {
+    if (!actionType) return "";
+    // For default types, use translation if available
+    if (
+      ["feed", "pee", "poop"].includes(actionType.id) &&
+      typeof t === "function"
+    ) {
+      return t(actionType.id);
+    }
+    // For custom types, use the stored name
+    return actionType.name;
+  }
+
   function formatDate(ts) {
     const d = new Date(ts);
+    const locale =
+      typeof getCurrentLanguage === "function" && getCurrentLanguage() === "fi"
+        ? "fi-FI"
+        : "en-US";
     const options = {
       weekday: "short",
       day: "numeric",
       month: "short",
       year: "numeric",
     };
-    return d.toLocaleDateString("en-US", options);
+    return d.toLocaleDateString(locale, options);
   }
   function formatTime(ts) {
     const d = new Date(ts);
@@ -246,6 +279,21 @@
   let syncQueue = loadSyncQueue();
   let actionTypes = loadActionTypes();
   let isSyncing = false;
+
+  // Auto-refresh remote log every 20s while the panel is open
+  let remoteRefreshTimer = null;
+  function startRemoteAutoRefresh() {
+    if (remoteRefreshTimer) clearInterval(remoteRefreshTimer);
+    remoteRefreshTimer = setInterval(async () => {
+      await backgroundSync();
+    }, 20000);
+  }
+  function stopRemoteAutoRefresh() {
+    if (remoteRefreshTimer) {
+      clearInterval(remoteRefreshTimer);
+      remoteRefreshTimer = null;
+    }
+  }
 
   // Apply saved theme or default to blossom
   function applyTheme(theme) {
@@ -289,6 +337,42 @@
   // Load and apply font on startup
   applyFont(settings.font || "roboto");
 
+  // Apply saved language or default to English
+  function applyLanguage(lang) {
+    const validLanguages = ["en", "fi"];
+    const selectedLanguage = validLanguages.includes(lang) ? lang : "en";
+
+    // Save the language setting
+    settings.language = selectedLanguage;
+    saveSettings(settings);
+
+    // Update radio buttons
+    const languageRadios = document.querySelectorAll('input[name="language"]');
+    languageRadios.forEach((radio) => {
+      radio.checked = radio.value === selectedLanguage;
+    });
+
+    // Update all translations on the page
+    if (typeof updatePageTranslations === "function") {
+      updatePageTranslations();
+    }
+
+    // Re-render UI components with new language
+    renderHomeScreen();
+    if (!logScreen.hidden) renderLog();
+    if (!insightsScreen.hidden) renderGraphs();
+    if (!settingsScreen.hidden && typeof renderActionTypes === "function") {
+      renderActionTypes();
+    }
+    updateStatus();
+
+    // Haptic feedback when language changes
+    haptics(5);
+  }
+
+  // Load and apply language on startup
+  applyLanguage(settings.language || "en");
+
   // If a fixed URL is provided, force-enable sync
   if (FIXED_WEB_APP_URL) {
     settings = { webAppUrl: FIXED_WEB_APP_URL, syncEnabled: true };
@@ -318,6 +402,10 @@
   // Render clock
   setInterval(() => {
     const now = new Date();
+    const locale =
+      typeof getCurrentLanguage === "function" && getCurrentLanguage() === "fi"
+        ? "fi-FI"
+        : "en-US";
     const options = {
       weekday: "short",
       day: "numeric",
@@ -328,7 +416,7 @@
     };
     if (nowText)
       nowText.textContent =
-        now.toLocaleDateString("en-US", options) +
+        now.toLocaleDateString(locale, options) +
         " " +
         now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   }, 1000);
@@ -362,7 +450,12 @@
 
     // Immediate UI update
     haptics(15);
-    toast(`${capitalize(type)} logged`);
+    const actionType = getActionTypeById(type);
+    const actionName = actionType
+      ? getActionTypeName(actionType)
+      : capitalize(type);
+    const loggedText = typeof t === "function" ? t("logged") : "logged";
+    toast(`${actionName} ${loggedText}`);
     updateStatus();
     showUndoButton();
 
@@ -525,23 +618,28 @@
       .slice(0, 3);
 
     if (recent.length === 0) {
-      recentList.innerHTML =
-        '<p style="text-align:center;color:var(--text-muted);padding:20px;">No activity yet</p>';
+      const noActivityMsg =
+        typeof t === "function" ? t("noActivityYet") : "No activity yet";
+      recentList.innerHTML = `<p style="text-align:center;color:var(--text-muted);padding:20px;">${noActivityMsg}</p>`;
       return;
     }
 
     recentList.innerHTML = recent
-      .map(
-        (e, index) => `
+      .map((e, index) => {
+        const actionType = getActionTypeById(e.type);
+        const actionName = actionType
+          ? getActionTypeName(actionType)
+          : capitalize(e.type);
+        return `
       <div class="recent-item" style="animation-delay: ${index * 0.05}s">
         <div class="recent-icon ${e.type}">${getTypeEmoji(e.type)}</div>
         <div class="recent-info">
-          <div class="recent-type">${capitalize(e.type)}</div>
+          <div class="recent-type">${actionName}</div>
           <div class="recent-time">${formatDate(e.timestamp)} ${formatTime(e.timestamp)}</div>
         </div>
       </div>
-    `,
-      )
+    `;
+      })
       .join("");
   }
 
@@ -617,7 +715,7 @@
         btn.style.borderColor = type.color;
         btn.innerHTML = `
           <span class="action-emoji">${type.emoji}</span>
-          <span class="action-label">${type.name}</span>
+          <span class="action-label">${getActionTypeName(type)}</span>
         `;
 
         // Add gradient background
@@ -728,11 +826,11 @@
 
     logSummaryCard.innerHTML = `
       <div class="summary-header">
-        <h3>📊 Overview</h3>
+        <h3>📊 ${typeof t === "function" ? t("overview") : "Overview"}</h3>
         <div class="summary-header-actions">
           <div class="summary-badges">
-            <span class="summary-badge">${src.length} Total</span>
-            <span class="summary-badge">${todayEntries.length} Today</span>
+            <span class="summary-badge">${src.length} ${typeof t === "function" ? t("total") : "Total"}</span>
+            <span class="summary-badge">${todayEntries.length} ${typeof t === "function" ? t("today") : "Today"}</span>
           </div>
         </div>
       </div>
@@ -741,18 +839,20 @@
         <div class="quick-stat">
           <div class="quick-stat-icon">🔥</div>
           <div class="quick-stat-value">${streak}</div>
-          <div class="quick-stat-label">Day Streak</div>
+          <div class="quick-stat-label">${typeof t === "function" ? t("dayStreak") : "Day Streak"}</div>
         </div>
         ${
           mostLoggedTypes.length > 0
             ? mostLoggedTypes
                 .map((type) => {
                   const count = allCounts[type.id];
+                  const mostLabel =
+                    typeof t === "function" ? t("most") : "Most";
                   return `
           <div class="quick-stat">
             <div class="quick-stat-icon" style="background-color: ${type.color}33">${type.emoji}</div>
             <div class="quick-stat-value">${count}</div>
-            <div class="quick-stat-label">Most: ${type.name}</div>
+            <div class="quick-stat-label">${mostLabel}: ${getActionTypeName(type)}</div>
           </div>
         `;
                 })
@@ -764,23 +864,24 @@
       <div class="summary-divider"></div>
       
       <div class="summary-activities">
-        <div class="summary-activities-header">Last Activity Times</div>
+        <div class="summary-activities-header">${typeof t === "function" ? t("lastActivityTimes") : "Last Activity Times"}</div>
         <div class="summary-activities-grid">
           ${actionTypes
             .map((type) => {
               const lastEntry = src
                 .filter((e) => e.type === type.id)
                 .sort((a, b) => b.timestamp - a.timestamp)[0];
+              const noDataLabel = typeof t === "function" ? t("noData") : "—";
               const lastTime = lastEntry
                 ? `${formatDate(lastEntry.timestamp)} ${formatTime(lastEntry.timestamp)}`
-                : "—";
+                : noDataLabel;
               const todayCount = todayCounts[type.id] || 0;
 
               return `
               <div class="activity-row">
                 <div class="activity-row-icon" style="background-color: ${type.color}">${type.emoji}</div>
                 <div class="activity-row-info">
-                  <div class="activity-row-name">${type.name}${todayCount > 0 ? ` <span class="activity-today-count">+${todayCount}</span>` : ""}</div>
+                  <div class="activity-row-name">${getActionTypeName(type)}${todayCount > 0 ? ` <span class="activity-today-count">+${todayCount}</span>` : ""}</div>
                   <div class="activity-row-time">${lastTime}</div>
                 </div>
               </div>
@@ -816,11 +917,13 @@
     if (todayTotals) {
       if (src.length) {
         const summaryParts = actionTypes
-          .map((type) => `${type.name} ${counts[type.id] || 0}`)
+          .map((type) => `${getActionTypeName(type)} ${counts[type.id] || 0}`)
           .join(" • ");
-        todayTotals.textContent = `Today: ${summaryParts}`;
+        const todayLabel = typeof t === "function" ? t("todayLabel") : "Today:";
+        todayTotals.textContent = `${todayLabel} ${summaryParts}`;
       } else {
-        todayTotals.textContent = "Today: —";
+        const todayNone = typeof t === "function" ? t("todayNone") : "Today: —";
+        todayTotals.textContent = todayNone;
       }
     }
 
@@ -913,7 +1016,7 @@
         item.className = "legend-item";
         item.innerHTML = `
           <span class="legend-color" style="background: ${type.color}"></span>
-          <span class="legend-label">${type.name}</span>
+          <span class="legend-label">${getActionTypeName(type)}</span>
         `;
         legend.appendChild(item);
       });
@@ -926,9 +1029,11 @@
       filteredTypes.forEach((type) => {
         const item = document.createElement("div");
         item.className = "legend-item";
+        const intervalsLabel =
+          typeof t === "function" ? t("intervals") : "intervals";
         item.innerHTML = `
           <span class="legend-color" style="background: ${type.color}"></span>
-          <span class="legend-label">${type.name} intervals</span>
+          <span class="legend-label">${getActionTypeName(type)} ${intervalsLabel}</span>
         `;
         intervalLegend.appendChild(item);
       });
@@ -962,7 +1067,7 @@
       item.innerHTML = `
         <div class="activity-filter-checkbox"></div>
         <div class="activity-filter-icon" style="background-color: ${type.color}">${type.emoji}</div>
-        <div class="activity-filter-label">${type.name}</div>
+        <div class="activity-filter-label">${getActionTypeName(type)}</div>
       `;
 
       item.addEventListener("click", () => {
@@ -1011,9 +1116,9 @@
           color: var(--text-secondary);
         ">
           <div style="font-size: 64px; margin-bottom: 16px; opacity: 0.5;">📊</div>
-          <h3 style="font-size: 20px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">No Data Yet</h3>
+          <h3 style="font-size: 20px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">${typeof t === "function" ? t("noDataYet") : "No Data Yet"}</h3>
           <p style="font-size: 15px; line-height: 1.5; max-width: 300px;">
-            Start logging activities to see insightful graphs and trends about your baby's routine.
+            ${typeof t === "function" ? t("noDataYetDesc") : "Start logging activities to see insightful graphs and trends about your baby's routine."}
           </p>
         </div>
       `;
@@ -1022,24 +1127,35 @@
 
     // Restore graphs container structure if it was replaced
     if (!graphsContainer.querySelector(".graph-card")) {
+      const todayTitle =
+        typeof t === "function" ? t("todayActivityTitle") : "Today's Activity";
+      const hourlyTitle =
+        typeof t === "function" ? t("last24HoursTitle") : "24-Hour Timeline";
+      const weekTitle =
+        typeof t === "function" ? t("sevenDayTrendTitle") : "7-Day Trend";
+      const intervalTitle =
+        typeof t === "function"
+          ? t("timeBetweenActivitiesTitle")
+          : "Time Between Activities";
+
       graphsContainer.innerHTML = `
         <div class="graph-card">
-          <h3>Today's Activity</h3>
+          <h3>${todayTitle}</h3>
           <canvas id="todayChart"></canvas>
           <div id="todayLegend" class="graph-legend"></div>
         </div>
         <div class="graph-card">
-          <h3>24-Hour Timeline</h3>
+          <h3>${hourlyTitle}</h3>
           <canvas id="hourlyChart"></canvas>
           <div id="hourlyLegend" class="graph-legend"></div>
         </div>
         <div class="graph-card">
-          <h3>7-Day Trend</h3>
+          <h3>${weekTitle}</h3>
           <canvas id="weekChart"></canvas>
           <div id="weekLegend" class="graph-legend"></div>
         </div>
         <div class="graph-card">
-          <h3>Time Between Activities</h3>
+          <h3>${intervalTitle}</h3>
           <canvas id="intervalChart"></canvas>
           <div id="intervalLegend" class="graph-legend"></div>
         </div>
@@ -1072,7 +1188,7 @@
     drawBarChart(
       "todayChart",
       filteredTypes.map((type) => ({
-        label: type.name,
+        label: getActionTypeName(type),
         value: todayCounts[type.id],
         color: type.color,
       })),
@@ -1118,8 +1234,15 @@
       dayEntries.forEach((e) => {
         if (counts[e.type] !== undefined) counts[e.type]++;
       });
+      const locale =
+        typeof getCurrentLanguage === "function" &&
+        getCurrentLanguage() === "fi"
+          ? "fi-FI"
+          : "en";
       dailyData.push({
-        day: new Date(dayStart).toLocaleDateString("en", { weekday: "short" }),
+        day: new Date(dayStart).toLocaleDateString(locale, {
+          weekday: "short",
+        }),
         ...counts,
       });
     }
@@ -1133,11 +1256,13 @@
         .sort((a, b) => a.timestamp - b.timestamp);
 
       if (typeEntries.length < 2) {
+        const notEnoughDataLabel =
+          typeof t === "function" ? t("notEnoughData") : "Not enough data";
         intervalData.push({
           type: type,
           avgInterval: 0,
           intervalCount: 0,
-          label: "Not enough data",
+          label: notEnoughDataLabel,
         });
         return;
       }
@@ -1431,10 +1556,14 @@
     const validData = data.filter((d) => d.intervalCount > 0);
 
     if (validData.length === 0) {
+      const needMoreMsg =
+        typeof t === "function"
+          ? t("needMoreActivities")
+          : "Need more activities to show intervals";
       ctx.fillStyle = chartColors.text;
       ctx.font = "14px sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText("Need more activities to show intervals", w / 2, h / 2);
+      ctx.fillText(needMoreMsg, w / 2, h / 2);
       return;
     }
 
@@ -1463,7 +1592,11 @@
       ctx.fillStyle = chartColors.text;
       ctx.font = "11px sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(item.type.name, x + barWidth / 2, h - padding.bottom + 15);
+      ctx.fillText(
+        getActionTypeName(item.type),
+        x + barWidth / 2,
+        h - padding.bottom + 15,
+      );
 
       // Interval time label above bar
       ctx.font = "12px sans-serif";
@@ -1491,11 +1624,15 @@
     if (summaryEl) {
       if (list.length) {
         const countParts = actionTypes
-          .map((type) => `${type.name} ${counts[type.id] || 0}`)
+          .map((type) => `${getActionTypeName(type)} ${counts[type.id] || 0}`)
           .join(", ");
-        summaryEl.textContent = `Showing ${list.length} entries — ${countParts}`;
+        const showingLabel = typeof t === "function" ? t("showing") : "Showing";
+        const entriesLabel = typeof t === "function" ? t("entries") : "entries";
+        summaryEl.textContent = `${showingLabel} ${list.length} ${entriesLabel} — ${countParts}`;
       } else {
-        summaryEl.textContent = "No entries yet";
+        const noEntriesLabel =
+          typeof t === "function" ? t("noEntriesYet") : "No entries yet";
+        summaryEl.textContent = noEntriesLabel;
       }
     }
 
@@ -1518,7 +1655,7 @@
             <div class="log-entry-time">${formatDate(e.timestamp)} ${formatTime(e.timestamp)}</div>
             ${e.note ? `<div class="log-entry-note">${escapeHtml(e.note)}</div>` : ""}
           </div>
-          <button class="log-entry-delete" data-del="${e.id}">Delete</button>
+          <button class="log-entry-delete" data-del="${e.id}">${typeof t === "function" ? t("delete") : "Delete"}</button>
         `;
         logEntries.appendChild(card);
       });
@@ -1535,7 +1672,11 @@
   window.exportToCSV = function () {
     const src = entries;
     if (src.length === 0) {
-      toast("No entries to export");
+      const noEntriesMsg =
+        typeof t === "function"
+          ? t("noEntriesToExport")
+          : "No entries to export";
+      toast(noEntriesMsg);
       return;
     }
 
@@ -2233,51 +2374,87 @@
 
     const steps = [
       {
-        title: "Welcome! 👶",
-        description: "Quick tour of your baby tracker.",
+        title:
+          typeof t === "function" ? t("wizardWelcomeTitle") : "Welcome! 👶",
+        description:
+          typeof t === "function"
+            ? t("wizardWelcomeDesc")
+            : "Quick tour of your baby tracker.",
         target: null,
         screen: "home",
       },
       {
-        title: "Quick Actions",
-        description: "Tap buttons to log activities instantly.",
+        title:
+          typeof t === "function"
+            ? t("wizardQuickActionsTitle")
+            : "Quick Actions",
+        description:
+          typeof t === "function"
+            ? t("wizardQuickActionsDesc")
+            : "Tap buttons to log activities instantly.",
         target: ".quick-actions",
         screen: "home",
       },
       {
-        title: "Today's Summary",
-        description: "View totals and time since last activity.",
+        title:
+          typeof t === "function"
+            ? t("wizardTodaySummaryTitle")
+            : "Today's Summary",
+        description:
+          typeof t === "function"
+            ? t("wizardTodaySummaryDesc")
+            : "View totals and time since last activity.",
         target: ".today-summary",
         screen: "home",
       },
       {
-        title: "Activity Log",
-        description: "See all entries, filter by date, delete if needed.",
+        title:
+          typeof t === "function"
+            ? t("wizardActivityLogTitle")
+            : "Activity Log",
+        description:
+          typeof t === "function"
+            ? t("wizardActivityLogDesc")
+            : "See all entries, filter by date, delete if needed.",
         target: null,
         screen: "log",
       },
       {
-        title: "Insights",
-        description: "Charts showing patterns and trends.",
+        title: typeof t === "function" ? t("wizardInsightsTitle") : "Insights",
+        description:
+          typeof t === "function"
+            ? t("wizardInsightsDesc")
+            : "Charts showing patterns and trends.",
         target: null,
         screen: "insights",
       },
       {
-        title: "Settings",
-        description: "Themes, custom activities, sync & export.",
+        title: typeof t === "function" ? t("wizardSettingsTitle") : "Settings",
+        description:
+          typeof t === "function"
+            ? t("wizardSettingsDesc")
+            : "Themes, custom activities, sync & export.",
         target: null,
         screen: "settings",
       },
       {
-        title: "Google Sheets Sync",
+        title:
+          typeof t === "function"
+            ? t("wizardGoogleSheetsTitle")
+            : "Google Sheets Sync",
         description:
-          "Sync across devices with Google Sheets. Check the Setup Guide for instructions.",
+          typeof t === "function"
+            ? t("wizardGoogleSheetsDesc")
+            : "Sync across devices with Google Sheets. Check the Setup Guide for instructions.",
         target: "#googleSheetsSection",
         screen: "settings",
       },
       {
-        title: "All Set! 🎉",
-        description: "Start tracking now. Replay from Settings anytime.",
+        title: typeof t === "function" ? t("wizardAllSetTitle") : "All Set! 🎉",
+        description:
+          typeof t === "function"
+            ? t("wizardAllSetDesc")
+            : "Start tracking now. Replay from Settings anytime.",
         target: ".bottom-nav",
         screen: "home",
       },
@@ -2599,6 +2776,19 @@
     });
   });
 
+  // Language switching - instant preview
+  document.querySelectorAll('input[name="language"]').forEach((radio) => {
+    radio.addEventListener("change", (e) => {
+      applyLanguage(e.target.value);
+      // Toast notification
+      toast(
+        e.target.value === "fi"
+          ? "Kieli vaihdettu suomeksi"
+          : "Language changed to English",
+      );
+    });
+  });
+
   // Disconnect from Google Sheets functionality
   if (disconnectBtn && disconnectModal) {
     disconnectBtn.addEventListener("click", () => {
@@ -2725,7 +2915,7 @@
           ${type.emoji}
         </div>
         <div class="action-type-info">
-          <div class="action-type-name">${type.name}</div>
+          <div class="action-type-name">${getActionTypeName(type)}</div>
           <div class="action-type-meta">ID: ${type.id}</div>
         </div>
         <div class="action-type-actions">
@@ -2807,7 +2997,8 @@
       const type = getActionTypeById(editId);
       if (!type) return;
 
-      modalTitle.textContent = "Edit Activity";
+      modalTitle.textContent =
+        typeof t === "function" ? t("editActivity") : "Edit Activity";
       editingTypeId.value = editId;
       typeNameInput.value = type.name;
       typeEmojiInput.value = type.emoji;
@@ -2817,7 +3008,8 @@
       // Hide suggestions when editing
       document.getElementById("activitySuggestions").style.display = "none";
     } else {
-      modalTitle.textContent = "Add Activity";
+      modalTitle.textContent =
+        typeof t === "function" ? t("addActivity") : "Add Activity";
       editingTypeId.value = "";
       typeNameInput.value = "";
       typeEmojiInput.value = "";
@@ -2838,31 +3030,59 @@
   }
 
   function populateActivitySuggestions() {
+    const sleepLabel = typeof t === "function" ? t("sleep") : "Sleep";
+    const bathLabel = typeof t === "function" ? t("bath") : "Bath";
+    const playLabel = typeof t === "function" ? t("play") : "Play";
+    const tummyTimeLabel =
+      typeof t === "function" ? t("tummyTime") : "Tummy Time";
+    const medicineLabel =
+      typeof t === "function" ? t("medicine") : "Medication";
+    const walkLabel = typeof t === "function" ? t("walk") : "Walk";
+    const doctorVisitLabel =
+      typeof t === "function" ? t("doctorVisit") : "Doctor Visit";
+    const cryLabel = typeof t === "function" ? t("cry") : "Cry";
+    const massageLabel = typeof t === "function" ? t("massage") : "Massage";
+    const storyTimeLabel =
+      typeof t === "function" ? t("storyTime") : "Story Time";
+    const musicLabel = typeof t === "function" ? t("music") : "Music";
+    const carRideLabel = typeof t === "function" ? t("carRide") : "Car Ride";
+    const cuddleLabel = typeof t === "function" ? t("cuddle") : "Cuddle";
+    const weightCheckLabel =
+      typeof t === "function" ? t("weightCheck") : "Weight Check";
+    const temperatureLabel =
+      typeof t === "function" ? t("temperature") : "Temperature";
+    const teethLabel = typeof t === "function" ? t("teeth") : "Teeth";
+    const strollerLabel = typeof t === "function" ? t("stroller") : "Stroller";
+    const visitorLabel = typeof t === "function" ? t("visitor") : "Visitor";
+    const photoLabel = typeof t === "function" ? t("photo") : "Photo";
+    const milestoneLabel =
+      typeof t === "function" ? t("milestone") : "Milestone";
+
     const suggestions = [
-      { name: "Sleep", emoji: "😴", color: "#b8b8ff" },
-      { name: "Bath", emoji: "🛁", color: "#a8d5ff" },
-      { name: "Play", emoji: "🧸", color: "#ffd4a8" },
-      { name: "Tummy Time", emoji: "🤸", color: "#c4e7ff" },
-      { name: "Medication", emoji: "💊", color: "#ffc4d4" },
-      { name: "Doctor Visit", emoji: "🏥", color: "#d4c4ff" },
-      { name: "Walk", emoji: "🚶", color: "#c4ffd4" },
-      { name: "Cry", emoji: "😢", color: "#ffd4d4" },
-      { name: "Massage", emoji: "👐", color: "#e8d4ff" },
-      { name: "Story Time", emoji: "📖", color: "#fff4d4" },
-      { name: "Music", emoji: "🎵", color: "#d4fff0" },
-      { name: "Car Ride", emoji: "🚗", color: "#d4e8ff" },
-      { name: "Cuddle", emoji: "🤗", color: "#ffeed4" },
-      { name: "Weight Check", emoji: "⚖️", color: "#e0d4ff" },
-      { name: "Temperature", emoji: "🌡️", color: "#ffd4d4" },
+      { name: sleepLabel, emoji: "😴", color: "#b8b8ff" },
+      { name: bathLabel, emoji: "🛁", color: "#a8d5ff" },
+      { name: playLabel, emoji: "🧸", color: "#ffd4a8" },
+      { name: tummyTimeLabel, emoji: "🤸", color: "#c4e7ff" },
+      { name: medicineLabel, emoji: "💊", color: "#ffc4d4" },
+      { name: doctorVisitLabel, emoji: "🏥", color: "#d4c4ff" },
+      { name: walkLabel, emoji: "🚶", color: "#c4ffd4" },
+      { name: cryLabel, emoji: "😢", color: "#ffd4d4" },
+      { name: massageLabel, emoji: "👐", color: "#e8d4ff" },
+      { name: storyTimeLabel, emoji: "📖", color: "#fff4d4" },
+      { name: musicLabel, emoji: "🎵", color: "#d4fff0" },
+      { name: carRideLabel, emoji: "🚗", color: "#d4e8ff" },
+      { name: cuddleLabel, emoji: "🤗", color: "#ffeed4" },
+      { name: weightCheckLabel, emoji: "⚖️", color: "#e0d4ff" },
+      { name: temperatureLabel, emoji: "🌡️", color: "#ffd4d4" },
       { name: "Bob 💩", emoji: "👶", color: "#d4ffd4" },
       { name: "Rowan 💩", emoji: "👶", color: "#d4f4ff" },
       { name: "Bob Feed", emoji: "🍼", color: "#fff0d4" },
       { name: "Rowan Feed", emoji: "🍼", color: "#f0d4ff" },
-      { name: "Teeth", emoji: "🦷", color: "#f0d4ff" },
-      { name: "Stroller", emoji: "🚼", color: "#d4ffe0" },
-      { name: "Visitor", emoji: "👋", color: "#ffe4d4" },
-      { name: "Photo", emoji: "📸", color: "#d4d4ff" },
-      { name: "Milestone", emoji: "🎉", color: "#ffd4f0" },
+      { name: teethLabel, emoji: "🦷", color: "#f0d4ff" },
+      { name: strollerLabel, emoji: "🚼", color: "#d4ffe0" },
+      { name: visitorLabel, emoji: "👋", color: "#ffe4d4" },
+      { name: photoLabel, emoji: "📸", color: "#d4d4ff" },
+      { name: milestoneLabel, emoji: "🎉", color: "#ffd4f0" },
     ];
 
     const container = document.getElementById("activitySuggestions");
@@ -3293,10 +3513,16 @@
     if (!helpContent) return;
 
     try {
-      helpContent.innerHTML =
-        '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading guide...</p>';
+      const loadingMsg =
+        typeof t === "function" ? t("loadingGuide") : "Loading guide...";
+      helpContent.innerHTML = `<p style="text-align: center; color: var(--text-muted); padding: 2rem;">${loadingMsg}</p>`;
 
-      const response = await fetch("USER_GUIDE.md");
+      // Load language-specific guide
+      const lang =
+        typeof getCurrentLanguage === "function" ? getCurrentLanguage() : "en";
+      const guideFile = lang === "fi" ? "USER_GUIDE_FI.md" : "USER_GUIDE.md";
+
+      const response = await fetch(guideFile);
       if (!response.ok) throw new Error("Failed to load user guide");
 
       const markdown = await response.text();
@@ -3307,18 +3533,47 @@
       // Add functionality for copy code button
       setupCodeCopyButtons();
     } catch (error) {
+      const setupTitle =
+        typeof t === "function"
+          ? t("googleSheetsSyncSetup")
+          : "📖 Google Sheets Sync Setup";
+      const unableMsg =
+        typeof t === "function"
+          ? t("unableToLoadGuide")
+          : "Unable to load user guide. Please check USER_GUIDE.md file.";
+      const setupSteps =
+        typeof t === "function"
+          ? t("setupSteps")
+          : "For Google Sheets sync setup:";
+      const step1 =
+        typeof t === "function"
+          ? t("setupStep1")
+          : "1. Create a Google Sheet with headers";
+      const step2 =
+        typeof t === "function"
+          ? t("setupStep2")
+          : "2. Add Apps Script (Extensions → Apps Script)";
+      const step3 =
+        typeof t === "function"
+          ? t("setupStep3")
+          : "3. Deploy as Web App (Anyone access)";
+      const step4 =
+        typeof t === "function"
+          ? t("setupStep4")
+          : "4. Paste URL in Settings and click Connect & Sync";
+
       helpContent.innerHTML = `
         <div style="text-align: center; padding: 2rem;">
-          <p style="color: var(--text-secondary);">📖 Google Sheets Sync Setup</p>
+          <p style="color: var(--text-secondary);">${setupTitle}</p>
           <p style="color: var(--text-muted); margin-top: 1rem;">
-            Unable to load user guide. Please check USER_GUIDE.md file.
+            ${unableMsg}
           </p>
           <p style="color: var(--text-muted); font-size: var(--text-sm); margin-top: 1rem;">
-            For Google Sheets sync setup:<br>
-            1. Create a Google Sheet with headers<br>
-            2. Add Apps Script (Extensions → Apps Script)<br>
-            3. Deploy as Web App (Anyone access)<br>
-            4. Paste URL in Settings and click Connect & Sync
+            ${setupSteps}<br>
+            ${step1}<br>
+            ${step2}<br>
+            ${step3}<br>
+            ${step4}
           </p>
         </div>
       `;
@@ -3347,10 +3602,18 @@
               e.target.classList.remove("copied");
             }, 3000);
 
-            toast("📋 Apps Script code copied to clipboard");
+            const copiedMsg =
+              typeof t === "function"
+                ? t("appsScriptCopied")
+                : "📋 Apps Script code copied to clipboard";
+            toast(copiedMsg);
             haptics(5);
           } catch (err) {
-            toast("❌ Failed to copy to clipboard");
+            const failedMsg =
+              typeof t === "function"
+                ? t("failedToCopy")
+                : "❌ Failed to copy to clipboard";
+            toast(failedMsg);
           }
         }
       });
@@ -3397,19 +3660,5 @@
     });
   }
 
-  // Auto-refresh remote log every 20s while the panel is open
-  let remoteRefreshTimer = null;
-  function startRemoteAutoRefresh() {
-    if (remoteRefreshTimer) clearInterval(remoteRefreshTimer);
-    remoteRefreshTimer = setInterval(async () => {
-      await backgroundSync();
-    }, 20000);
-  }
-  function stopRemoteAutoRefresh() {
-    if (remoteRefreshTimer) {
-      clearInterval(remoteRefreshTimer);
-      remoteRefreshTimer = null;
-    }
-  }
   // (auto-refresh hooks are called from openLog/closeLog above)
 })();

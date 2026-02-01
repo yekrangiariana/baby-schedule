@@ -53,7 +53,7 @@
     />
 
     <!-- App Icons & Manifest -->
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
     <link
       rel="icon"
       href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍼</text></svg>"
@@ -73,7 +73,7 @@
     <meta name="msapplication-TileColor" content="#FFF5F7" />
 
     <!-- Styles -->
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="css/styles.css" />
 
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -109,7 +109,7 @@
       <main class="screen-content">
         <!-- Today's Summary -->
         <section class="today-summary">
-          <h2>📊 Today's Summary</h2>
+          <h2 data-i18n="todaySummary">📊 Today's Summary</h2>
           <div class="now" id="nowText"></div>
           <div class="today-stats" id="todayTotals">Loading...</div>
           <div
@@ -117,8 +117,8 @@
             id="syncNoticeWarning"
             hidden
           >
-            <span>💡 Data stored locally only.</span>
-            <button class="sync-notice-link" id="syncNoticeLink">
+            <span data-i18n="dataStoredLocally">💡 Data stored locally only.</span>
+            <button class="sync-notice-link" id="syncNoticeLink" data-i18n="connectGoogleSheets">
               Connect Google Sheets
             </button>
           </div>
@@ -126,13 +126,13 @@
 
         <!-- Recent Activity -->
         <section class="recent-activity">
-          <h3>Recent Activity</h3>
+          <h3 data-i18n="recentActivity">Recent Activity</h3>
           <div class="recent-list" id="recentList"></div>
         </section>
 
         <!-- Quick Actions -->
         <section class="quick-actions">
-          <h3>Log Activity</h3>
+          <h3 data-i18n="logActivity">Log Activity</h3>
           <div class="action-buttons" id="actionButtons">
             <!-- Action buttons will be rendered dynamically -->
           </div>
@@ -142,7 +142,7 @@
 
     <!-- Activity Log Screen (Full Page) -->
     <div class="screen screen-modal" id="logScreen" hidden>
-      <div class="screen-indicator">📋 Log</div>
+      <div class="screen-indicator" data-i18n="logTitle">📋 Log</div>
       <main class="screen-content">
         <!-- Combined Summary Overview -->
         <div class="log-summary-card" id="logSummaryCard">
@@ -160,10 +160,11 @@
               color: var(--text-primary);
               margin-right: 8px;
             "
+            data-i18n="filterByDate"
             >📅 Filter by Date:</label
           >
           <input type="date" id="dateFilter" class="date-input" />
-          <button id="clearFilterBtn" class="btn-small" style="display: none">
+          <button id="clearFilterBtn" class="btn-small" style="display: none" data-i18n="clearFilter">
             Clear Filter
           </button>
         </div>
@@ -174,11 +175,11 @@
 
     <!-- Insights Screen (Full Page) -->
     <div class="screen screen-modal" id="insightsScreen" hidden>
-      <div class="screen-indicator">📈 Insights</div>
+      <div class="screen-indicator" data-i18n="insightsTitle">📈 Insights</div>
       <main class="screen-content">
         <!-- Activity Filter Section -->
         <div class="activity-filter-section">
-          <h3>📊 Show Activities</h3>
+          <h3 data-i18n="showActivities">📊 Show Activities</h3>
           <div class="activity-filter-grid" id="activityFilterGrid">
             <!-- Filter checkboxes will be rendered dynamically -->
           </div>
@@ -186,8 +187,8 @@
 
         <div class="graphs-container">
           <div class="graph-card">
-            <h3>📅 Today's Activity</h3>
-            <div class="graph-guide">
+            <h3 data-i18n="todayActivity">📅 Today's Activity</h3>
+            <div class="graph-guide" data-i18n="todayActivityDesc">
               Shows activity breakdown for today with a quick overview of what's been logged so far
             </div>
             <canvas id="todayChart" width="300" height="200"></canvas>
@@ -196,8 +197,8 @@
             </div>
           </div>
           <div class="graph-card">
-            <h3>📈 7-Day Trend</h3>
-            <div class="graph-guide">
+            <h3 data-i18n="sevenDayTrend">📈 7-Day Trend</h3>
+            <div class="graph-guide" data-i18n="sevenDayTrendDesc">
               Shows weekly patterns and changes to track how routines develop over the past week
             </div>
             <canvas id="weekChart" width="300" height="200"></canvas>
@@ -206,8 +207,8 @@
             </div>
           </div>
           <div class="graph-card">
-            <h3>🕑 Last 24 Hours</h3>
-            <div class="graph-guide">
+            <h3 data-i18n="last24Hours">🕑 Last 24 Hours</h3>
+            <div class="graph-guide" data-i18n="last24HoursDesc">
               Shows hour-by-hour timeline to see exactly when activities happened throughout the day
             </div>
             <canvas id="hourlyChart" width="300" height="200"></canvas>
@@ -216,8 +217,8 @@
             </div>
           </div>
           <div class="graph-card">
-            <h3>⏱️ Time Between Activities</h3>
-            <div class="graph-guide">
+            <h3 data-i18n="timeBetweenActivities">⏱️ Time Between Activities</h3>
+            <div class="graph-guide" data-i18n="timeBetweenActivitiesDesc">
               Shows average time between same activities to help track feeding intervals, diaper timing, and sleep patterns
             </div>
             <canvas id="intervalChart" width="300" height="200"></canvas>
@@ -231,12 +232,12 @@
 
     <!-- Settings Screen (Full Page) -->
     <div class="screen screen-modal" id="settingsScreen" hidden>
-      <div class="screen-indicator">⚙️ Settings</div>
+      <div class="screen-indicator" data-i18n="settingsTitle">⚙️ Settings</div>
       <main class="screen-content">
         <div class="settings">
           <!-- Google Sheets Sync Section -->
           <section class="settings-section" id="googleSheetsSection">
-            <h2 class="settings-section-title">☁️ Google Sheets Sync</h2>
+            <h2 class="settings-section-title" data-i18n="googleSheetsSync">☁️ Google Sheets Sync</h2>
             
             <!-- Connected State -->
             <div
@@ -244,14 +245,14 @@
               id="syncNoticeSuccess"
               hidden
             >
-              <span>✓ Connected to Google Sheets</span>
+              <span data-i18n="connectedToSheets">✓ Connected to Google Sheets</span>
             </div>
 
             <!-- Setup State -->
             <div id="syncSetupState">
               <label class="field">
-                <span class="field-label">Web App URL</span>
-                <small class="hint" style="margin: 0 0 8px 0;">
+                <span class="field-label" data-i18n="webAppUrl">Web App URL</span>
+                <small class="hint" style="margin: 0 0 8px 0;" data-i18n="webAppUrlHint">
                   Leave blank for local-only storage.
                 </small>
                 <div class="field-inline">
@@ -259,6 +260,8 @@
                     type="url"
                     id="appsScriptUrl"
                     class="input"
+                    data-i18n-attr="placeholder"
+                    data-i18n="webAppUrlPlaceholder"
                     placeholder="Paste your Google Sheets Web App URL"
                   />
                   <button
@@ -266,6 +269,7 @@
                     id="pasteUrlBtn"
                     class="btn-paste"
                     title="Paste from clipboard"
+                    data-i18n="paste"
                   >
                     Paste
                   </button>
@@ -277,8 +281,8 @@
                 class="btn-rounded btn-primary"
                 style="width: 100%; margin-bottom: 1rem;"
               >
-                <span class="btn-text">Connect & Sync</span>
-                <span class="btn-loading" hidden>Syncing...</span>
+                <span class="btn-text" data-i18n="connectAndSync">Connect & Sync</span>
+                <span class="btn-loading" hidden data-i18n="syncing">Syncing...</span>
               </button>
             </div>
             
@@ -286,6 +290,7 @@
               <button
                 id="viewHelpBtn"
                 class="btn-secondary-link"
+                data-i18n="setupGuide"
               >
                 Setup Guide
               </button>
@@ -293,6 +298,7 @@
                 id="disconnectBtn"
                 class="btn-secondary-link btn-danger-link"
                 style="display: none;"
+                data-i18n="disconnect"
               >
                 Disconnect
               </button>
@@ -301,8 +307,8 @@
 
           <!-- Action Types Section -->
           <section class="settings-section">
-            <h2 class="settings-section-title">📝 Activity Types</h2>
-            <p class="settings-section-description">
+            <h2 class="settings-section-title" data-i18n="activityTypes">📝 Activity Types</h2>
+            <p class="settings-section-description" data-i18n="activityTypesDesc">
               Customize the activities you want to track. Each activity has a
               name, emoji, and color.
             </p>
@@ -315,6 +321,7 @@
               id="addActionTypeBtn"
               class="btn-rounded btn-secondary"
               style="width: 100%; margin-top: 12px"
+              data-i18n="addNewActivity"
             >
               ➕ Add New Activity
             </button>
@@ -322,32 +329,32 @@
 
           <!-- Theme Section -->
           <section class="settings-section">
-            <h2 class="settings-section-title">🎨 Theme</h2>
+            <h2 class="settings-section-title" data-i18n="theme">🎨 Theme</h2>
 
             <div class="theme-options">
               <label class="theme-option">
                 <input type="radio" name="theme" value="blossom" checked />
-                <span class="theme-name">🌸 Blossom</span>
+                <span class="theme-name" data-i18n="themeBlossom">🌸 Blossom</span>
               </label>
               <label class="theme-option">
                 <input type="radio" name="theme" value="comet" />
-                <span class="theme-name">☄️ Comet</span>
+                <span class="theme-name" data-i18n="themeComet">☄️ Comet</span>
               </label>
               <label class="theme-option">
                 <input type="radio" name="theme" value="meadow" />
-                <span class="theme-name">🌿 Meadow</span>
+                <span class="theme-name" data-i18n="themeMeadow">🌿 Meadow</span>
               </label>
               <label class="theme-option">
                 <input type="radio" name="theme" value="midnight" />
-                <span class="theme-name">🌙 Midnight</span>
+                <span class="theme-name" data-i18n="themeMidnight">🌙 Midnight</span>
               </label>
             </div>
           </section>
 
           <!-- Font Section -->
           <section class="settings-section">
-            <h2 class="settings-section-title">🔤 Font</h2>
-            <p class="settings-section-description">
+            <h2 class="settings-section-title" data-i18n="font">🔤 Font</h2>
+            <p class="settings-section-description" data-i18n="fontDesc">
               Choose your preferred font style for better readability.
             </p>
 
@@ -379,10 +386,32 @@
             </div>
           </section>
 
+          <!-- Language Section -->
+          <section class="settings-section">
+            <h2 class="settings-section-title" data-i18n="language">🌐 Language</h2>
+            <p class="settings-section-description" data-i18n="languageDesc">
+              Choose your preferred language for the app.
+            </p>
+
+            <div class="language-options">
+              <label class="language-option">
+                <input type="radio" name="language" value="en" checked />
+                <span class="language-name" data-i18n="languageEnglish">English</span>
+              </label>
+              <label class="language-option">
+                <input type="radio" name="language" value="fi" />
+                <span class="language-name" data-i18n="languageFinnish">Suomi (Finnish)</span>
+              </label>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;" data-i18n="languageNote">
+              Note: Custom activities keep their creation name. Edit anytime in Activity Types above.
+            </p>
+          </section>
+
           <!-- Data Management Section -->
           <section class="settings-section">
-            <h2 class="settings-section-title">💾 Data Management</h2>
-            <p class="settings-section-description">
+            <h2 class="settings-section-title" data-i18n="dataManagement">💾 Data Management</h2>
+            <p class="settings-section-description" data-i18n="dataManagementDesc">
               Export or import your complete data including settings.
             </p>
 
@@ -390,6 +419,7 @@
               id="exportJSONBtn"
               class="btn-rounded btn-primary"
               style="width: 100%; margin-bottom: 12px"
+              data-i18n="exportData"
             >
               📥 Export Data
             </button>
@@ -398,6 +428,7 @@
               id="importJSONBtn"
               class="btn-rounded btn-primary"
               style="width: 100%; margin-bottom: 12px"
+              data-i18n="importData"
             >
               📤 Import Data
             </button>
@@ -412,6 +443,7 @@
               id="exportCSVBtn"
               class="btn-rounded btn-secondary"
               style="width: 100%"
+              data-i18n="exportCSV"
             >
               📊 Export Your Data as CSV
             </button>
@@ -420,8 +452,8 @@
 
           <!-- Tutorial Section -->
           <section class="settings-section">
-            <h2 class="settings-section-title">🎓 Tutorial</h2>
-            <p class="settings-section-description">
+            <h2 class="settings-section-title" data-i18n="tutorial">🎓 Tutorial</h2>
+            <p class="settings-section-description" data-i18n="tutorialDesc">
               Learn how to use the app with an interactive guided tour.
             </p>
 
@@ -429,6 +461,7 @@
               id="startTutorialBtn"
               class="btn-rounded btn-secondary"
               style="width: 100%"
+              data-i18n="startTutorial"
             >
               🎓 Start App Tutorial
             </button>
@@ -436,8 +469,8 @@
 
           <!-- About & Legal Section -->
           <section class="settings-section">
-            <h2 class="settings-section-title">📋 About & Legal</h2>
-            <p class="settings-section-description">
+            <h2 class="settings-section-title" data-i18n="aboutLegal">📋 About & Legal</h2>
+            <p class="settings-section-description" data-i18n="aboutDesc">
             I had to check my baby's bowel movements for a week, and I 
             couldn't be bothered to pay three euros to buy an app. Which, in hindsight, I should have. 
             So I spent an ungodly amount of time making this instead.
@@ -449,6 +482,7 @@
               id="aboutAppBtn"
               class="btn-rounded btn-secondary"
               style="width: 100%; margin-bottom: 0.75rem;"
+              data-i18n="privacyPolicy"
             >
               Privacy Policy
             </button>
@@ -456,6 +490,7 @@
               id="githubRepoBtn"
               class="btn-rounded btn-secondary"
               style="width: 100%;"
+              data-i18n="githubRepo"
             >
               GitHub Repository
             </button>
@@ -468,12 +503,12 @@
     <div class="screen screen-modal" id="helpScreen" hidden>
       <header class="screen-header">
         <div></div>
-        <h1>📖 Setup Guide</h1>
+        <h1 data-i18n="setupGuideTitle">📖 Setup Guide</h1>
         <div></div>
       </header>
 
       <main class="screen-content" style="padding: 1rem">
-        <div id="helpContent" class="help-content">
+        <div id="helpContent" class="help-content" data-i18n="loadingDocumentation">
           Loading documentation...
         </div>
       </main>
@@ -483,18 +518,20 @@
     <div class="modal-overlay" id="actionTypeModal" hidden>
       <div class="modal-content">
         <div class="modal-header">
-          <h3 id="modalTitle">Add Activity</h3>
+          <h3 id="modalTitle" data-i18n="addActivity">Add Activity</h3>
           <button class="modal-close" id="closeModalBtn">✕</button>
         </div>
         <div class="modal-body">
           <input type="hidden" id="editingTypeId" />
 
           <label class="field">
-            <span class="field-label">Activity Name</span>
+            <span class="field-label" data-i18n="activityName">Activity Name</span>
             <input
               type="text"
               id="typeNameInput"
               class="input"
+              data-i18n-attr="placeholder"
+              data-i18n="activityNamePlaceholder"
               placeholder="e.g., Sleep, Bath, Play"
               maxlength="20"
             />
@@ -508,7 +545,7 @@
           </label>
 
           <label class="field">
-            <span class="field-label">Emoji</span>
+            <span class="field-label" data-i18n="emoji">Emoji</span>
             <input
               type="text"
               id="typeEmojiInput"
@@ -522,7 +559,7 @@
           </label>
 
           <label class="field">
-            <span class="field-label">Color</span>
+            <span class="field-label" data-i18n="color">Color</span>
             <div class="color-picker">
               <input type="color" id="typeColorInput" value="#a8d5ff" />
               <input
@@ -539,10 +576,10 @@
           </label>
         </div>
         <div class="modal-footer">
-          <button id="cancelModalBtn" class="btn-rounded btn-secondary">
+          <button id="cancelModalBtn" class="btn-rounded btn-secondary" data-i18n="cancel">
             Cancel
           </button>
-          <button id="saveTypeBtn" class="btn-rounded btn-primary">Save</button>
+          <button id="saveTypeBtn" class="btn-rounded btn-primary" data-i18n="save">Save</button>
         </div>
       </div>
     </div>
@@ -551,26 +588,26 @@
     <div class="modal-overlay" id="disconnectModal" hidden>
       <div class="modal-content">
         <div class="modal-header">
-          <h3>Disconnect from Google Sheets</h3>
+          <h3 data-i18n="disconnectTitle">Disconnect from Google Sheets</h3>
           <button class="modal-close" id="closeDisconnectModalBtn">✕</button>
         </div>
         <div class="modal-body">
-          <p style="margin-bottom: 2rem; line-height: 1.5;">
+          <p style="margin-bottom: 2rem; line-height: 1.5;" data-i18n="disconnectQuestion">
             What would you like to do with your activity data?
           </p>
           
           <div class="disconnect-options">
-            <button id="keepDataBtn" class="btn-rounded btn-primary" style="width: 100%; margin-bottom: 1rem;">
+            <button id="keepDataBtn" class="btn-rounded btn-primary" style="width: 100%; margin-bottom: 1rem;" data-i18n="keepDataLocally">
               Keep Data Locally
             </button>
-            <small style="display: block; margin-bottom: 1.5rem; opacity: 0.7; line-height: 1.4;">
+            <small style="display: block; margin-bottom: 1.5rem; opacity: 0.7; line-height: 1.4;" data-i18n="keepDataLocallyDesc">
               Your activities will remain on this device only
             </small>
             
-            <button id="deleteDataBtn" class="btn-rounded btn-secondary btn-danger-link" style="width: 100%;">
+            <button id="deleteDataBtn" class="btn-rounded btn-secondary btn-danger-link" style="width: 100%;" data-i18n="deleteAllData">
               Delete All Data
             </button>
-            <small style="display: block; margin-top: 0.5rem; opacity: 0.7; line-height: 1.4;">
+            <small style="display: block; margin-top: 0.5rem; opacity: 0.7; line-height: 1.4;" data-i18n="deleteAllDataDesc">
               Remove all activities and start fresh
             </small>
           </div>
@@ -582,41 +619,42 @@
     <div class="screen screen-modal" id="aboutAppScreen" hidden>
       <header class="screen-header">
         <div></div>
-        <h1>📋 About This App</h1>
+        <h1 data-i18n="aboutAppTitle">📋 About This App</h1>
         <div></div>
       </header>
 
       <main class="screen-content" style="padding: 1rem">
         <div class="help-content">
-          <h2>What This App Is</h2>
-          <p>
+          <h2 data-i18n="whatIsThis">What This App Is</h2>
+          <p data-i18n="whatIsThisDesc">
             This is a completely static baby activity tracking app. No servers, no databases, 
             no cloud services—everything runs locally in your browser.
           </p>
 
-          <h2>Your Data & Privacy</h2>
-          <p><strong>Your data never leaves your device.</strong> Everything is stored locally using your browser's storage.</p>
+          <h2 data-i18n="yourDataPrivacy">Your Data & Privacy</h2>
+          <p><strong data-i18n="yourDataPrivacyDesc">Your data never leaves your device.</strong> Everything is stored locally using your browser's storage.</p>
           
           <ul>
-            <li>No tracking, no analytics, no telemetry</li>
-            <li>No user accounts or login required</li>
-            <li>No data is sent to any servers (unless you connect Google Sheets sync)</li>
-            <li>You can use this app completely offline</li>
+            <li data-i18n="noTracking">No tracking, no analytics, no telemetry</li>
+            <li data-i18n="noAccounts">No user accounts or login required</li>
+            <li data-i18n="noDataSent">No data is sent to any servers (unless you connect Google Sheets sync)</li>
+            <li data-i18n="worksOffline">You can use this app completely offline</li>
           </ul>
 
-          <h2>Google Sheets Sync (Optional)</h2>
-          <p>
+          <h2 data-i18n="googleSheetsSyncOptional">Google Sheets Sync (Optional)</h2>
+          <p data-i18n="googleSheetsSyncDesc">
             If you choose to connect Google Sheets sync, your data will be sent to Google's servers 
             through your own Google Apps Script. This is entirely optional and controlled by you.
           </p>
 
-          <h2>Open Source</h2>
-          <p>
+          <h2 data-i18n="openSource">Open Source</h2>
+          <p data-i18n="openSourceDesc">
             This app is open source. You can view the code, contribute, or run your own copy.
           </p>
           <p>
             <a href="https://github.com/yekrangiariana/baby-schedule" target="_blank" 
-               style="color: var(--primary); text-decoration: underline;">
+               style="color: var(--primary); text-decoration: underline;"
+               data-i18n="viewOnGithub">
               View on GitHub →
             </a>
           </p>
@@ -628,19 +666,19 @@
     <nav class="bottom-nav">
       <button class="nav-item active" data-screen="home">
         <span class="nav-icon">🏠</span>
-        <span class="nav-label">Home</span>
+        <span class="nav-label" data-i18n="navHome">Home</span>
       </button>
       <button class="nav-item" data-screen="log" id="viewLogBtn">
         <span class="nav-icon">📋</span>
-        <span class="nav-label">Log</span>
+        <span class="nav-label" data-i18n="navLog">Log</span>
       </button>
       <button class="nav-item" data-screen="insights" id="viewGraphsBtn">
         <span class="nav-icon">📈</span>
-        <span class="nav-label">Insights</span>
+        <span class="nav-label" data-i18n="navInsights">Insights</span>
       </button>
       <button class="nav-item" data-screen="settings" id="openSettingsBtn">
         <span class="nav-icon">⚙️</span>
-        <span class="nav-label">Settings</span>
+        <span class="nav-label" data-i18n="navSettings">Settings</span>
       </button>
     </nav>
 
@@ -679,13 +717,13 @@
         <div class="wizard-footer">
           <div class="wizard-indicators"></div>
           <div class="wizard-buttons">
-            <button id="wizardSkip" class="wizard-btn wizard-btn-skip">
+            <button id="wizardSkip" class="wizard-btn wizard-btn-skip" data-i18n="skip">
               Skip
             </button>
-            <button id="wizardBack" class="wizard-btn wizard-btn-secondary">
+            <button id="wizardBack" class="wizard-btn wizard-btn-secondary" data-i18n="back">
               Back
             </button>
-            <button id="wizardNext" class="wizard-btn wizard-btn-primary">
+            <button id="wizardNext" class="wizard-btn wizard-btn-primary" data-i18n="next">
               Next
             </button>
           </div>
@@ -693,6 +731,7 @@
       </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="js/translations.js"></script>
+    <script src="js/app.js"></script>
   </body>
 </html>

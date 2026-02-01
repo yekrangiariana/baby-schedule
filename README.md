@@ -2,6 +2,34 @@
 
 A beautiful, mobile-first web app to track your baby's feed, pee, and poop activities. Features instant local storage with optional cloud sync to Google Sheets.
 
+## 📁 Project Structure
+
+```
+baby-schedule/
+├── index.html           # Main HTML file
+├── manifest.json        # PWA manifest
+├── robots.txt          # Search engine directives
+├── sitemap.xml         # Sitemap for SEO
+├── js/
+│   ├── app.js          # Main application logic
+│   └── translations.js # Translation system (EN/FI)
+├── css/
+│   └── styles.css      # Application styles
+├── docs/
+│   ├── USER_GUIDE.md   # Setup guide (English)
+│   └── USER_GUIDE_FI.md # Setup guide (Finnish)
+└── assets/
+    └── favicon.svg     # App icon
+```
+
+## 🌍 Languages
+
+The app is fully available in:
+- **English** (default)
+- **Finnish** (Suomi)
+
+Language can be changed in the Settings tab. Your preference is saved automatically.
+
 ## ✨ Features
 
 ### 🎯 Quick Logging
