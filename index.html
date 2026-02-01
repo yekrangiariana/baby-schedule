@@ -226,7 +226,8 @@
           <!-- Google Sheets Sync Section -->
           <section class="settings-section" id="googleSheetsSection">
             <h2 class="settings-section-title">☁️ Google Sheets Sync</h2>
-
+            
+            <!-- Connected State -->
             <div
               class="sync-notice sync-notice-success"
               id="syncNoticeSuccess"
@@ -235,47 +236,56 @@
               <span>✓ Connected to Google Sheets</span>
             </div>
 
-            <label class="field">
-              <span class="field-label">Sync URL</span>
-              <input
-                type="url"
-                id="appsScriptUrl"
-                class="input"
-                placeholder=""
-              />
-              <button
-                type="button"
-                id="pasteUrlBtn"
-                class="btn-paste"
-                title="Paste from clipboard"
-              >
-                Paste
-              </button>
-            </label>
+            <!-- Setup State -->
+            <div id="syncSetupState">
+              <label class="field">
+                <span class="field-label">Web App URL</span>
+                <small class="hint" style="margin: 0 0 8px 0;">
+                  Leave blank for local-only storage.
+                </small>
+                <div class="field-inline">
+                  <input
+                    type="url"
+                    id="appsScriptUrl"
+                    class="input"
+                    placeholder="Paste your Google Sheets Web App URL"
+                  />
+                  <button
+                    type="button"
+                    id="pasteUrlBtn"
+                    class="btn-paste"
+                    title="Paste from clipboard"
+                  >
+                    Paste
+                  </button>
+                </div>
+              </label>
 
-            <div class="settings-actions">
               <button
                 id="saveSettingsBtn"
                 class="btn-rounded btn-primary"
-                style="width: 100%"
+                style="width: 100%; margin-bottom: 1rem;"
               >
-                <span class="btn-text">💾 Connect & Sync</span>
-                <span class="btn-loading" hidden>🔄 Syncing...</span>
+                <span class="btn-text">Connect & Sync</span>
+                <span class="btn-loading" hidden>Syncing...</span>
               </button>
             </div>
-
-            <small class="hint">
-              💡 Paste your Google Sheets Web App URL above. Leave blank to keep
-              everything local only.
-            </small>
-
-            <button
-              id="viewHelpBtn"
-              class="btn-rounded btn-secondary"
-              style="margin-top: 1rem; width: 100%"
-            >
-              📖 View Setup Guide
-            </button>
+            
+            <div class="settings-secondary-actions">
+              <button
+                id="viewHelpBtn"
+                class="btn-secondary-link"
+              >
+                Setup Guide
+              </button>
+              <button
+                id="disconnectBtn"
+                class="btn-secondary-link btn-danger-link"
+                style="display: none;"
+              >
+                Disconnect
+              </button>
+            </div>
           </section>
 
           <!-- Action Types Section -->
@@ -412,6 +422,33 @@
               🎓 Start App Tutorial
             </button>
           </section>
+
+          <!-- About & Legal Section -->
+          <section class="settings-section">
+            <h2 class="settings-section-title">📋 About & Legal</h2>
+            <p class="settings-section-description">
+            I had to check my baby's bowel movements for a week, and I 
+            couldn't be bothered to pay three euros to buy an app. Which, in hindsight, I should have. 
+            So I spent an ungodly amount of time making this instead.
+            Anyway, if you find yourself in a situation like this, you are welcome to use it, 
+            fork it, or adopt it in whatever way you like.
+          </p>
+            
+            <button
+              id="aboutAppBtn"
+              class="btn-rounded btn-secondary"
+              style="width: 100%; margin-bottom: 0.75rem;"
+            >
+              Privacy Policy
+            </button>
+            <button
+              id="githubRepoBtn"
+              class="btn-rounded btn-secondary"
+              style="width: 100%;"
+            >
+              GitHub Repository
+            </button>
+          </section>
         </div>
       </main>
     </div>
@@ -497,6 +534,83 @@
           <button id="saveTypeBtn" class="btn-rounded btn-primary">Save</button>
         </div>
       </div>
+    </div>
+
+    <!-- Disconnect Confirmation Modal -->
+    <div class="modal-overlay" id="disconnectModal" hidden>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Disconnect from Google Sheets</h3>
+          <button class="modal-close" id="closeDisconnectModalBtn">✕</button>
+        </div>
+        <div class="modal-body">
+          <p style="margin-bottom: 2rem; line-height: 1.5;">
+            What would you like to do with your activity data?
+          </p>
+          
+          <div class="disconnect-options">
+            <button id="keepDataBtn" class="btn-rounded btn-primary" style="width: 100%; margin-bottom: 1rem;">
+              Keep Data Locally
+            </button>
+            <small style="display: block; margin-bottom: 1.5rem; opacity: 0.7; line-height: 1.4;">
+              Your activities will remain on this device only
+            </small>
+            
+            <button id="deleteDataBtn" class="btn-rounded btn-secondary btn-danger-link" style="width: 100%;">
+              Delete All Data
+            </button>
+            <small style="display: block; margin-top: 0.5rem; opacity: 0.7; line-height: 1.4;">
+              Remove all activities and start fresh
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- About This App Screen -->
+    <div class="screen screen-modal" id="aboutAppScreen" hidden>
+      <header class="screen-header">
+        <div></div>
+        <h1>📋 About This App</h1>
+        <div></div>
+      </header>
+
+      <main class="screen-content" style="padding: 1rem">
+        <div class="help-content">
+          <h2>What This App Is</h2>
+          <p>
+            This is a completely static baby activity tracking app. No servers, no databases, 
+            no cloud services—everything runs locally in your browser.
+          </p>
+
+          <h2>Your Data & Privacy</h2>
+          <p><strong>Your data never leaves your device.</strong> Everything is stored locally using your browser's storage.</p>
+          
+          <ul>
+            <li>No tracking, no analytics, no telemetry</li>
+            <li>No user accounts or login required</li>
+            <li>No data is sent to any servers (unless you connect Google Sheets sync)</li>
+            <li>You can use this app completely offline</li>
+          </ul>
+
+          <h2>Google Sheets Sync (Optional)</h2>
+          <p>
+            If you choose to connect Google Sheets sync, your data will be sent to Google's servers 
+            through your own Google Apps Script. This is entirely optional and controlled by you.
+          </p>
+
+          <h2>Open Source</h2>
+          <p>
+            This app is open source. You can view the code, contribute, or run your own copy.
+          </p>
+          <p>
+            <a href="https://github.com/yekrangiariana/baby-schedule" target="_blank" 
+               style="color: var(--primary); text-decoration: underline;">
+              View on GitHub →
+            </a>
+          </p>
+        </div>
+      </main>
     </div>
 
     <!-- Bottom Navigation -->

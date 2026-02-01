@@ -14,7 +14,7 @@ This guide shows you how to sync your baby tracking data with Google Sheets so y
 
 1. Go to [Google Sheets](https://sheets.google.com)
 2. Create a new blank spreadsheet
-3. Name it something like "Baby Tracker Data"
+3. Name it something like "Baby Tracker Data" or whatever you like
 4. Add these column headers in row 1:
    - Column A: `Timestamp`
    - Column B: `ISO` 
@@ -26,8 +26,7 @@ This guide shows you how to sync your baby tracking data with Google Sheets so y
 ### Step 2: Add the Apps Script
 
 1. In your Google Sheet, click **Extensions** → **Apps Script**
-2. Delete any existing code
-3. Copy and paste the code below:
+2. Copy and paste the code below:
 
 <button class="copy-code-btn" onclick="copyCodeToClipboard(this)">Copy Code</button>
 
@@ -176,15 +175,15 @@ function getOrCreateSheet(ss, sheetName) {
 
 </details>
 
-4. Click **Save** (💾 icon)
-5. Click **Deploy** → **New deployment**
-6. Click the gear icon ⚙️ → Choose **Web app**
-7. Set these options:
+3. Click **Save** (💾 icon)
+4. Click **Deploy** → **New deployment**
+5. Click the gear icon ⚙️ → Choose **Web app**
+6. Set these options:
    - **Execute as:** Me
    - **Who has access:** Anyone
-8. Click **Deploy**
-9. Click **Authorize access** and follow the prompts
-10. **Copy the Web App URL** - you'll need this!
+7. Click **Deploy**
+8. Click **Authorize access** and follow the prompts
+9. **Copy the Web App URL** - you'll need this!
 
 ### Step 3: Connect the App
 
@@ -199,18 +198,12 @@ That's it! Your data now syncs automatically to Google Sheets.
 
 To let your partner or family members use the same data:
 
-1. **Share the Google Sheet:**
-   - Open your Google Sheet
-   - Click **Share** button
-   - Add their email addresses
-   - Give them **Editor** access
-
-2. **Share the Web App URL:**
+1. **Share the Web App URL:**
    - Send them the same Web App URL you copied
    - They paste it in their Settings tab
    - Everyone's data syncs to the same sheet!
 
-3. **Share the App:**
+2. **Share the App:**
    - Just send them the link to this app
    - They open it, add the sync URL, and you're connected!
 

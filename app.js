@@ -56,6 +56,16 @@
   const importJSONBtn = $("#importJSONBtn");
   const importJSONInput = $("#importJSONInput");
   const viewHelpBtn = $("#viewHelpBtn");
+  const disconnectBtn = $("#disconnectBtn");
+  const disconnectSection = $("#disconnectSection");
+  const syncSetupState = $("#syncSetupState");
+  const disconnectModal = $("#disconnectModal");
+  const closeDisconnectModalBtn = $("#closeDisconnectModalBtn");
+  const keepDataBtn = $("#keepDataBtn");
+  const deleteDataBtn = $("#deleteDataBtn");
+  const aboutAppBtn = $("#aboutAppBtn");
+  const githubRepoBtn = $("#githubRepoBtn");
+  const aboutAppScreen = $("#aboutAppScreen");
 
   // Action Types Manager
   const actionTypesList = $("#actionTypesList");
@@ -361,6 +371,7 @@
       insightsScreen.hidden = true;
       settingsScreen.hidden = true;
       if (helpScreen) helpScreen.hidden = true;
+      if (aboutAppScreen) aboutAppScreen.hidden = true;
       $$(`.nav-item[data-screen="home"]`)[0]?.classList.add("active");
       updateStatus(); // Refresh sync notice when returning to home
     } else if (screen === "log") {
@@ -369,6 +380,7 @@
       insightsScreen.hidden = true;
       settingsScreen.hidden = true;
       if (helpScreen) helpScreen.hidden = true;
+      if (aboutAppScreen) aboutAppScreen.hidden = true;
       $$(`.nav-item[data-screen="log"]`)[0]?.classList.add("active");
       renderLogSummary();
       renderLog();
@@ -380,6 +392,7 @@
       insightsScreen.hidden = false;
       settingsScreen.hidden = true;
       if (helpScreen) helpScreen.hidden = true;
+      if (aboutAppScreen) aboutAppScreen.hidden = true;
       $$(`.nav-item[data-screen="insights"]`)[0]?.classList.add("active");
       renderGraphs();
       backgroundSync();
@@ -389,6 +402,7 @@
       insightsScreen.hidden = true;
       settingsScreen.hidden = false;
       if (helpScreen) helpScreen.hidden = true;
+      if (aboutAppScreen) aboutAppScreen.hidden = true;
       $$(`.nav-item[data-screen="settings"]`)[0]?.classList.add("active");
     } else if (screen === "help") {
       homeScreen.hidden = true;
@@ -398,6 +412,16 @@
       if (helpScreen) {
         helpScreen.hidden = false;
         loadHelpContent();
+      }
+      if (aboutAppScreen) aboutAppScreen.hidden = true;
+    } else if (screen === "about") {
+      homeScreen.hidden = true;
+      logScreen.hidden = true;
+      insightsScreen.hidden = true;
+      settingsScreen.hidden = true;
+      if (helpScreen) helpScreen.hidden = true;
+      if (aboutAppScreen) {
+        aboutAppScreen.hidden = false;
       }
     }
   }
@@ -729,6 +753,16 @@
     // Update success notice in settings (handled separately when settings screen is shown)
     if (syncNoticeSuccess) {
       syncNoticeSuccess.hidden = !isSyncConfigured;
+    }
+
+    // Show/hide setup state vs connected state
+    if (syncSetupState) {
+      syncSetupState.style.display = isSyncConfigured ? "none" : "block";
+    }
+
+    // Show/hide disconnect button based on connection status
+    if (disconnectBtn) {
+      disconnectBtn.style.display = isSyncConfigured ? "inline-block" : "none";
     }
 
     renderRecentActivity();
@@ -2390,6 +2424,86 @@
       saveSettings(settings);
     });
   });
+
+  // Disconnect from Google Sheets functionality
+  if (disconnectBtn && disconnectModal) {
+    disconnectBtn.addEventListener("click", () => {
+      disconnectModal.hidden = false;
+    });
+  }
+
+  if (closeDisconnectModalBtn && disconnectModal) {
+    closeDisconnectModalBtn.addEventListener("click", () => {
+      disconnectModal.hidden = true;
+    });
+  }
+
+  if (keepDataBtn && disconnectModal) {
+    keepDataBtn.addEventListener("click", async () => {
+      // Keep data locally, just remove the Google Sheets connection
+      settings.webAppUrl = "";
+      settings.syncEnabled = false;
+      saveSettings(settings);
+
+      // Clear the URL input
+      if (appsScriptUrl) appsScriptUrl.value = "";
+
+      // Update UI
+      await updateStatus();
+      disconnectModal.hidden = true;
+
+      toast("📱 Disconnected - Data kept locally");
+    });
+  }
+
+  if (deleteDataBtn && disconnectModal) {
+    deleteDataBtn.addEventListener("click", async () => {
+      // Remove Google Sheets connection AND clear all data
+      settings.webAppUrl = "";
+      settings.syncEnabled = false;
+      saveSettings(settings);
+
+      // Clear the URL input
+      if (appsScriptUrl) appsScriptUrl.value = "";
+
+      // Clear all activity data
+      activities.length = 0;
+      saveActivities();
+
+      // Re-render all views
+      render();
+      renderLog();
+      renderGraphs();
+
+      // Update UI
+      await updateStatus();
+      disconnectModal.hidden = true;
+
+      toast("🗑️ Disconnected - All data deleted");
+    });
+  }
+
+  // Close disconnect modal when clicking outside
+  if (disconnectModal) {
+    disconnectModal.addEventListener("click", (e) => {
+      if (e.target === disconnectModal) {
+        disconnectModal.hidden = true;
+      }
+    });
+  }
+
+  // Privacy Policy and GitHub functionality
+  if (aboutAppBtn) {
+    aboutAppBtn.addEventListener("click", () => {
+      showScreen("about");
+    });
+  }
+
+  if (githubRepoBtn) {
+    githubRepoBtn.addEventListener("click", () => {
+      window.open("https://github.com/yekrangiariana/baby-schedule", "_blank");
+    });
+  }
 
   // Action Types Manager
   function renderActionTypes() {
