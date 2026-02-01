@@ -1,11 +1,11 @@
-# Baby Schedule
+# Little Agenda
 
 A simple, mobile-first web app to track your baby's daily activities. Features instant local storage with optional cloud sync to Google Sheets.
 
 ## Project Structure
 
 ```
-baby-schedule/
+little-agenda/
 ├── index.html           # Main HTML file
 ├── manifest.json        # PWA manifest
 ├── robots.txt          # Search engine directives
@@ -435,17 +435,6 @@ python3 -m http.server 8099
 
 # Then visit: http://localhost:8099
 ```
-
-### Project Structure
-```
-baby-schedule/
-├── index.html      # App structure
-├── styles.css      # All styling
-├── app.js          # All logic
-└── README.md       # Documentation
-```
-
-No build process, no package.json, no dependencies. Just open and run.
 
 ## Deployment & Sharing
 

@@ -7,48 +7,76 @@
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
 
+    <!-- Load configuration first -->
+    <script src="js/config.js"></script>
+
     <!-- SEO Meta Tags -->
-    <title>Baby Schedule - Track Your Baby's Activities</title>
+    <title data-config="title">
+      Baby Schedule - Track Your Baby's Activities
+    </title>
     <meta
       name="description"
+      data-config="description"
       content="Simple baby activity tracker. Log feedings, diaper changes, and other activities. Works offline and syncs with Google Sheets."
     />
     <meta
       name="keywords"
+      data-config="keywords"
       content="baby tracker, baby log, feeding tracker, diaper log, baby activities, parenting tool"
     />
-    <meta name="author" content="Baby Schedule" />
+    <meta name="author" data-config="author" content="Baby Schedule" />
     <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://yourdomain.com/" />
+    <link
+      rel="canonical"
+      data-config="baseUrl"
+      href="https://yourdomain.com/"
+    />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://yourdomain.com/" />
+    <meta
+      property="og:url"
+      data-config="baseUrl"
+      content="https://yourdomain.com/"
+    />
     <meta
       property="og:title"
+      data-config="title"
       content="Baby Schedule - Track Your Baby's Activities"
     />
     <meta
       property="og:description"
+      data-config="description"
       content="Simple baby activity tracker. Log feedings, diaper changes, and other activities. Works offline and syncs with Google Sheets."
     />
-    <meta property="og:image" content="https://yourdomain.com/og-image.jpg" />
-    <meta property="og:site_name" content="Baby Schedule" />
-    <meta property="og:locale" content="en_US" />
+    <meta
+      property="og:image"
+      data-config="ogImage"
+      content="https://yourdomain.com/og-image.jpg"
+    />
+    <meta property="og:site_name" data-config="name" content="Baby Schedule" />
+    <meta property="og:locale" data-config="locale" content="en_US" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="https://yourdomain.com/" />
+    <meta
+      name="twitter:url"
+      data-config="baseUrl"
+      content="https://yourdomain.com/"
+    />
     <meta
       name="twitter:title"
+      data-config="title"
       content="Baby Schedule - Track Your Baby's Activities"
     />
     <meta
       name="twitter:description"
+      data-config="shortDescription"
       content="Simple baby activity tracker. Log feedings, diaper changes, and other activities."
     />
     <meta
       name="twitter:image"
+      data-config="twitterImage"
       content="https://yourdomain.com/twitter-image.jpg"
     />
 
@@ -65,16 +93,78 @@
     <link rel="manifest" href="/manifest.json" />
 
     <!-- Theme & App Config -->
-    <meta name="theme-color" content="#FFF5F7" />
+    <meta name="theme-color" data-config="themeColor" content="#FFF5F7" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="Baby Schedule" />
-    <meta name="application-name" content="Baby Schedule" />
-    <meta name="msapplication-TileColor" content="#FFF5F7" />
+    <meta
+      name="apple-mobile-web-app-title"
+      data-config="shortName"
+      content="Baby Schedule"
+    />
+    <meta name="application-name" data-config="name" content="Baby Schedule" />
+    <meta
+      name="msapplication-TileColor"
+      data-config="backgroundColor"
+      content="#FFF5F7"
+    />
 
     <!-- Styles -->
     <link rel="stylesheet" href="css/styles.css" />
     <link rel="stylesheet" href="css/welcome.css" />
+
+    <!-- Apply config to meta tags -->
+    <script>
+      (function () {
+        if (!window.APP_CONFIG) return;
+        const config = window.APP_CONFIG;
+
+        // Update all meta tags and elements with data-config attribute
+        document.querySelectorAll("[data-config]").forEach(function (el) {
+          const configKey = el.getAttribute("data-config");
+          const value = config[configKey];
+
+          if (!value) return;
+
+          if (el.tagName === "META") {
+            if (el.hasAttribute("content")) {
+              el.setAttribute("content", value);
+            }
+          } else if (el.tagName === "TITLE") {
+            el.textContent = value;
+          } else if (el.tagName === "LINK" && el.hasAttribute("href")) {
+            el.setAttribute("href", value);
+          }
+        });
+
+        // Update structured data
+        const structuredDataScript = document.querySelector(
+          'script[type="application/ld+json"]',
+        );
+        if (structuredDataScript) {
+          try {
+            const data = JSON.parse(structuredDataScript.textContent);
+            data.name = config.name;
+            data.description = config.shortDescription;
+            data.url = config.baseUrl;
+            data.author.name = config.name;
+            structuredDataScript.textContent = JSON.stringify(data, null, 2);
+          } catch (e) {}
+        }
+
+        // Update text content when DOM is loaded
+        document.addEventListener("DOMContentLoaded", function () {
+          document
+            .querySelectorAll("[data-config-text]")
+            .forEach(function (el) {
+              const configKey = el.getAttribute("data-config-text");
+              const value = config[configKey];
+              if (value) {
+                el.textContent = value;
+              }
+            });
+        });
+      })();
+    </script>
 
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -897,7 +987,9 @@
               <div class="welcome-icon">👋</div>
               <h1 class="welcome-title">
                 <span data-i18n="welcomeTitle">Welcome to</span><br />
-                <span style="color: var(--primary); font-size: 1.1em"
+                <span
+                  style="color: var(--primary); font-size: 1.1em"
+                  data-config-text="name"
                   >Baby Schedule</span
                 >
               </h1>
@@ -1154,6 +1246,7 @@
       </div>
     </div>
 
+    <script src="js/manifest-generator.js"></script>
     <script src="js/translations.js"></script>
     <script src="js/welcome.js"></script>
     <script src="js/app.js"></script>
