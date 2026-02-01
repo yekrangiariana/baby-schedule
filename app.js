@@ -385,9 +385,9 @@
 
     // Update browser history if not called from popstate event
     if (updateHistory) {
-      const currentHash = window.location.hash.slice(1) || 'home';
+      const currentHash = window.location.hash.slice(1) || "home";
       if (currentHash !== screen) {
-        history.pushState({ screen: screen }, '', `#${screen}`);
+        history.pushState({ screen: screen }, "", `#${screen}`);
       }
     }
 
@@ -462,18 +462,25 @@
 
   // Browser History Support
   function handleBrowserNavigation() {
-    const hash = window.location.hash.slice(1) || 'home';
-    const validScreens = ['home', 'log', 'insights', 'settings', 'help', 'about'];
-    
+    const hash = window.location.hash.slice(1) || "home";
+    const validScreens = [
+      "home",
+      "log",
+      "insights",
+      "settings",
+      "help",
+      "about",
+    ];
+
     // Handle modal states
-    if (hash === 'add-activity') {
+    if (hash === "add-activity") {
       // Don't change underlying screen, just show modal
       if (actionTypeModal && actionTypeModal.hidden) {
         // Show modal without adding to history again
         actionTypeModal.hidden = false;
       }
       return;
-    } else if (hash === 'disconnect') {
+    } else if (hash === "disconnect") {
       // Don't change underlying screen, just show disconnect modal
       if (disconnectModal && disconnectModal.hidden) {
         disconnectModal.hidden = false;
@@ -488,18 +495,18 @@
         disconnectModal.hidden = true;
       }
     }
-    
+
     if (validScreens.includes(hash)) {
       // Don't update history when handling browser navigation
       showScreen(hash, false);
     } else {
       // Default to home for invalid hashes
-      showScreen('home', false);
+      showScreen("home", false);
     }
   }
 
   // Listen for browser back/forward button
-  window.addEventListener('popstate', (event) => {
+  window.addEventListener("popstate", (event) => {
     handleBrowserNavigation();
   });
 
@@ -2595,18 +2602,22 @@
   if (disconnectBtn && disconnectModal) {
     disconnectBtn.addEventListener("click", () => {
       // Add to browser history
-      const currentHash = window.location.hash.slice(1) || 'home';
-      history.pushState({ screen: currentHash, modal: 'disconnect' }, '', '#disconnect');
+      const currentHash = window.location.hash.slice(1) || "home";
+      history.pushState(
+        { screen: currentHash, modal: "disconnect" },
+        "",
+        "#disconnect",
+      );
       disconnectModal.hidden = false;
     });
   }
 
   function closeDisconnectModal() {
     if (disconnectModal) disconnectModal.hidden = true;
-    
+
     // Handle browser history - go back to the previous screen
     const currentHash = window.location.hash.slice(1);
-    if (currentHash === 'disconnect') {
+    if (currentHash === "disconnect") {
       history.back();
     }
   }
@@ -2743,8 +2754,12 @@
     if (!actionTypeModal) return;
 
     // Add to browser history
-    const currentHash = window.location.hash.slice(1) || 'home';
-    history.pushState({ screen: currentHash, modal: 'add-activity' }, '', '#add-activity');
+    const currentHash = window.location.hash.slice(1) || "home";
+    history.pushState(
+      { screen: currentHash, modal: "add-activity" },
+      "",
+      "#add-activity",
+    );
 
     if (editId) {
       const type = getActionTypeById(editId);
@@ -2928,10 +2943,10 @@
 
   function closeActionTypeModal() {
     if (actionTypeModal) actionTypeModal.hidden = true;
-    
+
     // Handle browser history - go back to the previous screen
     const currentHash = window.location.hash.slice(1);
-    if (currentHash === 'add-activity') {
+    if (currentHash === "add-activity") {
       // Go back in history instead of manually changing hash
       history.back();
     }
