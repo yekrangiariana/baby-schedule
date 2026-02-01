@@ -1,6 +1,6 @@
 {
-  "name": "Baby Schedule",
-  "short_name": "Baby Schedule",
+  "name": "Little Agenda",
+  "short_name": "Little Agenda",
   "description": "Track your baby's activities. Works offline and syncs with Google Sheets.",
   "start_url": "/",
   "display": "standalone",

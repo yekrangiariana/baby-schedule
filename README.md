@@ -286,7 +286,7 @@ function getOrCreateSheet(ss, sheetName) {
 ```
 
 4. Click **Save**
-5. Name your project (e.g., "Baby Schedule Sync")
+5. Name your project (e.g., "Little Agenda Sync")
 
 ### Step 3: Deploy the Web App
 
@@ -308,7 +308,7 @@ You have two options:
 
 #### Option A: Settings UI (Recommended for beginners)
 
-1. Open the Baby Schedule app
+1. Open the Little Agenda app
 2. Tap **Settings** tab at the bottom
 3. Paste your Web App URL
 4. Toggle **Enable Sync** on

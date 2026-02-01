@@ -1,10 +1,10 @@
-// Translation system for Baby Schedule App
+// Translation system for Little Agenda App
 // Add new languages by adding a new key to the translations object
 
 const translations = {
   en: {
     // Meta tags
-    pageTitle: "Baby Schedule - Track Your Baby's Activities",
+    pageTitle: "Little Agenda - Track Your Baby's Activities",
     pageDescription:
       "Simple baby activity tracker. Log feedings, diaper changes, and other activities. Works offline and syncs with Google Sheets.",
     pageKeywords:

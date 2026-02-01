@@ -11,9 +11,9 @@ Open `js/config.js` and edit the following values:
 ```javascript
 const APP_CONFIG = {
   // App Identity
-  name: "Baby Schedule",              // Full app name
-  shortName: "Baby Schedule",         // Short name (for PWA)
-  title: "Baby Schedule - Track Your Baby's Activities",  // Page title & meta title
+  name: "Little Agenda",              // Full app name
+  shortName: "Little Agenda",         // Short name (for PWA)
+  title: "Little Agenda - Track Your Baby's Activities",  // Page title & meta title
   
   // Domain and URLs
   domain: "yourdomain.com",           // Your domain name
@@ -32,7 +32,7 @@ const APP_CONFIG = {
   locale: "en_US",                    // Locale for Open Graph
   
   // Author
-  author: "Baby Schedule",            // Author name
+  author: "Little Agenda",            // Author name
   
   // Theme Colors
   themeColor: "#6A5ACD",             // Browser theme color

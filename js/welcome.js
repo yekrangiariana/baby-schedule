@@ -1,4 +1,4 @@
-// Welcome/Onboarding System for Baby Schedule App
+// Welcome/Onboarding System for Little Agenda App
 (function () {
   const WELCOME_COMPLETED_KEY = "babylog.welcome.completed.v1";
   const WELCOME_SETTINGS_KEY = "babylog.welcome.settings.v1";
