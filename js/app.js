@@ -2213,7 +2213,7 @@
 
     // Populate the modal with entry data
     editingEntryId.value = entry.id;
-    
+
     // Populate activity type dropdown
     editEntryType.innerHTML = "";
     actionTypes.forEach((type) => {
@@ -2230,7 +2230,7 @@
     const date = new Date(entry.timestamp);
     const dateStr = date.toISOString().split("T")[0];
     const timeStr = date.toTimeString().slice(0, 5);
-    
+
     editEntryDate.value = dateStr;
     editEntryTime.value = timeStr;
     editEntryNote.value = entry.note || "";
@@ -2259,7 +2259,10 @@
     const newNote = editEntryNote.value;
 
     if (!oldEntryId || !newType || !newDate || !newTime) {
-      const fillAllFieldsMsg = typeof t === "function" ? t("fillAllFields") : "Please fill all required fields";
+      const fillAllFieldsMsg =
+        typeof t === "function"
+          ? t("fillAllFields")
+          : "Please fill all required fields";
       toast(fillAllFieldsMsg);
       return;
     }
@@ -2267,7 +2270,8 @@
     // Find the entry
     const index = entries.findIndex((e) => e.id === oldEntryId);
     if (index === -1) {
-      const entryNotFoundMsg = typeof t === "function" ? t("entryNotFound") : "Entry not found";
+      const entryNotFoundMsg =
+        typeof t === "function" ? t("entryNotFound") : "Entry not found";
       toast(entryNotFoundMsg);
       closeEditModal();
       return;
@@ -2300,10 +2304,10 @@
 
     // Add to sync queue - delete old, create new
     syncQueue.push({ type: "delete", id: oldEntryId, queuedAt: Date.now() });
-    syncQueue.push({ 
-      type: "create", 
-      entry: updatedEntry, 
-      queuedAt: Date.now() 
+    syncQueue.push({
+      type: "create",
+      entry: updatedEntry,
+      queuedAt: Date.now(),
     });
     saveSyncQueue(syncQueue);
 
@@ -2391,7 +2395,10 @@
     const note = pastEntryNote.value;
 
     if (!type || !date || !time) {
-      const fillAllFieldsMsg = typeof t === "function" ? t("fillAllFields") : "Please fill all required fields";
+      const fillAllFieldsMsg =
+        typeof t === "function"
+          ? t("fillAllFields")
+          : "Please fill all required fields";
       toast(fillAllFieldsMsg);
       return;
     }
@@ -2401,7 +2408,10 @@
 
     // Validate that the timestamp is not in the future
     if (timestamp > Date.now()) {
-      const cannotLogFutureMsg = typeof t === "function" ? t("cannotLogFuture") : "Cannot log future entries";
+      const cannotLogFutureMsg =
+        typeof t === "function"
+          ? t("cannotLogFuture")
+          : "Cannot log future entries";
       toast(cannotLogFutureMsg);
       return;
     }

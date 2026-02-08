@@ -4020,7 +4020,11 @@ body {
   align-items: center;
   justify-content: center;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.1),
+    rgba(168, 85, 247, 0.1)
+  );
   flex-shrink: 0;
 }
 
@@ -4043,7 +4047,11 @@ body {
 }
 
 .fab-past-entry .fab-menu-icon {
-  background: linear-gradient(135deg, rgba(251, 146, 60, 0.15), rgba(251, 146, 60, 0.25));
+  background: linear-gradient(
+    135deg,
+    rgba(251, 146, 60, 0.15),
+    rgba(251, 146, 60, 0.25)
+  );
 }
 
 /* FAB Backdrop */
