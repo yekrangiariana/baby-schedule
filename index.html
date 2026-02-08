@@ -235,14 +235,27 @@
           <div class="recent-list" id="recentList"></div>
         </section>
 
-        <!-- Quick Actions -->
-        <section class="quick-actions">
-          <h3 data-i18n="logActivity">Log Activity</h3>
-          <div class="action-buttons" id="actionButtons">
-            <!-- Action buttons will be rendered dynamically -->
-          </div>
-        </section>
       </main>
+
+      <!-- FAB Backdrop -->
+      <div class="fab-backdrop" id="fabBackdrop"></div>
+
+      <!-- Floating Action Button -->
+      <div class="fab-container" id="fabContainer">
+        <div class="fab-menu" id="fabMenu">
+          <!-- Menu items will be rendered dynamically -->
+          <button class="fab-menu-item fab-past-entry" id="fabPastEntry">
+            <span class="fab-menu-icon">🕐</span>
+            <span class="fab-menu-label" data-i18n="logPastEntry">Log Past Entry</span>
+          </button>
+          <div class="fab-menu-activities" id="fabMenuActivities">
+            <!-- Activity buttons will be rendered here -->
+          </div>
+        </div>
+        <button class="fab-button" id="fabButton">
+          <span class="fab-icon">+</span>
+        </button>
+      </div>
     </div>
 
     <!-- Activity Log Screen (Full Page) -->
@@ -804,6 +817,138 @@
       </div>
     </div>
 
+    <!-- Log Past Entry Modal -->
+    <div class="modal-overlay" id="logPastEntryModal" hidden>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 data-i18n="logPastEntry">Log Past Entry</h3>
+          <button class="modal-close" id="closePastEntryModalBtn">✕</button>
+        </div>
+        <div class="modal-body">
+          <label class="field">
+            <span class="field-label" data-i18n="activityType">Activity Type</span>
+            <select id="pastEntryType" class="input">
+              <!-- Options will be populated dynamically -->
+            </select>
+          </label>
+
+          <label class="field">
+            <span class="field-label" data-i18n="date">Date</span>
+            <input
+              type="date"
+              id="pastEntryDate"
+              class="input"
+            />
+          </label>
+
+          <label class="field">
+            <span class="field-label" data-i18n="time">Time</span>
+            <input
+              type="time"
+              id="pastEntryTime"
+              class="input"
+            />
+          </label>
+
+          <label class="field">
+            <span class="field-label" data-i18n="note">Note</span>
+            <input
+              type="text"
+              id="pastEntryNote"
+              class="input"
+              data-i18n-attr="placeholder"
+              data-i18n="notePlaceholder"
+              placeholder="Optional note..."
+              maxlength="100"
+            />
+          </label>
+        </div>
+        <div class="modal-footer">
+          <button
+            id="cancelPastEntryModalBtn"
+            class="btn-rounded btn-secondary"
+            data-i18n="cancel"
+          >
+            Cancel
+          </button>
+          <button
+            id="savePastEntryBtn"
+            class="btn-rounded btn-primary"
+            data-i18n="logEntry"
+          >
+            Log Entry
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Entry Modal -->
+    <div class="modal-overlay" id="editEntryModal" hidden>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 data-i18n="editEntry">Edit Entry</h3>
+          <button class="modal-close" id="closeEditModalBtn">✕</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="editingEntryId" />
+
+          <label class="field">
+            <span class="field-label" data-i18n="activityType">Activity Type</span>
+            <select id="editEntryType" class="input">
+              <!-- Options will be populated dynamically -->
+            </select>
+          </label>
+
+          <label class="field">
+            <span class="field-label" data-i18n="date">Date</span>
+            <input
+              type="date"
+              id="editEntryDate"
+              class="input"
+            />
+          </label>
+
+          <label class="field">
+            <span class="field-label" data-i18n="time">Time</span>
+            <input
+              type="time"
+              id="editEntryTime"
+              class="input"
+            />
+          </label>
+
+          <label class="field">
+            <span class="field-label" data-i18n="note">Note</span>
+            <input
+              type="text"
+              id="editEntryNote"
+              class="input"
+              data-i18n-attr="placeholder"
+              data-i18n="notePlaceholder"
+              placeholder="Optional note..."
+              maxlength="100"
+            />
+          </label>
+        </div>
+        <div class="modal-footer">
+          <button
+            id="cancelEditModalBtn"
+            class="btn-rounded btn-secondary"
+            data-i18n="cancel"
+          >
+            Cancel
+          </button>
+          <button
+            id="saveEditBtn"
+            class="btn-rounded btn-primary"
+            data-i18n="save"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Disconnect Confirmation Modal -->
     <div class="modal-overlay" id="disconnectModal" hidden>
       <div class="modal-content">
@@ -1254,7 +1399,6 @@
       </div>
     </div>
 
-    <script src="js/manifest-generator.js"></script>
     <script src="js/translations.js"></script>
     <script src="js/welcome.js"></script>
     <script src="js/app.js"></script>

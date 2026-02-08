@@ -190,6 +190,7 @@ const translations = {
 
     // Toast Messages
     logged: "logged",
+    updated: "updated",
 
     // Log Summary/Overview
     overview: "Overview",
@@ -201,11 +202,23 @@ const translations = {
     noData: "—",
 
     // Log Entries
+    edit: "Edit",
+    editEntry: "Edit Entry",
+    logPastEntry: "Log Past Entry",
+    logEntry: "Log Entry",
+    activityType: "Activity Type",
+    date: "Date",
+    time: "Time",
+    note: "Note",
+    notePlaceholder: "Optional note...",
     delete: "Delete",
     noEntriesToExport: "No entries to export",
     noEntriesYet: "No entries yet",
     showing: "Showing",
     entries: "entries",
+    fillAllFields: "Please fill all required fields",
+    entryNotFound: "Entry not found",
+    cannotLogFuture: "Cannot log future entries",
 
     // Home Screen Today Summary
     todayLabel: "Today:",
@@ -473,6 +486,7 @@ const translations = {
 
     // Toast Messages
     logged: "kirjattu",
+    updated: "päivitetty",
 
     // Log Summary/Overview
     overview: "Yleiskatsaus",
@@ -484,11 +498,23 @@ const translations = {
     noData: "—",
 
     // Log Entries
+    edit: "Muokkaa",
+    editEntry: "Muokkaa Merkintää",
+    logPastEntry: "Kirjaa Aikaisempi Merkintä",
+    logEntry: "Kirjaa Merkintä",
+    activityType: "Toiminnan Tyyppi",
+    date: "Päivämäärä",
+    time: "Aika",
+    note: "Huomautus",
+    notePlaceholder: "Valinnainen huomautus...",
     delete: "Poista",
     noEntriesToExport: "Ei merkintöjä vietäväksi",
     noEntriesYet: "Ei vielä merkintöjä",
     showing: "Näytetään",
     entries: "merkintää",
+    fillAllFields: "Täytä kaikki pakolliset kentät",
+    entryNotFound: "Merkintää ei löytynyt",
+    cannotLogFuture: "Ei voi kirjata tulevia merkintöjä",
 
     // Home Screen Today Summary
     todayLabel: "Tänään:",

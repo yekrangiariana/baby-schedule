@@ -28,10 +28,6 @@ const APP_CONFIG = {
 
   // Author
   author: "Little Agenda",
-
-  // Theme Colors
-  themeColor: "#6A5ACD",
-  backgroundColor: "#ffffff",
 };
 
 // Make config available globally

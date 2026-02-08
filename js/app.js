@@ -81,6 +81,35 @@
   const cancelModalBtn = $("#cancelModalBtn");
   const saveTypeBtn = $("#saveTypeBtn");
 
+  // Edit Entry Modal
+  const editEntryModal = $("#editEntryModal");
+  const closeEditModalBtn = $("#closeEditModalBtn");
+  const cancelEditModalBtn = $("#cancelEditModalBtn");
+  const saveEditBtn = $("#saveEditBtn");
+  const editingEntryId = $("#editingEntryId");
+  const editEntryType = $("#editEntryType");
+  const editEntryDate = $("#editEntryDate");
+  const editEntryTime = $("#editEntryTime");
+  const editEntryNote = $("#editEntryNote");
+
+  // Log Past Entry Modal
+  const logPastEntryModal = $("#logPastEntryModal");
+  const closePastEntryModalBtn = $("#closePastEntryModalBtn");
+  const cancelPastEntryModalBtn = $("#cancelPastEntryModalBtn");
+  const savePastEntryBtn = $("#savePastEntryBtn");
+  const pastEntryType = $("#pastEntryType");
+  const pastEntryDate = $("#pastEntryDate");
+  const pastEntryTime = $("#pastEntryTime");
+  const pastEntryNote = $("#pastEntryNote");
+
+  // FAB (Floating Action Button)
+  const fabContainer = $("#fabContainer");
+  const fabButton = $("#fabButton");
+  const fabMenu = $("#fabMenu");
+  const fabMenuActivities = $("#fabMenuActivities");
+  const fabPastEntry = $("#fabPastEntry");
+  const fabBackdrop = $("#fabBackdrop");
+
   // Screens
   const helpScreen = $("#helpScreen");
   const helpContent = $("#helpContent");
@@ -487,6 +516,9 @@
     // Always scroll to top when switching tabs
     window.scrollTo({ top: 0, behavior: "smooth" });
 
+    // Close FAB when switching screens
+    closeFAB();
+
     // Update browser history if not called from popstate event
     if (updateHistory) {
       const currentHash = window.location.hash.slice(1) || "home";
@@ -704,55 +736,31 @@
 
   // Render home screen action buttons dynamically
   function renderHomeScreen(showLoading = false) {
-    // Render action buttons
-    if (actionButtons) {
-      actionButtons.innerHTML = "";
+    // Render FAB menu items instead of action buttons
+    if (fabMenuActivities) {
+      fabMenuActivities.innerHTML = "";
 
-      if (showLoading) {
-        // Show loading skeletons
-        for (let i = 0; i < 3; i++) {
-          const skeleton = document.createElement("div");
-          skeleton.className = "action action-skeleton";
-          skeleton.innerHTML = `
-            <div class="action-skeleton-emoji"></div>
-            <div class="action-skeleton-label"></div>
+      if (!showLoading) {
+        actionTypes.forEach((type) => {
+          const btn = document.createElement("button");
+          btn.className = "fab-menu-activity";
+          btn.dataset.type = type.id;
+          btn.innerHTML = `
+            <span class="fab-menu-icon" style="background: ${type.color}33;">${type.emoji}</span>
+            <span class="fab-menu-label">${getActionTypeName(type)}</span>
           `;
-          actionButtons.appendChild(skeleton);
-        }
-        return;
-      }
 
-      actionTypes.forEach((type) => {
-        const btn = document.createElement("button");
-        btn.className = `action action-${type.id}`;
-        btn.dataset.type = type.id;
-        btn.style.borderColor = type.color;
-        btn.innerHTML = `
-          <span class="action-emoji">${type.emoji}</span>
-          <span class="action-label">${getActionTypeName(type)}</span>
-        `;
-
-        // Add gradient background
-        const gradientBefore = document.createElement("style");
-        gradientBefore.textContent = `
-          .action-${type.id}::before {
-            background: linear-gradient(135deg, ${type.color}33, ${type.color});
-          }
-        `;
-        if (!document.querySelector(`style[data-type="${type.id}"]`)) {
-          gradientBefore.setAttribute("data-type", type.id);
-          document.head.appendChild(gradientBefore);
-        }
-
-        actionButtons.appendChild(btn);
-      });
-
-      // Re-attach event listeners to new buttons
-      $$(".action").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-          await addEntry(btn.dataset.type);
+          fabMenuActivities.appendChild(btn);
         });
-      });
+
+        // Re-attach event listeners to new FAB menu buttons
+        $$(".fab-menu-activity").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            closeFAB();
+            await addEntry(btn.dataset.type);
+          });
+        });
+      }
     }
 
     // Render mini-stats
@@ -1882,7 +1890,10 @@
             <div class="log-entry-time">${formatDate(e.timestamp)} ${formatTime(e.timestamp)}</div>
             ${e.note ? `<div class="log-entry-note">${escapeHtml(e.note)}</div>` : ""}
           </div>
-          <button class="log-entry-delete" data-del="${e.id}">${typeof t === "function" ? t("delete") : "Delete"}</button>
+          <div class="log-entry-actions">
+            <button class="log-entry-edit" data-edit="${e.id}">${typeof t === "function" ? t("edit") : "Edit"}</button>
+            <button class="log-entry-delete" data-del="${e.id}">${typeof t === "function" ? t("delete") : "Delete"}</button>
+          </div>
         `;
         logEntries.appendChild(card);
       });
@@ -2190,6 +2201,243 @@
       renderLog();
     }
     if (!insightsScreen.hidden) renderGraphs();
+
+    // Trigger background sync
+    backgroundSync();
+  }
+
+  // Open edit modal with entry data
+  function openEditModal(entryId) {
+    const entry = entries.find((e) => e.id === entryId);
+    if (!entry) return;
+
+    // Populate the modal with entry data
+    editingEntryId.value = entry.id;
+    
+    // Populate activity type dropdown
+    editEntryType.innerHTML = "";
+    actionTypes.forEach((type) => {
+      const option = document.createElement("option");
+      option.value = type.id;
+      option.textContent = `${getTypeEmoji(type.id)} ${getActionTypeName(type)}`;
+      if (type.id === entry.type) {
+        option.selected = true;
+      }
+      editEntryType.appendChild(option);
+    });
+
+    // Convert timestamp to date and time
+    const date = new Date(entry.timestamp);
+    const dateStr = date.toISOString().split("T")[0];
+    const timeStr = date.toTimeString().slice(0, 5);
+    
+    editEntryDate.value = dateStr;
+    editEntryTime.value = timeStr;
+    editEntryNote.value = entry.note || "";
+
+    // Show the modal
+    editEntryModal.hidden = false;
+    haptics(5);
+  }
+
+  // Close edit modal
+  function closeEditModal() {
+    editEntryModal.hidden = true;
+    editingEntryId.value = "";
+    editEntryType.value = "";
+    editEntryDate.value = "";
+    editEntryTime.value = "";
+    editEntryNote.value = "";
+  }
+
+  // Update entry with new data
+  function updateEntry() {
+    const oldEntryId = editingEntryId.value;
+    const newType = editEntryType.value;
+    const newDate = editEntryDate.value;
+    const newTime = editEntryTime.value;
+    const newNote = editEntryNote.value;
+
+    if (!oldEntryId || !newType || !newDate || !newTime) {
+      const fillAllFieldsMsg = typeof t === "function" ? t("fillAllFields") : "Please fill all required fields";
+      toast(fillAllFieldsMsg);
+      return;
+    }
+
+    // Find the entry
+    const index = entries.findIndex((e) => e.id === oldEntryId);
+    if (index === -1) {
+      const entryNotFoundMsg = typeof t === "function" ? t("entryNotFound") : "Entry not found";
+      toast(entryNotFoundMsg);
+      closeEditModal();
+      return;
+    }
+
+    // Create new timestamp from date and time
+    const newTimestamp = new Date(`${newDate}T${newTime}`).getTime();
+
+    // Generate a NEW ID for the edited entry
+    const newEntryId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+    // Create the updated entry with a NEW ID
+    const updatedEntry = {
+      id: newEntryId,
+      type: newType,
+      timestamp: newTimestamp,
+      note: newNote,
+      synced: false, // Mark as not synced
+    };
+
+    // Replace the old entry with the new one
+    entries[index] = updatedEntry;
+
+    // Save to localStorage
+    saveEntries(entries);
+
+    // Add to delete queue - delete the OLD entry from Google Sheets
+    deleteQueue.push(oldEntryId);
+    saveDeletes(deleteQueue);
+
+    // Add to sync queue - delete old, create new
+    syncQueue.push({ type: "delete", id: oldEntryId, queuedAt: Date.now() });
+    syncQueue.push({ 
+      type: "create", 
+      entry: updatedEntry, 
+      queuedAt: Date.now() 
+    });
+    saveSyncQueue(syncQueue);
+
+    // Immediate UI update
+    haptics(15);
+    const actionType = getActionTypeById(newType);
+    const actionName = actionType
+      ? getActionTypeName(actionType)
+      : capitalize(newType);
+    const updatedText = typeof t === "function" ? t("updated") : "updated";
+    toast(`${actionName} ${updatedText}`);
+    updateStatus();
+
+    // Update open screens immediately
+    if (!logScreen.hidden) {
+      renderLogSummary();
+      renderLog();
+    }
+    if (!insightsScreen.hidden) renderGraphs();
+
+    // Close modal
+    closeEditModal();
+
+    // Trigger background sync
+    backgroundSync();
+  }
+
+  // FAB (Floating Action Button) functions
+  function toggleFAB() {
+    if (fabContainer && fabBackdrop) {
+      const isActive = fabContainer.classList.toggle("active");
+      if (isActive) {
+        fabBackdrop.classList.add("active");
+      } else {
+        fabBackdrop.classList.remove("active");
+      }
+      haptics(5);
+    }
+  }
+
+  function closeFAB() {
+    if (fabContainer && fabBackdrop) {
+      fabContainer.classList.remove("active");
+      fabBackdrop.classList.remove("active");
+    }
+  }
+
+  // Open past entry modal
+  function openPastEntryModal() {
+    // Populate activity type dropdown
+    pastEntryType.innerHTML = "";
+    actionTypes.forEach((type) => {
+      const option = document.createElement("option");
+      option.value = type.id;
+      option.textContent = `${type.emoji} ${getActionTypeName(type)}`;
+      pastEntryType.appendChild(option);
+    });
+
+    // Set default date to today and time to now
+    const now = new Date();
+    pastEntryDate.value = now.toISOString().split("T")[0];
+    pastEntryTime.value = now.toTimeString().slice(0, 5);
+    pastEntryNote.value = "";
+
+    // Show the modal
+    logPastEntryModal.hidden = false;
+    closeFAB();
+    haptics(5);
+  }
+
+  // Close past entry modal
+  function closePastEntryModal() {
+    logPastEntryModal.hidden = true;
+    pastEntryType.value = "";
+    pastEntryDate.value = "";
+    pastEntryTime.value = "";
+    pastEntryNote.value = "";
+  }
+
+  // Log past entry
+  function logPastEntry() {
+    const type = pastEntryType.value;
+    const date = pastEntryDate.value;
+    const time = pastEntryTime.value;
+    const note = pastEntryNote.value;
+
+    if (!type || !date || !time) {
+      const fillAllFieldsMsg = typeof t === "function" ? t("fillAllFields") : "Please fill all required fields";
+      toast(fillAllFieldsMsg);
+      return;
+    }
+
+    // Create timestamp from date and time
+    const timestamp = new Date(`${date}T${time}`).getTime();
+
+    // Validate that the timestamp is not in the future
+    if (timestamp > Date.now()) {
+      const cannotLogFutureMsg = typeof t === "function" ? t("cannotLogFuture") : "Cannot log future entries";
+      toast(cannotLogFutureMsg);
+      return;
+    }
+
+    // Create the entry
+    const entry = {
+      id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      type,
+      note: note || "",
+      timestamp: timestamp,
+      synced: false,
+    };
+
+    entries.push(entry);
+    saveEntries(entries);
+
+    // Add to sync queue
+    syncQueue.push({ type: "create", entry, queuedAt: Date.now() });
+    saveSyncQueue(syncQueue);
+
+    // Immediate UI update
+    haptics(15);
+    const actionType = getActionTypeById(type);
+    const actionName = actionType
+      ? getActionTypeName(actionType)
+      : capitalize(type);
+    const loggedText = typeof t === "function" ? t("logged") : "logged";
+    toast(`${actionName} ${loggedText}`);
+    updateStatus();
+
+    // Update open screens immediately
+    if (!logScreen.hidden) renderLog();
+    if (!insightsScreen.hidden) renderGraphs();
+
+    // Close modal
+    closePastEntryModal();
 
     // Trigger background sync
     backgroundSync();
@@ -2851,9 +3099,16 @@
 
   // Wire up log entry delete buttons (event delegation)
   logEntries.addEventListener("click", (e) => {
-    const btn = e.target.closest("button[data-del]");
-    if (btn) {
-      deleteEntry(btn.dataset.del);
+    const deleteBtn = e.target.closest("button[data-del]");
+    if (deleteBtn) {
+      deleteEntry(deleteBtn.dataset.del);
+      return;
+    }
+
+    const editBtn = e.target.closest("button[data-edit]");
+    if (editBtn) {
+      openEditModal(editBtn.dataset.edit);
+      return;
     }
   });
 
@@ -3571,6 +3826,76 @@
 
   if (saveTypeBtn) {
     saveTypeBtn.addEventListener("click", saveActionType);
+  }
+
+  // Edit Entry Modal Event Listeners
+  if (closeEditModalBtn) {
+    closeEditModalBtn.addEventListener("click", closeEditModal);
+  }
+
+  if (cancelEditModalBtn) {
+    cancelEditModalBtn.addEventListener("click", closeEditModal);
+  }
+
+  if (saveEditBtn) {
+    saveEditBtn.addEventListener("click", updateEntry);
+  }
+
+  // FAB Event Listeners
+  if (fabButton) {
+    fabButton.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleFAB();
+    });
+  }
+
+  if (fabPastEntry) {
+    fabPastEntry.addEventListener("click", openPastEntryModal);
+  }
+
+  // Close FAB when clicking backdrop
+  if (fabBackdrop) {
+    fabBackdrop.addEventListener("click", closeFAB);
+  }
+
+  // Close FAB when clicking outside
+  document.addEventListener("click", (e) => {
+    if (fabContainer && fabContainer.classList.contains("active")) {
+      if (!fabContainer.contains(e.target)) {
+        closeFAB();
+      }
+    }
+  });
+
+  // Past Entry Modal Event Listeners
+  if (closePastEntryModalBtn) {
+    closePastEntryModalBtn.addEventListener("click", closePastEntryModal);
+  }
+
+  if (cancelPastEntryModalBtn) {
+    cancelPastEntryModalBtn.addEventListener("click", closePastEntryModal);
+  }
+
+  if (savePastEntryBtn) {
+    savePastEntryBtn.addEventListener("click", logPastEntry);
+  }
+
+  // Close past entry modal on overlay click
+  if (logPastEntryModal) {
+    logPastEntryModal.addEventListener("click", (e) => {
+      if (e.target === logPastEntryModal) {
+        closePastEntryModal();
+      }
+    });
+  }
+
+  // Close edit modal on overlay click
+  if (editEntryModal) {
+    editEntryModal.addEventListener("click", (e) => {
+      if (e.target === editEntryModal) {
+        closeEditModal();
+      }
+    });
   }
 
   if (typeColorInput && typeColorText) {
