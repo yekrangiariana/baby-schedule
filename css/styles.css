@@ -1745,6 +1745,103 @@ body {
   gap: 10px;
 }
 
+/* Log Entry Swipe Container */
+.log-entry-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  margin-bottom: 10px;
+  background: transparent;
+}
+
+.log-entry-actions-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.log-entry-action-left {
+  background: linear-gradient(90deg, #6b7280, #4b5563);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  gap: 4px;
+  transition:
+    width 0.1s ease,
+    padding 0.1s ease;
+  width: 0;
+  min-width: 0;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.log-entry-action-left.visible {
+  padding: 16px;
+}
+
+.log-entry-action-left:active {
+  background: linear-gradient(90deg, #4b5563, #374151);
+}
+
+.log-entry-action-right {
+  background: linear-gradient(270deg, #b91c1c, #991b1b);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  gap: 4px;
+  transition:
+    width 0.1s ease,
+    padding 0.1s ease;
+  width: 0;
+  min-width: 0;
+  overflow: hidden;
+  pointer-events: auto;
+  margin-left: auto;
+}
+
+.log-entry-action-right.visible {
+  padding: 16px;
+}
+
+.log-entry-action-right:active {
+  background: linear-gradient(270deg, #991b1b, #7f1d1d);
+}
+
+.log-entry-action-icon {
+  font-size: 24px;
+  line-height: 1;
+  min-width: 24px;
+  flex-shrink: 0;
+}
+
+.log-entry-action-label {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.15s ease 0.1s;
+}
+
+.log-entry-action-left.visible .log-entry-action-label,
+.log-entry-action-right.visible .log-entry-action-label {
+  opacity: 1;
+  transition-delay: 0s;
+}
+
 .log-entry {
   background: var(--bg-secondary);
   border-radius: 16px;
@@ -1753,6 +1850,36 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
+  position: relative;
+  z-index: 1;
+  touch-action: pan-y;
+  cursor: grab;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.log-entry:active {
+  cursor: grabbing;
+}
+
+/* Swipe hint animation - plays once on first 3 items */
+.log-entry-wrapper:nth-child(1) .log-entry,
+.log-entry-wrapper:nth-child(2) .log-entry,
+.log-entry-wrapper:nth-child(3) .log-entry {
+  animation: swipeHint 2s ease-in-out 0.5s;
+}
+
+@keyframes swipeHint {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30% {
+    transform: translateX(8px);
+  }
+  20% {
+    transform: translateX(0);
+  }
 }
 
 .log-entry-icon {
@@ -1803,49 +1930,14 @@ body {
   line-height: 1.5;
 }
 
+/* Old button styles - kept for backward compatibility */
 .log-entry-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: flex-end;
+  display: none;
 }
 
-.log-entry-edit {
-  padding: 10px 18px;
-  border-radius: 12px;
-  border: none;
-  background: rgba(59, 130, 246, 0.1);
-  color: #2563eb;
-  font-size: var(--text-sm);
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-  letter-spacing: -0.1px;
-  white-space: nowrap;
-}
-
-.log-entry-edit:active {
-  background: rgba(59, 130, 246, 0.2);
-  transform: scale(0.95);
-}
-
+.log-entry-edit,
 .log-entry-delete {
-  padding: 10px 18px;
-  border-radius: 12px;
-  border: none;
-  background: rgba(248, 113, 113, 0.1);
-  color: #dc2626;
-  font-size: var(--text-sm);
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-  letter-spacing: -0.1px;
-  white-space: nowrap;
-}
-
-.log-entry-delete:active {
-  background: rgba(248, 113, 113, 0.2);
-  transform: scale(0.95);
+  display: none;
 }
 
 .empty-message {
@@ -2008,14 +2100,10 @@ body {
     font-size: var(--text-sm);
   }
 
-  .log-entry-actions {
-    gap: 6px;
-  }
-
+  .log-entry-actions,
   .log-entry-edit,
   .log-entry-delete {
-    padding: 8px 14px;
-    font-size: var(--text-xs);
+    display: none;
   }
 }
 

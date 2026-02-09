@@ -1934,21 +1934,32 @@
       .sort((a, b) => b.timestamp - a.timestamp)
       .forEach((e) => {
         const card = document.createElement("div");
-        card.className = "log-entry";
+        card.className = "log-entry-wrapper";
         card.innerHTML = `
-          <div class="log-entry-icon ${e.type}" style="background-color: ${getTypeColor(e.type)}">${getTypeEmoji(e.type)}</div>
-          <div class="log-entry-content">
-            <div class="log-entry-type">${getTypeName(e.type)}</div>
-            <div class="log-entry-time">${formatDate(e.timestamp)} ${formatTime(e.timestamp)}</div>
-            ${e.note ? `<div class="log-entry-note">${escapeHtml(e.note)}</div>` : ""}
+          <div class="log-entry-actions-bg">
+            <div class="log-entry-action-left" data-edit="${e.id}">
+              <div class="log-entry-action-icon">✏️</div>
+              <div class="log-entry-action-label">${typeof t === "function" ? t("edit") : "Edit"}</div>
+            </div>
+            <div class="log-entry-action-right" data-del="${e.id}">
+              <div class="log-entry-action-icon">🗑️</div>
+              <div class="log-entry-action-label">${typeof t === "function" ? t("delete") : "Delete"}</div>
+            </div>
           </div>
-          <div class="log-entry-actions">
-            <button class="log-entry-edit" data-edit="${e.id}">${typeof t === "function" ? t("edit") : "Edit"}</button>
-            <button class="log-entry-delete" data-del="${e.id}">${typeof t === "function" ? t("delete") : "Delete"}</button>
+          <div class="log-entry" data-entry-id="${e.id}">
+            <div class="log-entry-icon ${e.type}" style="background-color: ${getTypeColor(e.type)}">${getTypeEmoji(e.type)}</div>
+            <div class="log-entry-content">
+              <div class="log-entry-type">${getTypeName(e.type)}</div>
+              <div class="log-entry-time">${formatDate(e.timestamp)} ${formatTime(e.timestamp)}</div>
+              ${e.note ? `<div class="log-entry-note">${escapeHtml(e.note)}</div>` : ""}
+            </div>
           </div>
         `;
         logEntries.appendChild(card);
       });
+
+    // Initialize swipe handlers
+    initSwipeHandlers();
   }
 
   function escapeHtml(s) {
@@ -1956,6 +1967,158 @@
       /[&<>"]/g,
       (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
     );
+  }
+
+  // Swipe handler for log entries
+  function initSwipeHandlers() {
+    const entries = document.querySelectorAll(".log-entry");
+
+    entries.forEach((entry) => {
+      let startX = 0;
+      let currentX = 0;
+      let isDragging = false;
+      let hasMoved = false;
+      const wrapper = entry.closest(".log-entry-wrapper");
+      const actionLeft = wrapper.querySelector(".log-entry-action-left");
+      const actionRight = wrapper.querySelector(".log-entry-action-right");
+
+      const onStart = (e) => {
+        // Check if clicking on action buttons
+        if (e.target.closest(".log-entry-actions-bg")) return;
+
+        startX = e.type.includes("mouse") ? e.clientX : e.touches[0].clientX;
+        currentX = startX;
+        isDragging = true;
+        hasMoved = false;
+        entry.style.transition = "none";
+        if (actionLeft) actionLeft.style.transition = "none";
+        if (actionRight) actionRight.style.transition = "none";
+      };
+
+      const onMove = (e) => {
+        if (!isDragging) return;
+
+        currentX = e.type.includes("mouse") ? e.clientX : e.touches[0].clientX;
+        const diff = currentX - startX;
+
+        if (Math.abs(diff) > 5) {
+          hasMoved = true;
+          e.preventDefault();
+        }
+
+        // Limit swipe distance
+        const maxSwipe = 120;
+        const limitedDiff = Math.max(-maxSwipe, Math.min(maxSwipe, diff));
+        entry.style.transform = `translateX(${limitedDiff}px)`;
+
+        // Expand action backgrounds based on swipe distance
+        if (diff > 0) {
+          // Swiping right - show edit
+          const width = Math.min(Math.abs(limitedDiff), maxSwipe);
+          if (actionLeft) {
+            actionLeft.style.width = `${width}px`;
+            if (width > 40) {
+              actionLeft.classList.add("visible");
+            } else {
+              actionLeft.classList.remove("visible");
+            }
+          }
+          if (actionRight) {
+            actionRight.style.width = "0";
+            actionRight.classList.remove("visible");
+          }
+        } else if (diff < 0) {
+          // Swiping left - show delete
+          const width = Math.min(Math.abs(limitedDiff), maxSwipe);
+          if (actionRight) {
+            actionRight.style.width = `${width}px`;
+            if (width > 40) {
+              actionRight.classList.add("visible");
+            } else {
+              actionRight.classList.remove("visible");
+            }
+          }
+          if (actionLeft) {
+            actionLeft.style.width = "0";
+            actionLeft.classList.remove("visible");
+          }
+        }
+      };
+
+      const onEnd = () => {
+        if (!isDragging) return;
+        isDragging = false;
+
+        entry.style.transition = "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
+        if (actionLeft)
+          actionLeft.style.transition = "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
+        if (actionRight)
+          actionRight.style.transition =
+            "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
+
+        const diff = currentX - startX;
+        const threshold = 60;
+
+        if (diff > threshold) {
+          // Swiped right - Edit
+          entry.style.transform = "translateX(100px)";
+          setTimeout(() => {
+            const entryId = entry.getAttribute("data-entry-id");
+            openEditModal(entryId);
+            entry.style.transform = "";
+            if (actionLeft) {
+              actionLeft.style.width = "0";
+              actionLeft.classList.remove("visible");
+            }
+          }, 200);
+        } else if (diff < -threshold) {
+          // Swiped left - Delete
+          entry.style.transform = "translateX(-100px)";
+          setTimeout(() => {
+            const entryId = entry.getAttribute("data-entry-id");
+            deleteEntry(entryId);
+          }, 200);
+        } else {
+          // Return to center
+          entry.style.transform = "";
+          if (actionLeft) {
+            actionLeft.style.width = "0";
+            actionLeft.classList.remove("visible");
+          }
+          if (actionRight) {
+            actionRight.style.width = "0";
+            actionRight.classList.remove("visible");
+          }
+        }
+      };
+
+      // Touch events
+      entry.addEventListener("touchstart", onStart, { passive: true });
+      entry.addEventListener("touchmove", onMove, { passive: false });
+      entry.addEventListener("touchend", onEnd);
+      entry.addEventListener("touchcancel", onEnd);
+
+      // Mouse events (for trackpad)
+      const onMouseMove = (e) => {
+        if (isDragging) {
+          onMove(e);
+        }
+      };
+
+      const onMouseUp = () => {
+        if (isDragging) {
+          onEnd();
+        }
+      };
+
+      entry.addEventListener("mousedown", onStart);
+
+      // Add listeners to document for mouse movement
+      entry._onMouseMove = onMouseMove;
+      entry._onMouseUp = onMouseUp;
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+    });
   }
 
   // Export entries to CSV
@@ -3179,17 +3342,19 @@
     renderLog();
   });
 
-  // Wire up log entry delete buttons (event delegation)
+  // Wire up log entry actions (event delegation)
   logEntries.addEventListener("click", (e) => {
-    const deleteBtn = e.target.closest("button[data-del]");
-    if (deleteBtn) {
-      deleteEntry(deleteBtn.dataset.del);
+    const editAction = e.target.closest("[data-edit]");
+    if (editAction) {
+      const entryId = editAction.getAttribute("data-edit");
+      openEditModal(entryId);
       return;
     }
 
-    const editBtn = e.target.closest("button[data-edit]");
-    if (editBtn) {
-      openEditModal(editBtn.dataset.edit);
+    const deleteAction = e.target.closest("[data-del]");
+    if (deleteAction) {
+      const entryId = deleteAction.getAttribute("data-del");
+      deleteEntry(entryId);
       return;
     }
   });
