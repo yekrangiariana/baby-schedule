@@ -8,7 +8,7 @@
     />
 
     <!-- Load configuration first -->
-    <script src="js/config.js"></script>
+    <script src="js/config.js" defer></script>
 
     <!-- SEO Meta Tags -->
     <title data-config="title">
@@ -115,6 +115,10 @@
       data-config="backgroundColor"
       content="#FFF5F7"
     />
+
+    <!-- Preconnect to Google Fonts for faster loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
     <!-- Styles -->
     <link rel="stylesheet" href="css/styles.css" />
@@ -1400,8 +1404,8 @@
       </div>
     </div>
 
-    <script src="js/translations.js"></script>
-    <script src="js/welcome.js"></script>
-    <script src="js/app.js"></script>
+    <script src="js/translations.js" defer></script>
+    <script src="js/welcome.js" defer></script>
+    <script src="js/app.js" defer></script>
   </body>
 </html>

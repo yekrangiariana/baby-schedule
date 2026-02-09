@@ -281,7 +281,7 @@ const translations = {
     welcomeActivitiesDesc: "Start with these common activities",
     welcomeActivitiesInfoTitle: "Track whatever you want!",
     welcomeActivitiesInfoDesc:
-      "You can add, remove, and customize activities anytime in Settings → Activity Types.",
+      "You can add, remove, and customise activities anytime in Settings → Activity Types.",
     welcomeThemeTitle: "Choose Your Theme",
     welcomeThemeDesc: "Pick a colour scheme that suits your style",
     welcomeFontTitle: "Choose Your Font",
