@@ -1928,7 +1928,7 @@
     if (list.length === 0) {
       return; // Summary already shows "No entries yet"
     }
-    
+
     // Add swipe instructions
     if (list.length > 0) {
       const instructions = document.createElement("div");
@@ -2011,7 +2011,9 @@
         if (!isDragging) return;
 
         currentX = e.type.includes("mouse") ? e.clientX : e.touches[0].clientX;
-        const currentY = e.type.includes("mouse") ? e.clientY : e.touches[0].clientY;
+        const currentY = e.type.includes("mouse")
+          ? e.clientY
+          : e.touches[0].clientY;
         const diffX = currentX - startX;
         const diffY = currentY - startY;
 
@@ -2091,14 +2093,12 @@
             deleteEntry(entryId);
           }
         }
-        
+
         // Reset position and styles
         entry.style.transition = "transform 0.2s ease-out";
-        if (actionLeft)
-          actionLeft.style.transition = "all 0.2s ease-out";
-        if (actionRight)
-          actionRight.style.transition = "all 0.2s ease-out";
-        
+        if (actionLeft) actionLeft.style.transition = "all 0.2s ease-out";
+        if (actionRight) actionRight.style.transition = "all 0.2s ease-out";
+
         entry.style.transform = "";
         if (actionLeft) {
           actionLeft.style.width = "0";
