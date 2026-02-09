@@ -208,7 +208,7 @@
       <main class="screen-content">
         <!-- Today's Summary -->
         <section class="today-summary">
-          <h2 data-i18n="todaySummary">📊 Today's Summary</h2>
+          <h2 data-i18n="todaySummary">Today's Summary</h2>
           <div class="now" id="nowText"></div>
           <div class="today-stats" id="todayTotals">Loading...</div>
           <div
@@ -219,13 +219,22 @@
             <span data-i18n="dataStoredLocally"
               >💡 Data stored locally only.</span
             >
-            <button
-              class="sync-notice-link"
-              id="syncNoticeLink"
-              data-i18n="connectGoogleSheets"
-            >
-              Connect Google Sheets
-            </button>
+            <div class="sync-notice-actions">
+              <button
+                class="sync-notice-link"
+                id="syncNoticeLink"
+                data-i18n="connectGoogleSheets"
+              >
+                Connect Google Sheets
+              </button>
+              <button
+                class="sync-notice-dismiss"
+                id="dismissSyncNotice"
+                data-i18n="hideNotice"
+              >
+                Hide
+              </button>
+            </div>
           </div>
         </section>
 
@@ -242,13 +251,16 @@
       <!-- Floating Action Button -->
       <div class="fab-container" id="fabContainer">
         <div class="fab-menu" id="fabMenu">
-          <!-- Menu items will be rendered dynamically -->
-          <button class="fab-menu-item fab-past-entry" id="fabPastEntry">
-            <span class="fab-menu-icon">🕐</span>
-            <span class="fab-menu-label" data-i18n="logPastEntry"
-              >Log Past Entry</span
-            >
-          </button>
+          <!-- Secondary action buttons -->
+          <div class="fab-secondary-actions">
+            <button class="fab-secondary-btn fab-past-entry" id="fabPastEntry" data-i18n-attr="title" data-i18n="logPastEntry" title="Log Past Entry">
+              <span class="fab-secondary-icon">🕐</span>
+            </button>
+            <button class="fab-secondary-btn fab-manage-activities" id="fabManageActivities" data-i18n-attr="title" data-i18n="manageActivities" title="Manage Activities">
+              <span class="fab-secondary-icon">⚙️</span>
+            </button>
+          </div>
+          <!-- Activity buttons -->
           <div class="fab-menu-activities" id="fabMenuActivities">
             <!-- Activity buttons will be rendered here -->
           </div>
@@ -471,7 +483,7 @@
           </section>
 
           <!-- Action Types Section -->
-          <section class="settings-section">
+          <section class="settings-section" id="activityTypesSection">
             <h2 class="settings-section-title" data-i18n="activityTypes">
               📝 Activity Types
             </h2>
@@ -1160,8 +1172,7 @@
                 Choose Activities to Track
               </h1>
               <p class="welcome-description" data-i18n="welcomeActivitiesDesc">
-                Select activities to track. Add more or customise in Settings
-                anytime.
+                Start with these common activities
               </p>
 
               <div class="welcome-activities-grid">
@@ -1187,29 +1198,18 @@
                     >Sleep</span
                   >
                 </div>
-                <div class="welcome-activity-option" data-activity="bath">
-                  <span class="welcome-activity-emoji">🛁</span>
-                  <span class="welcome-activity-name" data-i18n="bath"
-                    >Bath</span
+              </div>
+
+              <div class="welcome-info-box">
+                <div class="welcome-info-icon">✨</div>
+                <div class="welcome-info-text">
+                  <strong data-i18n="welcomeActivitiesInfoTitle"
+                    >Track whatever you want!</strong
                   >
-                </div>
-                <div class="welcome-activity-option" data-activity="play">
-                  <span class="welcome-activity-emoji">🎮</span>
-                  <span class="welcome-activity-name" data-i18n="play"
-                    >Play</span
-                  >
-                </div>
-                <div class="welcome-activity-option" data-activity="walk">
-                  <span class="welcome-activity-emoji">🚶</span>
-                  <span class="welcome-activity-name" data-i18n="walk"
-                    >Walk</span
-                  >
-                </div>
-                <div class="welcome-activity-option" data-activity="medicine">
-                  <span class="welcome-activity-emoji">💊</span>
-                  <span class="welcome-activity-name" data-i18n="medicine"
-                    >Medicine</span
-                  >
+                  <p data-i18n="welcomeActivitiesInfoDesc">
+                    You can add, remove, and customise activities anytime in
+                    Settings → Activity Types.
+                  </p>
                 </div>
               </div>
             </div>

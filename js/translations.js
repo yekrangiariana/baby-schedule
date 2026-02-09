@@ -11,11 +11,12 @@ const translations = {
       "baby tracker, baby log, feeding tracker, diaper log, baby activities, parenting tool",
 
     // Home Screen
-    todaySummary: "📊 Today's Summary",
+    todaySummary: "Today's Summary",
     recentActivity: "Recent Activity",
     logActivity: "Log Activity",
     dataStoredLocally: "💡 Data stored locally only.",
     connectGoogleSheets: "Connect Google Sheets",
+    hideNotice: "Hide",
 
     // Navigation
     navHome: "Home",
@@ -173,7 +174,7 @@ const translations = {
     wizardWelcomeTitle: "Welcome! 👶",
     wizardWelcomeDesc: "Quick tour of your baby tracker.",
     wizardQuickActionsTitle: "Quick Actions",
-    wizardQuickActionsDesc: "Tap buttons to log activities instantly.",
+    wizardQuickActionsDesc: "Tap the + button to open the menu and log activities.",
     wizardTodaySummaryTitle: "Today's Summary",
     wizardTodaySummaryDesc: "View totals and time since last activity.",
     wizardActivityLogTitle: "Activity Log",
@@ -205,6 +206,7 @@ const translations = {
     edit: "Edit",
     editEntry: "Edit Entry",
     logPastEntry: "Log Past Entry",
+    manageActivities: "Manage Activities",
     logEntry: "Log Entry",
     activityType: "Activity Type",
     date: "Date",
@@ -275,8 +277,10 @@ const translations = {
     welcomeTitle: "Welcome to",
     welcomeLanguageDesc: "Let's start by choosing your preferred language",
     welcomeActivitiesTitle: "Choose Activities to Track",
-    welcomeActivitiesDesc:
-      "Select activities to track. Add more or customise in Settings anytime.",
+    welcomeActivitiesDesc: "Start with these common activities",
+    welcomeActivitiesInfoTitle: "Track whatever you want!",
+    welcomeActivitiesInfoDesc:
+      "You can add, remove, and customize activities anytime in Settings → Activity Types.",
     welcomeThemeTitle: "Choose Your Theme",
     welcomeThemeDesc: "Pick a colour scheme that suits your style",
     welcomeFontTitle: "Choose Your Font",
@@ -302,11 +306,12 @@ const translations = {
       "vauvan seuranta, vauvan loki, ruokailun seuranta, vaippaloki, vauvan toiminnot, vanhemmuustyökalu",
 
     // Home Screen
-    todaySummary: "📊 Tämän Päivän Yhteenveto",
+    todaySummary: "Tämän Päivän Yhteenveto",
     recentActivity: "Viimeisimmät Toiminnot",
     logActivity: "Kirjaa Toiminto",
     dataStoredLocally: "💡 Tiedot tallennettu vain paikallisesti.",
     connectGoogleSheets: "Yhdistä Google Sheets",
+    hideNotice: "Piilota",
 
     // Navigation
     navHome: "Koti",
@@ -466,7 +471,7 @@ const translations = {
     wizardWelcomeDesc: "Nopea kierros vauvaseurantasovelluksestasi.",
     wizardQuickActionsTitle: "Pikatoiminnot",
     wizardQuickActionsDesc:
-      "Napauta painikkeita kirjataksesi toimintoja välittömästi.",
+      "Napauta + -painiketta avataksesi valikon ja kirjataksesi toimintoja.",
     wizardTodaySummaryTitle: "Tämän Päivän Yhteenveto",
     wizardTodaySummaryDesc:
       "Katso kokonaismäärät ja aika viimeisestä toiminnasta.",
@@ -501,6 +506,7 @@ const translations = {
     edit: "Muokkaa",
     editEntry: "Muokkaa Merkintää",
     logPastEntry: "Kirjaa Aikaisempi Merkintä",
+    manageActivities: "Hallinnoi Toimintoja",
     logEntry: "Kirjaa Merkintä",
     activityType: "Toiminnan Tyyppi",
     date: "Päivämäärä",
@@ -571,8 +577,10 @@ const translations = {
     welcomeTitle: "Tervetuloa",
     welcomeLanguageDesc: "Aloitetaan valitsemalla haluamasi kieli",
     welcomeActivitiesTitle: "Valitse Seurattavat Toiminnot",
-    welcomeActivitiesDesc:
-      "Valitse toiminnot. Lisää tai muokkaa Asetuksissa milloin tahansa.",
+    welcomeActivitiesDesc: "Aloita näillä yleisillä toiminnoilla",
+    welcomeActivitiesInfoTitle: "Seuraa mitä haluat!",
+    welcomeActivitiesInfoDesc:
+      "Voit lisätä, poistaa ja muokata toimintoja milloin tahansa kohdassa Asetukset → Toimintotyypit.",
     welcomeThemeTitle: "Valitse Teemasi",
     welcomeThemeDesc: "Valitse värimaailma, joka sopii tyyliisi",
     welcomeFontTitle: "Valitse Fonttisi",

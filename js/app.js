@@ -9,6 +9,7 @@
   const SYNC_QUEUE_KEY = "babylog.syncqueue.v1";
   const LAST_SYNC_KEY = "babylog.lastsync.v1";
   const ACTION_TYPES_KEY = "babylog.actiontypes.v1";
+  const SYNC_NOTICE_DISMISSED_KEY = "babylog.syncnoticedismissed.v1";
 
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => Array.from(document.querySelectorAll(s));
@@ -32,6 +33,7 @@
   const syncNoticeWarning = $("#syncNoticeWarning");
   const syncNoticeSuccess = $("#syncNoticeSuccess");
   const syncNoticeLink = $("#syncNoticeLink");
+  const dismissSyncNotice = $("#dismissSyncNotice");
   const recentList = $("#recentList");
   const logEntries = $("#logEntries");
   const undoBtn = $("#undoBtn");
@@ -108,6 +110,7 @@
   const fabMenu = $("#fabMenu");
   const fabMenuActivities = $("#fabMenuActivities");
   const fabPastEntry = $("#fabPastEntry");
+  const fabManageActivities = $("#fabManageActivities");
   const fabBackdrop = $("#fabBackdrop");
 
   // Screens
@@ -303,6 +306,22 @@
     const d = new Date(ts);
     return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   }
+  
+  // Format time since timestamp in a friendly way
+  function formatTimeSince(ts) {
+    const now = Date.now();
+    const diff = now - ts;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    
+    if (minutes < 1) return "just now";
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    if (days === 1) return "yesterday";
+    return `${days}d ago`;
+  }
+  
   function isSameDay(ts, day) {
     const d1 = new Date(ts);
     const d2 = new Date(day);
@@ -455,10 +474,7 @@
       minute: "2-digit",
     };
     if (nowText)
-      nowText.textContent =
-        now.toLocaleDateString(locale, options) +
-        " " +
-        now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      nowText.textContent = now.toLocaleDateString(locale, options);
   }, 1000);
 
   // Show/hide undo button temporarily
@@ -938,14 +954,33 @@
 
     if (todayTotals) {
       if (src.length) {
-        const summaryParts = actionTypes
-          .map((type) => `${getActionTypeName(type)} ${counts[type.id] || 0}`)
-          .join(" • ");
-        const todayLabel = typeof t === "function" ? t("todayLabel") : "Today:";
-        todayTotals.textContent = `${todayLabel} ${summaryParts}`;
+        // Create visual card-based summary
+        const summaryCards = actionTypes
+          .map((type) => {
+            const count = counts[type.id] || 0;
+            const lastEntry = src
+              .filter((e) => e.type === type.id)
+              .sort((a, b) => b.timestamp - a.timestamp)[0];
+            const timeText = lastEntry 
+              ? formatTimeSince(lastEntry.timestamp)
+              : "—";
+            
+            return `
+              <div class="summary-card">
+                <div class="summary-emoji" style="background-color: ${type.color}20;">${type.emoji}</div>
+                <div class="summary-info">
+                  <div class="summary-count">${count}</div>
+                  <div class="summary-time">${timeText}</div>
+                </div>
+              </div>
+            `;
+          })
+          .join("");
+        
+        todayTotals.innerHTML = `<div class="summary-grid">${summaryCards}</div>`;
       } else {
-        const todayNone = typeof t === "function" ? t("todayNone") : "Today: —";
-        todayTotals.textContent = todayNone;
+        const todayNone = typeof t === "function" ? t("todayNone") : "No activities yet";
+        todayTotals.innerHTML = `<div class="summary-empty">${todayNone}</div>`;
       }
     }
 
@@ -955,9 +990,10 @@
     const hasUrl = !!(currentSettings.webAppUrl || FIXED_WEB_APP_URL);
     const isSyncConfigured = hasUrl && currentSettings.syncEnabled;
 
-    // Only show warning on home screen when NOT connected
+    // Only show warning on home screen when NOT connected and not dismissed
     if (syncNoticeWarning) {
-      syncNoticeWarning.hidden = isSyncConfigured;
+      const isDismissed = localStorage.getItem(SYNC_NOTICE_DISMISSED_KEY) === "true";
+      syncNoticeWarning.hidden = isSyncConfigured || isDismissed;
     }
 
     // Update success notice in settings (handled separately when settings screen is shown)
@@ -2886,8 +2922,8 @@
         description:
           typeof t === "function"
             ? t("wizardQuickActionsDesc")
-            : "Tap buttons to log activities instantly.",
-        target: ".quick-actions",
+            : "Tap the + button to open the menu and log activities.",
+        target: ".fab-button",
         screen: "home",
       },
       {
@@ -2972,6 +3008,11 @@
       }
       wizardOverlay.classList.remove("active");
 
+      // Close FAB menu when leaving Quick Actions step
+      if (currentStep === 1 && index !== 1) {
+        closeFAB();
+      }
+
       // Navigate to the correct screen
       if (step.screen) {
         showScreen(step.screen);
@@ -3016,6 +3057,15 @@
               const viewportHeight = window.innerHeight;
               const elementCenter = rect.top + rect.height / 2;
 
+              // Open FAB menu during Quick Actions step
+              if (index === 1 && step.target === ".fab-button") {
+                // Open the FAB menu to show the activities
+                if (fabContainer && !fabContainer.classList.contains("active")) {
+                  fabContainer.classList.add("active");
+                  if (fabBackdrop) fabBackdrop.classList.add("active");
+                }
+              }
+
               // Position card at top if element is in bottom half of screen
               if (elementCenter > viewportHeight / 2) {
                 wizardOverlay.classList.add("top");
@@ -3038,6 +3088,9 @@
 
     function closeWizard() {
       haptics(8);
+
+      // Close FAB if open
+      closeFAB();
 
       // Clear highlighting
       if (currentHighlightedElement) {
@@ -3269,6 +3322,7 @@
         localStorage.removeItem(DELETE_QUEUE_KEY);
         localStorage.removeItem(SYNC_QUEUE_KEY);
         localStorage.removeItem(LAST_SYNC_KEY);
+        localStorage.removeItem(SYNC_NOTICE_DISMISSED_KEY);
 
         // Reset welcome
         if (window.WelcomeSystem) {
@@ -3285,6 +3339,16 @@
   if (syncNoticeLink) {
     syncNoticeLink.addEventListener("click", () => {
       showScreen("settings");
+    });
+  }
+
+  // Dismiss sync notice
+  if (dismissSyncNotice) {
+    dismissSyncNotice.addEventListener("click", () => {
+      localStorage.setItem(SYNC_NOTICE_DISMISSED_KEY, "true");
+      if (syncNoticeWarning) {
+        syncNoticeWarning.hidden = true;
+      }
     });
   }
 
@@ -3861,6 +3925,20 @@
 
   if (fabPastEntry) {
     fabPastEntry.addEventListener("click", openPastEntryModal);
+  }
+
+  if (fabManageActivities) {
+    fabManageActivities.addEventListener("click", () => {
+      closeFAB();
+      showScreen("settings");
+      // Scroll to Activity Types section
+      setTimeout(() => {
+        const activityTypesSection = document.getElementById("activityTypesSection");
+        if (activityTypesSection) {
+          activityTypesSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 100);
+    });
   }
 
   // Close FAB when clicking backdrop

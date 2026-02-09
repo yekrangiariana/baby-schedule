@@ -123,9 +123,13 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   text-align: center;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px 0;
+  -webkit-overflow-scrolling: touch;
 }
 
 .welcome-icon {
@@ -187,6 +191,17 @@
   border-color: var(--primary-light);
 }
 
+.welcome-language-option.selected,
+.welcome-activity-option.selected,
+.welcome-theme-option.selected,
+.welcome-font-option.selected,
+.welcome-tutorial-choice.selected {
+  opacity: 1 !important;
+  filter: none !important;
+  position: relative;
+  z-index: 10;
+}
+
 .welcome-language-option.selected {
   background: linear-gradient(
     135deg,
@@ -218,12 +233,10 @@
 .welcome-activities-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+  gap: 12px;
   width: 100%;
   max-width: 400px;
-  margin-bottom: 20px;
-  overflow-y: auto;
-  max-height: 380px;
+  margin-bottom: 24px;
   padding: 4px;
 }
 
@@ -231,8 +244,8 @@
   background: var(--bg-secondary);
   backdrop-filter: blur(20px);
   border: 2px solid var(--border);
-  border-radius: 12px;
-  padding: 10px 8px;
+  border-radius: 16px;
+  padding: 20px 12px;
   cursor: pointer;
   transition: all 0.3s ease;
   text-align: center;
@@ -240,7 +253,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+  min-height: 100px;
 }
 
 .welcome-activity-option:hover {
@@ -261,17 +275,62 @@
 }
 
 .welcome-activity-emoji {
-  font-size: 28px;
+  font-size: 36px;
 }
 
 .welcome-activity-name {
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .welcome-activity-option.selected .welcome-activity-name {
   color: white;
+}
+
+/* Info box for activities */
+.welcome-info-box {
+  background: linear-gradient(
+    135deg,
+    rgba(79, 70, 229, 0.1) 0%,
+    rgba(147, 51, 234, 0.1) 100%
+  );
+  border: 2px solid rgba(79, 70, 229, 0.2);
+  border-radius: 16px;
+  padding: 16px 20px;
+  max-width: 400px;
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 8px;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+}
+
+.welcome-info-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.welcome-info-text {
+  flex: 1;
+  text-align: left;
+}
+
+.welcome-info-text strong {
+  font-size: var(--text-base);
+  color: var(--primary);
+  display: block;
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+
+.welcome-info-text p {
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--text-primary);
+  margin: 0;
 }
 
 /* Theme selection */
@@ -570,11 +629,15 @@
   }
 
   .welcome-icon {
-    font-size: 64px;
+    font-size: 52px;
   }
 
   .welcome-title {
-    font-size: var(--text-2xl);
+    font-size: var(--text-xl);
+  }
+
+  .welcome-description {
+    font-size: var(--text-sm);
   }
 
   /* Keep language and theme grids in 2 columns for space efficiency */
@@ -586,7 +649,33 @@
 
   .welcome-activities-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    gap: 10px;
+  }
+
+  .welcome-activity-option {
+    padding: 16px 10px;
+    min-height: 90px;
+  }
+
+  .welcome-activity-emoji {
+    font-size: 32px;
+  }
+
+  .welcome-info-box {
+    padding: 14px 16px;
+    gap: 10px;
+  }
+
+  .welcome-info-icon {
+    font-size: 20px;
+  }
+
+  .welcome-info-text strong {
+    font-size: var(--text-sm);
+  }
+
+  .welcome-info-text p {
+    font-size: var(--text-xs);
   }
 
   .welcome-navigation {
@@ -610,4 +699,143 @@
 
 .welcome-activities-grid::-webkit-scrollbar-thumb:hover {
   background: var(--primary);
+}
+
+/* Midnight Theme Adjustments */
+body[data-theme="midnight"] #welcomeOverlay {
+  background: #1a1a2e;
+}
+
+body[data-theme="midnight"] .welcome-container {
+  background: #1a1a2e;
+}
+
+body[data-theme="midnight"] .welcome-skip-btn {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+body[data-theme="midnight"] .welcome-skip-btn:hover {
+  background: rgba(51, 65, 85, 0.9);
+}
+
+body[data-theme="midnight"] .welcome-progress-dot {
+  background: rgba(100, 116, 139, 0.3);
+}
+
+body[data-theme="midnight"] .welcome-progress-dot.active {
+  background: #3b82f6;
+}
+
+body[data-theme="midnight"] .welcome-slide-content {
+  color: #f8fafc;
+}
+
+body[data-theme="midnight"] .welcome-title {
+  color: #f8fafc;
+}
+
+body[data-theme="midnight"] .welcome-description {
+  color: #cbd5e1;
+}
+
+body[data-theme="midnight"] .welcome-language-option,
+body[data-theme="midnight"] .welcome-activity-option,
+body[data-theme="midnight"] .welcome-theme-option,
+body[data-theme="midnight"] .welcome-font-option,
+body[data-theme="midnight"] .welcome-tutorial-choice {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+body[data-theme="midnight"] .welcome-language-option:hover,
+body[data-theme="midnight"] .welcome-activity-option:hover,
+body[data-theme="midnight"] .welcome-theme-option:hover,
+body[data-theme="midnight"] .welcome-font-option:hover,
+body[data-theme="midnight"] .welcome-tutorial-choice:hover {
+  background: rgba(51, 65, 85, 0.9);
+  border-color: #3b82f6;
+}
+
+body[data-theme="midnight"] .welcome-language-option.selected,
+body[data-theme="midnight"] .welcome-activity-option.selected,
+body[data-theme="midnight"] .welcome-theme-option.selected,
+body[data-theme="midnight"] .welcome-font-option.selected,
+body[data-theme="midnight"] .welcome-tutorial-choice.selected {
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  border-color: #3b82f6;
+  color: #f8fafc;
+  opacity: 1 !important;
+  filter: none !important;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.6);
+}
+
+body[data-theme="midnight"] .welcome-language-name,
+body[data-theme="midnight"] .welcome-activity-name,
+body[data-theme="midnight"] .welcome-theme-name,
+body[data-theme="midnight"] .welcome-font-name {
+  color: #f8fafc;
+}
+
+body[data-theme="midnight"] .welcome-language-option.selected .welcome-language-name,
+body[data-theme="midnight"] .welcome-activity-option.selected .welcome-activity-name,
+body[data-theme="midnight"] .welcome-theme-option.selected .welcome-theme-name,
+body[data-theme="midnight"] .welcome-font-option.selected .welcome-font-name {
+  color: white;
+}
+
+body[data-theme="midnight"] .welcome-info-box {
+  background: linear-gradient(135deg, rgba(30, 64, 175, 0.2) 0%, rgba(59, 130, 246, 0.15) 100%);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+body[data-theme="midnight"] .welcome-info-text {
+  color: #f8fafc;
+}
+
+body[data-theme="midnight"] .welcome-info-text strong {
+  color: #60a5fa;
+}
+
+body[data-theme="midnight"] .welcome-back-btn {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+body[data-theme="midnight"] .welcome-back-btn:hover:not(:disabled) {
+  background: rgba(51, 65, 85, 0.9);
+}
+
+body[data-theme="midnight"] .welcome-next-btn {
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  color: #f8fafc;
+}
+
+body[data-theme="midnight"] .welcome-next-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+}
+
+body[data-theme="midnight"] .welcome-navigation {
+  background: #0f0f23;
+  border-top: 1px solid #334155;
+}
+
+body[data-theme="midnight"] .welcome-settings-reminder {
+  background: rgba(30, 41, 59, 0.5);
+  border-color: #334155;
+}
+
+body[data-theme="midnight"] .welcome-settings-reminder-text {
+  color: #cbd5e1;
+}
+
+body[data-theme="midnight"] .welcome-tutorial-choice-desc {
+  color: #cbd5e1;
+}
+
+body[data-theme="midnight"] .welcome-tutorial-choice.selected .welcome-tutorial-choice-desc {
+  color: rgba(248, 250, 252, 0.9);
 }
