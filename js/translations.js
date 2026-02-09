@@ -174,7 +174,8 @@ const translations = {
     wizardWelcomeTitle: "Welcome! 👶",
     wizardWelcomeDesc: "Quick tour of your baby tracker.",
     wizardQuickActionsTitle: "Quick Actions",
-    wizardQuickActionsDesc: "Tap the + button to open the menu and log activities.",
+    wizardQuickActionsDesc:
+      "Tap the + button to open the menu and log activities.",
     wizardTodaySummaryTitle: "Today's Summary",
     wizardTodaySummaryDesc: "View totals and time since last activity.",
     wizardActivityLogTitle: "Activity Log",

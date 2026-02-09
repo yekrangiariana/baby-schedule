@@ -1204,22 +1204,22 @@ body {
     grid-template-columns: repeat(auto-fit, minmax(55px, 1fr));
     gap: 6px;
   }
-  
+
   .summary-card {
     padding: 6px 4px;
     min-height: 62px;
   }
-  
+
   .summary-emoji {
     font-size: 22px;
     width: 34px;
     height: 34px;
   }
-  
+
   .summary-count {
     font-size: var(--text-sm);
   }
-  
+
   .summary-time {
     font-size: 9px;
   }

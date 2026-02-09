@@ -306,7 +306,7 @@
     const d = new Date(ts);
     return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   }
-  
+
   // Format time since timestamp in a friendly way
   function formatTimeSince(ts) {
     const now = Date.now();
@@ -314,14 +314,14 @@
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
-    
+
     if (minutes < 1) return "just now";
     if (minutes < 60) return `${minutes}m ago`;
     if (hours < 24) return `${hours}h ago`;
     if (days === 1) return "yesterday";
     return `${days}d ago`;
   }
-  
+
   function isSameDay(ts, day) {
     const d1 = new Date(ts);
     const d2 = new Date(day);
@@ -473,8 +473,7 @@
       hour: "2-digit",
       minute: "2-digit",
     };
-    if (nowText)
-      nowText.textContent = now.toLocaleDateString(locale, options);
+    if (nowText) nowText.textContent = now.toLocaleDateString(locale, options);
   }, 1000);
 
   // Show/hide undo button temporarily
@@ -961,10 +960,10 @@
             const lastEntry = src
               .filter((e) => e.type === type.id)
               .sort((a, b) => b.timestamp - a.timestamp)[0];
-            const timeText = lastEntry 
+            const timeText = lastEntry
               ? formatTimeSince(lastEntry.timestamp)
               : "—";
-            
+
             return `
               <div class="summary-card">
                 <div class="summary-emoji" style="background-color: ${type.color}20;">${type.emoji}</div>
@@ -976,10 +975,11 @@
             `;
           })
           .join("");
-        
+
         todayTotals.innerHTML = `<div class="summary-grid">${summaryCards}</div>`;
       } else {
-        const todayNone = typeof t === "function" ? t("todayNone") : "No activities yet";
+        const todayNone =
+          typeof t === "function" ? t("todayNone") : "No activities yet";
         todayTotals.innerHTML = `<div class="summary-empty">${todayNone}</div>`;
       }
     }
@@ -992,7 +992,8 @@
 
     // Only show warning on home screen when NOT connected and not dismissed
     if (syncNoticeWarning) {
-      const isDismissed = localStorage.getItem(SYNC_NOTICE_DISMISSED_KEY) === "true";
+      const isDismissed =
+        localStorage.getItem(SYNC_NOTICE_DISMISSED_KEY) === "true";
       syncNoticeWarning.hidden = isSyncConfigured || isDismissed;
     }
 
@@ -3060,7 +3061,10 @@
               // Open FAB menu during Quick Actions step
               if (index === 1 && step.target === ".fab-button") {
                 // Open the FAB menu to show the activities
-                if (fabContainer && !fabContainer.classList.contains("active")) {
+                if (
+                  fabContainer &&
+                  !fabContainer.classList.contains("active")
+                ) {
                   fabContainer.classList.add("active");
                   if (fabBackdrop) fabBackdrop.classList.add("active");
                 }
@@ -3933,9 +3937,14 @@
       showScreen("settings");
       // Scroll to Activity Types section
       setTimeout(() => {
-        const activityTypesSection = document.getElementById("activityTypesSection");
+        const activityTypesSection = document.getElementById(
+          "activityTypesSection",
+        );
         if (activityTypesSection) {
-          activityTypesSection.scrollIntoView({ behavior: "smooth", block: "start" });
+          activityTypesSection.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
         }
       }, 100);
     });
