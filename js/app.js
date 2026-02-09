@@ -1928,6 +1928,14 @@
     if (list.length === 0) {
       return; // Summary already shows "No entries yet"
     }
+    
+    // Add swipe instructions
+    if (list.length > 0) {
+      const instructions = document.createElement("div");
+      instructions.className = "swipe-instructions";
+      instructions.innerHTML = `<span style="opacity: 0.6;">💡 Swipe right to edit • Swipe left to delete</span>`;
+      logEntries.appendChild(instructions);
+    }
 
     list
       .slice()
@@ -1975,9 +1983,11 @@
 
     entries.forEach((entry) => {
       let startX = 0;
+      let startY = 0;
       let currentX = 0;
       let isDragging = false;
       let hasMoved = false;
+      let swipeEnabled = false;
       const wrapper = entry.closest(".log-entry-wrapper");
       const actionLeft = wrapper.querySelector(".log-entry-action-left");
       const actionRight = wrapper.querySelector(".log-entry-action-right");
@@ -1987,9 +1997,11 @@
         if (e.target.closest(".log-entry-actions-bg")) return;
 
         startX = e.type.includes("mouse") ? e.clientX : e.touches[0].clientX;
+        startY = e.type.includes("mouse") ? e.clientY : e.touches[0].clientY;
         currentX = startX;
         isDragging = true;
         hasMoved = false;
+        swipeEnabled = false;
         entry.style.transition = "none";
         if (actionLeft) actionLeft.style.transition = "none";
         if (actionRight) actionRight.style.transition = "none";
@@ -1999,20 +2011,35 @@
         if (!isDragging) return;
 
         currentX = e.type.includes("mouse") ? e.clientX : e.touches[0].clientX;
-        const diff = currentX - startX;
+        const currentY = e.type.includes("mouse") ? e.clientY : e.touches[0].clientY;
+        const diffX = currentX - startX;
+        const diffY = currentY - startY;
 
-        if (Math.abs(diff) > 5) {
+        // Determine if movement is horizontal (swipe) or vertical (scroll)
+        if (!swipeEnabled && (Math.abs(diffX) > 8 || Math.abs(diffY) > 8)) {
+          // Enable swipe only if horizontal movement dominates
+          swipeEnabled = Math.abs(diffX) > Math.abs(diffY) * 1.5;
+          if (!swipeEnabled) {
+            // It's a scroll, not a swipe
+            isDragging = false;
+            return;
+          }
+        }
+
+        if (!swipeEnabled) return;
+
+        if (Math.abs(diffX) > 5) {
           hasMoved = true;
           e.preventDefault();
         }
 
         // Limit swipe distance
         const maxSwipe = 120;
-        const limitedDiff = Math.max(-maxSwipe, Math.min(maxSwipe, diff));
-        entry.style.transform = `translateX(${limitedDiff}px)`;
+        const limitedDiff = Math.max(-maxSwipe, Math.min(maxSwipe, diffX));
+        entry.style.transform = `translate3d(${limitedDiff}px, 0, 0)`;
 
         // Expand action backgrounds based on swipe distance
-        if (diff > 0) {
+        if (diffX > 0) {
           // Swiping right - show edit
           const width = Math.min(Math.abs(limitedDiff), maxSwipe);
           if (actionLeft) {
@@ -2027,7 +2054,7 @@
             actionRight.style.width = "0";
             actionRight.classList.remove("visible");
           }
-        } else if (diff < 0) {
+        } else if (diffX < 0) {
           // Swiping left - show delete
           const width = Math.min(Math.abs(limitedDiff), maxSwipe);
           if (actionRight) {
@@ -2049,46 +2076,37 @@
         if (!isDragging) return;
         isDragging = false;
 
-        entry.style.transition = "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
-        if (actionLeft)
-          actionLeft.style.transition = "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
-        if (actionRight)
-          actionRight.style.transition =
-            "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
-
         const diff = currentX - startX;
         const threshold = 60;
 
-        if (diff > threshold) {
-          // Swiped right - Edit
-          entry.style.transform = "translateX(100px)";
-          setTimeout(() => {
+        if (swipeEnabled && Math.abs(diff) > threshold) {
+          // Action triggered - execute immediately
+          if (diff > threshold) {
+            // Swiped right - Edit
             const entryId = entry.getAttribute("data-entry-id");
             openEditModal(entryId);
-            entry.style.transform = "";
-            if (actionLeft) {
-              actionLeft.style.width = "0";
-              actionLeft.classList.remove("visible");
-            }
-          }, 200);
-        } else if (diff < -threshold) {
-          // Swiped left - Delete
-          entry.style.transform = "translateX(-100px)";
-          setTimeout(() => {
+          } else {
+            // Swiped left - Delete
             const entryId = entry.getAttribute("data-entry-id");
             deleteEntry(entryId);
-          }, 200);
-        } else {
-          // Return to center
-          entry.style.transform = "";
-          if (actionLeft) {
-            actionLeft.style.width = "0";
-            actionLeft.classList.remove("visible");
           }
-          if (actionRight) {
-            actionRight.style.width = "0";
-            actionRight.classList.remove("visible");
-          }
+        }
+        
+        // Reset position and styles
+        entry.style.transition = "transform 0.2s ease-out";
+        if (actionLeft)
+          actionLeft.style.transition = "all 0.2s ease-out";
+        if (actionRight)
+          actionRight.style.transition = "all 0.2s ease-out";
+        
+        entry.style.transform = "";
+        if (actionLeft) {
+          actionLeft.style.width = "0";
+          actionLeft.classList.remove("visible");
+        }
+        if (actionRight) {
+          actionRight.style.width = "0";
+          actionRight.classList.remove("visible");
         }
       };
 
