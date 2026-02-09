@@ -528,9 +528,6 @@
 
   // Screen Navigation with Browser History Support
   function showScreen(screen, updateHistory = true) {
-    // Always scroll to top when switching tabs
-    window.scrollTo({ top: 0, behavior: "smooth" });
-
     // Close FAB when switching screens
     closeFAB();
 
@@ -554,6 +551,9 @@
       if (aboutAppScreen) aboutAppScreen.hidden = true;
       $$(`.nav-item[data-screen="home"]`)[0]?.classList.add("active");
       updateStatus(); // Refresh sync notice when returning to home
+      // Scroll to top
+      const homeContent = homeScreen.querySelector(".screen-content");
+      if (homeContent) homeContent.scrollTop = 0;
     } else if (screen === "log") {
       homeScreen.hidden = true;
       logScreen.hidden = false;
@@ -566,6 +566,9 @@
       renderLog();
       backgroundSync();
       startRemoteAutoRefresh();
+      // Scroll to top
+      const logContent = logScreen.querySelector(".screen-content");
+      if (logContent) logContent.scrollTop = 0;
     } else if (screen === "insights") {
       homeScreen.hidden = true;
       logScreen.hidden = true;
@@ -576,6 +579,9 @@
       $$(`.nav-item[data-screen="insights"]`)[0]?.classList.add("active");
       renderGraphs();
       backgroundSync();
+      // Scroll to top
+      const insightsContent = insightsScreen.querySelector(".screen-content");
+      if (insightsContent) insightsContent.scrollTop = 0;
     } else if (screen === "settings") {
       homeScreen.hidden = true;
       logScreen.hidden = true;
@@ -585,6 +591,9 @@
       if (aboutAppScreen) aboutAppScreen.hidden = true;
       $$(`.nav-item[data-screen="settings"]`)[0]?.classList.add("active");
       renderActionTypes();
+      // Scroll to top
+      const settingsContent = settingsScreen.querySelector(".screen-content");
+      if (settingsContent) settingsContent.scrollTop = 0;
     } else if (screen === "help") {
       homeScreen.hidden = true;
       logScreen.hidden = true;
@@ -593,6 +602,9 @@
       if (helpScreen) {
         helpScreen.hidden = false;
         loadHelpContent();
+        // Scroll to top
+        const helpContent = helpScreen.querySelector(".screen-content");
+        if (helpContent) helpContent.scrollTop = 0;
       }
       if (aboutAppScreen) aboutAppScreen.hidden = true;
     } else if (screen === "about") {
@@ -603,6 +615,9 @@
       if (helpScreen) helpScreen.hidden = true;
       if (aboutAppScreen) {
         aboutAppScreen.hidden = false;
+        // Scroll to top
+        const aboutContent = aboutAppScreen.querySelector(".screen-content");
+        if (aboutContent) aboutContent.scrollTop = 0;
       }
     }
   }
