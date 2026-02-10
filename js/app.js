@@ -249,8 +249,7 @@
   function getLastSyncTime() {
     try {
       return (
-        parseInt(localStorage.getItem(getStorageKey(LAST_SYNC_KEY)) || "0") ||
-        0
+        parseInt(localStorage.getItem(getStorageKey(LAST_SYNC_KEY)) || "0") || 0
       );
     } catch {
       return 0;
@@ -2402,7 +2401,9 @@
       return; // Summary already shows "No entries yet"
     }
 
-    const shouldShowSwipeHint = !sessionStorage.getItem("babylog.swipeHintShown");
+    const shouldShowSwipeHint = !sessionStorage.getItem(
+      "babylog.swipeHintShown",
+    );
 
     list
       .slice()
