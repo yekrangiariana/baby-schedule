@@ -11,6 +11,12 @@
   const ACTION_TYPES_KEY = "babylog.actiontypes.v1";
   const SYNC_NOTICE_DISMISSED_KEY = "babylog.syncnoticedismissed.v1";
 
+  const DEMO_MODE =
+    window.location.pathname.replace(/\/+$/, "").endsWith("/demo") ||
+    new URLSearchParams(window.location.search).get("demo") === "1";
+
+  const getStorageKey = (key) => (DEMO_MODE ? `${key}.demo` : key);
+
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => Array.from(document.querySelectorAll(s));
 
@@ -39,6 +45,7 @@
   const undoBtn = $("#undoBtn");
   const viewGraphsBtn = $("#viewGraphsBtn");
   const viewLogBtn = $("#viewLogBtn");
+  const demoNotice = $("#demoNotice");
 
   const closeGraphsBtn = $("#closeGraphsBtn");
   const closeLogBtn = $("#closeLogBtn");
@@ -55,20 +62,22 @@
   const importCSVInput = $("#importCSVInput");
 
   // === Helper Functions ===
-  
+
   // Get filtered entries based on currentFilter
   function getFilteredEntries() {
     const source = entries;
     let filtered = source;
-    
+
     if (currentFilter.type === "days") {
       const now = Date.now();
       const cutoff = now - currentFilter.value * 24 * 60 * 60 * 1000;
       filtered = source.filter((e) => e.timestamp >= cutoff);
     } else if (currentFilter.type === "date") {
-      filtered = source.filter((e) => isSameDay(e.timestamp, currentFilter.value));
+      filtered = source.filter((e) =>
+        isSameDay(e.timestamp, currentFilter.value),
+      );
     }
-    
+
     return filtered;
   }
   const exportJSONBtn = $("#exportJSONBtn");
@@ -193,53 +202,65 @@
 
   function loadEntries() {
     try {
-      return JSON.parse(localStorage.getItem(STORE_KEY) || "[]");
+      return JSON.parse(localStorage.getItem(getStorageKey(STORE_KEY)) || "[]");
     } catch {
       return [];
     }
   }
   function saveEntries(list) {
-    localStorage.setItem(STORE_KEY, JSON.stringify(list));
+    localStorage.setItem(getStorageKey(STORE_KEY), JSON.stringify(list));
   }
   function loadSettings() {
     try {
-      return JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}");
+      return JSON.parse(
+        localStorage.getItem(getStorageKey(SETTINGS_KEY)) || "{}",
+      );
     } catch {
       return {};
     }
   }
   function saveSettings(s) {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+    localStorage.setItem(getStorageKey(SETTINGS_KEY), JSON.stringify(s));
   }
   function loadDeletes() {
     try {
-      return JSON.parse(localStorage.getItem(DELETE_QUEUE_KEY) || "[]");
+      return JSON.parse(
+        localStorage.getItem(getStorageKey(DELETE_QUEUE_KEY)) || "[]",
+      );
     } catch {
       return [];
     }
   }
   function saveDeletes(list) {
-    localStorage.setItem(DELETE_QUEUE_KEY, JSON.stringify(list));
+    localStorage.setItem(getStorageKey(DELETE_QUEUE_KEY), JSON.stringify(list));
   }
   function loadSyncQueue() {
     try {
-      return JSON.parse(localStorage.getItem(SYNC_QUEUE_KEY) || "[]");
+      return JSON.parse(
+        localStorage.getItem(getStorageKey(SYNC_QUEUE_KEY)) || "[]",
+      );
     } catch {
       return [];
     }
   }
   function saveSyncQueue(list) {
-    localStorage.setItem(SYNC_QUEUE_KEY, JSON.stringify(list));
+    localStorage.setItem(getStorageKey(SYNC_QUEUE_KEY), JSON.stringify(list));
   }
   function getLastSyncTime() {
     try {
-      return parseInt(localStorage.getItem(LAST_SYNC_KEY) || "0") || 0;
+      return (
+        parseInt(localStorage.getItem(getStorageKey(LAST_SYNC_KEY)) || "0") ||
+        0
+      );
     } catch {
       return 0;
     }
   }
   function setLastSyncTime(ts) {
-    localStorage.setItem(LAST_SYNC_KEY, String(ts || Date.now()));
+    localStorage.setItem(
+      getStorageKey(LAST_SYNC_KEY),
+      String(ts || Date.now()),
+    );
   }
   // Default action types
   function getDefaultActionTypes() {
@@ -267,7 +288,7 @@
 
   function loadActionTypes() {
     try {
-      const stored = localStorage.getItem(ACTION_TYPES_KEY);
+      const stored = localStorage.getItem(getStorageKey(ACTION_TYPES_KEY));
       return stored ? JSON.parse(stored) : getDefaultActionTypes();
     } catch {
       return getDefaultActionTypes();
@@ -275,7 +296,127 @@
   }
 
   function saveActionTypes(types) {
-    localStorage.setItem(ACTION_TYPES_KEY, JSON.stringify(types));
+    localStorage.setItem(
+      getStorageKey(ACTION_TYPES_KEY),
+      JSON.stringify(types),
+    );
+  }
+
+  function buildDemoEntries(types) {
+    const typeIds = new Set(types.map((t) => t.id));
+    const now = new Date();
+    const demoEntries = [];
+
+    const addEntryAt = (daysAgo, hour, minute, type, note) => {
+      if (!typeIds.has(type)) return;
+      const d = new Date(now);
+      d.setDate(d.getDate() - daysAgo);
+      d.setHours(hour, minute, 0, 0);
+      const ts = d.getTime();
+      demoEntries.push({
+        id: `demo_${ts}_${Math.random().toString(36).slice(2, 8)}`,
+        type,
+        note: note || "",
+        timestamp: ts,
+        synced: true,
+      });
+    };
+
+    const schedule = [
+      {
+        day: 0,
+        items: [
+          [7, 15, "feed", "Morning feed"],
+          [8, 5, "pee", ""],
+          [9, 45, "sleep", "Short nap"],
+          [11, 10, "feed", ""],
+          [11, 40, "poop", ""],
+          [14, 20, "play", "Tummy time"],
+          [17, 5, "bath", "Warm bath"],
+          [19, 30, "feed", "Evening feed"],
+        ],
+      },
+      {
+        day: 1,
+        items: [
+          [6, 50, "feed", ""],
+          [7, 30, "pee", ""],
+          [10, 15, "sleep", ""],
+          [12, 0, "feed", ""],
+          [15, 30, "walk", "Fresh air"],
+          [18, 10, "poop", ""],
+          [20, 5, "feed", ""],
+        ],
+      },
+      {
+        day: 2,
+        items: [
+          [7, 5, "feed", ""],
+          [8, 20, "pee", ""],
+          [9, 55, "sleep", ""],
+          [12, 20, "feed", ""],
+          [13, 45, "play", ""],
+          [16, 10, "medicine", "Vitamins"],
+          [19, 15, "feed", ""],
+        ],
+      },
+      {
+        day: 3,
+        items: [
+          [6, 40, "feed", ""],
+          [7, 25, "pee", ""],
+          [10, 5, "sleep", ""],
+          [12, 50, "feed", ""],
+          [15, 0, "walk", "Park"],
+          [18, 45, "poop", ""],
+          [20, 25, "feed", ""],
+        ],
+      },
+      {
+        day: 4,
+        items: [
+          [7, 0, "feed", ""],
+          [8, 0, "pee", ""],
+          [10, 30, "sleep", ""],
+          [13, 15, "feed", ""],
+          [16, 30, "play", ""],
+          [18, 55, "bath", ""],
+          [20, 40, "feed", ""],
+        ],
+      },
+      {
+        day: 5,
+        items: [
+          [6, 30, "feed", ""],
+          [7, 10, "pee", ""],
+          [9, 40, "sleep", ""],
+          [12, 5, "feed", ""],
+          [14, 45, "walk", ""],
+          [17, 15, "poop", ""],
+          [19, 50, "feed", ""],
+        ],
+      },
+      {
+        day: 6,
+        items: [
+          [7, 20, "feed", ""],
+          [8, 10, "pee", ""],
+          [10, 0, "sleep", ""],
+          [12, 40, "feed", ""],
+          [15, 20, "play", ""],
+          [18, 0, "bath", ""],
+          [20, 10, "feed", ""],
+        ],
+      },
+    ];
+
+    schedule.forEach((day) => {
+      day.items.forEach(([hour, minute, type, note]) => {
+        addEntryAt(day.day, hour, minute, type, note);
+      });
+    });
+
+    return demoEntries.sort((a, b) => a.timestamp - b.timestamp);
   }
 
   function getActionTypeById(id) {
@@ -353,6 +494,16 @@
   let syncQueue = loadSyncQueue();
   let actionTypes = loadActionTypes();
   let isSyncing = false;
+
+  if (DEMO_MODE) {
+    if (!entries.length) {
+      entries = buildDemoEntries(actionTypes);
+      saveEntries(entries);
+    }
+    if (settings.syncEnabled || settings.webAppUrl) {
+      settings = { ...settings, syncEnabled: false, webAppUrl: "" };
+    }
+  }
 
   // Auto-refresh remote log every 20s while the panel is open
   let remoteRefreshTimer = null;
@@ -862,10 +1013,10 @@
   // Render summary overview for log screen
   function updateLogSummaryWithFilter(filteredList, counts) {
     if (!logSummaryCard) return;
-    
+
     const summaryInfo = logSummaryCard.querySelector(".summary-filter-info");
     if (!summaryInfo) return;
-    
+
     if (filteredList.length > 0) {
       const countParts = actionTypes
         .map((type) => `${getActionTypeName(type)} ${counts[type.id] || 0}`)
@@ -887,7 +1038,9 @@
     const src = getFilteredEntries();
     const allEntries = entries; // Keep reference for "today" badge
     const today = new Date();
-    const todayEntries = allEntries.filter((e) => isSameDay(e.timestamp, today));
+    const todayEntries = allEntries.filter((e) =>
+      isSameDay(e.timestamp, today),
+    );
     const todayCounts = countByType(todayEntries);
 
     // Find most logged activity within filtered period - handle ties
@@ -906,18 +1059,19 @@
     // Calculate streak (consecutive days with at least one entry within filtered period)
     let streak = 0;
     let checkDate = new Date(today);
-    
+
     // For filtered views, calculate streak within the filter range
-    const filterStartDate = currentFilter.type === "date" 
-      ? new Date(currentFilter.value)
-      : currentFilter.type === "days" 
-        ? new Date(Date.now() - currentFilter.value * 24 * 60 * 60 * 1000)
-        : null;
-    
+    const filterStartDate =
+      currentFilter.type === "date"
+        ? new Date(currentFilter.value)
+        : currentFilter.type === "days"
+          ? new Date(Date.now() - currentFilter.value * 24 * 60 * 60 * 1000)
+          : null;
+
     while (true) {
       // Stop if we've gone before the filter start date
       if (filterStartDate && checkDate < filterStartDate) break;
-      
+
       const hasEntry = src.some((e) => isSameDay(e.timestamp, checkDate));
       if (!hasEntry) break;
       streak++;
@@ -928,9 +1082,6 @@
       <div class="summary-header">
         <div>
           <h3>📊 ${typeof t === "function" ? t("overview") : "Overview"}</h3>
-          <div class="summary-badges">
-            <span class="summary-badge">${todayEntries.length} ${typeof t === "function" ? t("today") : "today"}</span>
-          </div>
         </div>
       </div>
       
@@ -938,7 +1089,12 @@
         <div class="quick-stat">
           <div class="quick-stat-icon">📝</div>
           <div class="quick-stat-value">${src.length}</div>
-          <div class="quick-stat-label">${typeof t === "function" ? t("total") : "Total"} ${typeof t === "function" ? t("entries") : "Entries"}</div>
+          <div class="quick-stat-label">${typeof t === "function" ? t("total") : "Total"}</div>
+        </div>
+        <div class="quick-stat">
+          <div class="quick-stat-icon">☀️</div>
+          <div class="quick-stat-value">${todayEntries.length}</div>
+          <div class="quick-stat-label">${typeof t === "function" ? t("today") : "Today"}</div>
         </div>
         ${
           mostLoggedTypes.length > 0
@@ -949,9 +1105,9 @@
                     typeof t === "function" ? t("most") : "Most";
                   return `
           <div class="quick-stat">
-            <div class="quick-stat-icon" style="background-color: ${type.color}33">${type.emoji}</div>
+            <div class="quick-stat-icon">${type.emoji}</div>
             <div class="quick-stat-value">${count}</div>
-            <div class="quick-stat-label">${mostLabel}: ${getActionTypeName(type)}</div>
+            <div class="quick-stat-label">${mostLabel} ${getActionTypeName(type)}</div>
           </div>
         `;
                 })
@@ -973,12 +1129,22 @@
                 .sort((a, b) => b.timestamp - a.timestamp)[0];
               const noDataLabel = typeof t === "function" ? t("noData") : "—";
               const lastLabel = typeof t === "function" ? t("last") : "Last";
+              const shortDate = lastEntry
+                ? new Date(lastEntry.timestamp).toLocaleDateString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                  })
+                : "";
               const lastTime = lastEntry
-                ? `${lastLabel} ${formatDate(lastEntry.timestamp)} ${formatTime(lastEntry.timestamp)}`
+                ? isSameDay(lastEntry.timestamp, today)
+                  ? `${lastLabel} ${formatTime(lastEntry.timestamp)}`
+                  : `${lastLabel} ${shortDate}`
                 : noDataLabel;
-              
+
               // Show count within filtered period
-              const filteredCount = src.filter((e) => e.type === type.id).length;
+              const filteredCount = src.filter(
+                (e) => e.type === type.id,
+              ).length;
 
               return `
               <div class="activity-row">
@@ -1021,31 +1187,293 @@
     const counts = countByType(todayEntries);
 
     if (todayTotals) {
-      if (src.length) {
-        // Create visual card-based summary
-        const summaryCards = actionTypes
-          .map((type) => {
-            const count = counts[type.id] || 0;
-            const lastEntry = src
-              .filter((e) => e.type === type.id)
-              .sort((a, b) => b.timestamp - a.timestamp)[0];
-            const timeText = lastEntry
-              ? formatTimeSince(lastEntry.timestamp)
-              : "—";
+      if (todayEntries.length > 0) {
+        // Create timeline visualization
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
 
-            return `
-              <div class="summary-card">
-                <div class="summary-emoji" style="background-color: ${type.color}20;">${type.emoji}</div>
-                <div class="summary-info">
-                  <div class="summary-count">${count}</div>
-                  <div class="summary-time">${timeText}</div>
+        // Sort today's entries by time
+        const sortedEntries = todayEntries.sort(
+          (a, b) => a.timestamp - b.timestamp,
+        );
+
+        // Full day timeline (00:00 to 23:59)
+        const startHour = 0;
+        const endHour = 23;
+        const totalMinutes = (endHour - startHour + 1) * 60; // +1 to include 23:00-23:59
+
+        // Create timeline entries with positions
+        const timelineItems = sortedEntries.map((entry) => {
+          const entryDate = new Date(entry.timestamp);
+          const hour = entryDate.getHours();
+          const minute = entryDate.getMinutes();
+          const activityType = getActionTypeById(entry.type);
+
+          // Calculate position percentage within visible range
+          const entryMinutes = (hour - startHour) * 60 + minute;
+          const position = (entryMinutes / totalMinutes) * 100;
+
+          return {
+            position,
+            emoji: activityType.emoji,
+            color: activityType.color,
+            time: `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`,
+            name: getActionTypeName(activityType),
+            timestamp: entry.timestamp,
+          };
+        });
+
+        // Group events that are close together (within 5 minutes = collision)
+        const collisionThresholdMinutes = 10;
+        const eventGroups = [];
+        const used = new Set();
+
+        timelineItems.forEach((item, idx) => {
+          if (used.has(idx)) return;
+
+          const group = [item];
+          used.add(idx);
+
+          // Find all items within collision threshold
+          for (let i = idx + 1; i < timelineItems.length; i++) {
+            if (used.has(i)) continue;
+            const diffMinutes = Math.abs(
+              (timelineItems[i].timestamp - item.timestamp) / (1000 * 60),
+            );
+            if (diffMinutes <= collisionThresholdMinutes) {
+              group.push(timelineItems[i]);
+              used.add(i);
+            }
+          }
+
+          // Calculate average position for the group
+          const avgPosition =
+            group.reduce((sum, g) => sum + g.position, 0) / group.length;
+          eventGroups.push({ items: group, position: avgPosition });
+        });
+
+        // Calculate current time position
+        const currentMinutes = (currentHour - startHour) * 60 + currentMinute;
+        const currentPosition = Math.min(
+          100,
+          (currentMinutes / totalMinutes) * 100,
+        );
+
+        // Create hour markers (every hour for clearer spacing)
+        const hourMarkers = [];
+        for (let h = startHour; h <= endHour; h += 1) {
+          const position = (((h - startHour) * 60) / totalMinutes) * 100;
+          hourMarkers.push({ hour: h, position });
+        }
+
+        const snapPoints = Array.from({ length: 24 }, (_, i) => i);
+
+        todayTotals.innerHTML = `
+          <div class="timeline-summary">
+            <div class="timeline-header">
+              <div class="timeline-title">${todayEntries.length} ${typeof t === "function" ? t("activities") : "activities"} ${typeof t === "function" ? t("today") : "today"}</div>
+              <div class="timeline-legend">
+                ${actionTypes
+                  .map((type) => {
+                    const count = counts[type.id] || 0;
+                    if (count === 0) return "";
+                    return `<span class="legend-item"><span class="legend-dot" style="background: ${type.color};"></span>${type.emoji} ${count}</span>`;
+                  })
+                  .filter(Boolean)
+                  .join("")}
+              </div>
+            </div>
+          </div>
+          <div class="timeline-container">
+            <div class="timeline-scroll" id="timelineScroll">
+              <div class="timeline-snap-strip">
+                ${snapPoints.map(() => `<div class="timeline-snap-point"></div>`).join("")}
+              </div>
+              <div class="timeline-track">
+                ${hourMarkers
+                  .map(
+                    (marker) => `
+                  <div class="timeline-hour-marker" style="left: ${marker.position}%;">
+                    <div class="timeline-hour-label">${String(marker.hour).padStart(2, "0")}:00</div>
+                  </div>
+                `,
+                  )
+                  .join("")}
+                <div class="timeline-now" style="left: ${currentPosition}%;">
+                  <div class="timeline-now-line"></div>
+                  <div class="timeline-now-label">${typeof t === "function" ? t("now") : "Now"}</div>
+                </div>
+                ${eventGroups
+                  .map((group, groupIdx) => {
+                    const isStacked = group.items.length > 1;
+                    if (isStacked) {
+                      // Render stacked group
+                      return `
+                      <div class="timeline-event-group" data-group="${groupIdx}" style="left: ${group.position}%;">
+                        <div class="timeline-event-stack">
+                          ${group.items
+                            .slice(0, 2)
+                            .map(
+                              (item, idx) => `
+                            <div class="timeline-event-dot stacked" style="background: ${item.color}; box-shadow: 0 0 0 2px ${item.color}33; z-index: ${2 - idx}; transform: translateY(${idx * -3}px) scale(${1 - idx * 0.12});">
+                              <span class="timeline-event-emoji">${item.emoji}</span>
+                            </div>
+                          `,
+                            )
+                            .join("")}
+                          <div class="timeline-stack-count">${group.items.length}</div>
+                        </div>
+                        <div class="timeline-event-data" data-items="${encodeURIComponent(JSON.stringify(group.items))}"></div>
+                      </div>
+                    `;
+                    } else {
+                      // Render single event
+                      const item = group.items[0];
+                      return `
+                      <div class="timeline-event" style="left: ${group.position}%;" title="${item.name} at ${item.time}">
+                        <div class="timeline-event-dot" style="background: ${item.color}; box-shadow: 0 0 0 3px ${item.color}33;">
+                          <span class="timeline-event-emoji">${item.emoji}</span>
+                        </div>
+                      </div>
+                    `;
+                    }
+                  })
+                  .join("")}
+              </div>
+            </div>
+            <div class="timeline-popup-layer" id="timelinePopupLayer"></div>
+          </div>
+        `;
+        const popupLayer = document.getElementById("timelinePopupLayer");
+
+        const closePopup = () => {
+          if (!popupLayer) return;
+          const popup = popupLayer.querySelector(".timeline-event-expanded");
+          if (popup) {
+            popup.classList.remove("visible");
+            setTimeout(() => {
+              popupLayer.innerHTML = "";
+              popupLayer.classList.remove("active");
+            }, 200);
+          }
+        };
+
+        // Add event listeners for stacked groups
+        document.querySelectorAll(".timeline-event-group").forEach((group) => {
+          const stack = group.querySelector(".timeline-event-stack");
+          const dataEl = group.querySelector(".timeline-event-data");
+          if (!stack || !dataEl || !popupLayer) return;
+
+          stack.addEventListener("click", (e) => {
+            e.stopPropagation();
+            closePopup();
+
+            const encoded = dataEl.getAttribute("data-items") || "[]";
+            const items = JSON.parse(decodeURIComponent(encoded));
+            if (!items.length) return;
+
+            popupLayer.innerHTML = `
+              <div class="timeline-event-expanded">
+                <div class="timeline-expanded-header">
+                  <span>${items.length} ${typeof t === "function" ? t("activities") : "activities"}</span>
+                  <button class="timeline-close-btn">✕</button>
+                </div>
+                <div class="timeline-expanded-items">
+                  ${items
+                    .map(
+                      (item) => `
+                    <div class="timeline-expanded-item">
+                      <div class="timeline-expanded-dot" style="background: ${item.color};">
+                        <span class="timeline-event-emoji">${item.emoji}</span>
+                      </div>
+                      <div class="timeline-expanded-info">
+                        <div class="timeline-expanded-name">${item.name}</div>
+                        <div class="timeline-expanded-time">${item.time}</div>
+                      </div>
+                    </div>
+                  `,
+                    )
+                    .join("")}
                 </div>
               </div>
             `;
-          })
-          .join("");
 
-        todayTotals.innerHTML = `<div class="summary-grid">${summaryCards}</div>`;
+            const popup = popupLayer.querySelector(".timeline-event-expanded");
+            const closeBtn = popupLayer.querySelector(".timeline-close-btn");
+            const rect = stack.getBoundingClientRect();
+            const popupRect = popup.getBoundingClientRect();
+
+            let left = rect.left + rect.width / 2 - popupRect.width / 2;
+            left = Math.max(
+              12,
+              Math.min(left, window.innerWidth - popupRect.width - 12),
+            );
+            let top = rect.bottom + 10;
+            if (top + popupRect.height > window.innerHeight - 12) {
+              top = rect.top - popupRect.height - 10;
+            }
+
+            popup.style.left = `${left}px`;
+            popup.style.top = `${top}px`;
+
+            popupLayer.classList.add("active");
+
+            requestAnimationFrame(() => {
+              popup.classList.add("visible");
+            });
+
+            if (closeBtn) {
+              closeBtn.addEventListener("click", (evt) => {
+                evt.stopPropagation();
+                closePopup();
+              });
+            }
+          });
+        });
+
+        // Close expanded views when clicking anywhere outside
+        const closeAllExpanded = (e) => {
+          if (
+            !e.target.closest(".timeline-event-group") &&
+            !e.target.closest(".timeline-event-expanded")
+          ) {
+            closePopup();
+          }
+        };
+
+        // Add listeners to document for clicking anywhere
+        setTimeout(() => {
+          document.addEventListener("click", closeAllExpanded, { once: false });
+          document.addEventListener("touchstart", closeAllExpanded, {
+            once: false,
+            passive: true,
+          });
+        }, 100);
+
+        const scrollToFocus = (behavior = "smooth") => {
+          const timelineScroll = document.getElementById("timelineScroll");
+          if (!timelineScroll) return;
+          const timelineTrack = timelineScroll.querySelector(".timeline-track");
+          const trackWidth = timelineTrack
+            ? timelineTrack.scrollWidth
+            : timelineScroll.scrollWidth;
+          if (trackWidth <= timelineScroll.clientWidth) return;
+
+          // Keep a bit of the past visible by offsetting the current time
+          const scrollPosition =
+            (currentPosition / 100) * trackWidth -
+            timelineScroll.clientWidth * 0.4;
+          timelineScroll.scrollTo({
+            left: Math.max(0, scrollPosition),
+            behavior,
+          });
+        };
+
+        // Auto-scroll to current time (with a bit of past visible)
+        setTimeout(() => {
+          scrollToFocus("auto");
+        }, 50);
       } else {
         const todayNone =
           typeof t === "function" ? t("todayNone") : "No activities yet";
@@ -1956,7 +2384,7 @@
   function renderLog() {
     const source = entries;
     let list = source;
-    
+
     // Apply filter based on currentFilter
     if (currentFilter.type === "days") {
       const now = Date.now();
@@ -1965,7 +2393,7 @@
     } else if (currentFilter.type === "date") {
       list = source.filter((e) => isSameDay(e.timestamp, currentFilter.value));
     }
-    
+
     const counts = countByType(list);
 
     // Render log entries as cards
@@ -1974,20 +2402,17 @@
       return; // Summary already shows "No entries yet"
     }
 
-    // Add swipe instructions
-    if (list.length > 0) {
-      const instructions = document.createElement("div");
-      instructions.className = "swipe-instructions";
-      instructions.innerHTML = `<span style="opacity: 0.6;">💡 Swipe right to edit • Swipe left to delete</span>`;
-      logEntries.appendChild(instructions);
-    }
+    const shouldShowSwipeHint = !sessionStorage.getItem("babylog.swipeHintShown");
 
     list
       .slice()
       .sort((a, b) => b.timestamp - a.timestamp)
-      .forEach((e) => {
+      .forEach((e, index) => {
         const card = document.createElement("div");
         card.className = "log-entry-wrapper";
+        if (index === 0 && shouldShowSwipeHint) {
+          card.classList.add("swipe-hint");
+        }
         card.innerHTML = `
           <div class="log-entry-actions-bg">
             <div class="log-entry-action-left" data-edit="${e.id}">
@@ -2010,6 +2435,10 @@
         `;
         logEntries.appendChild(card);
       });
+
+    if (shouldShowSwipeHint) {
+      sessionStorage.setItem("babylog.swipeHintShown", "true");
+    }
 
     // Initialize swipe handlers
     initSwipeHandlers();
@@ -3425,7 +3854,7 @@
   document.querySelectorAll(".filter-pill").forEach((pill) => {
     pill.addEventListener("click", () => {
       const filterType = pill.getAttribute("data-filter");
-      
+
       if (filterType === "custom") {
         // Open date picker - with mobile-friendly fallback
         try {
@@ -3441,11 +3870,13 @@
         }
         return;
       }
-      
+
       // Update active state
-      document.querySelectorAll(".filter-pill").forEach((p) => p.classList.remove("active"));
+      document
+        .querySelectorAll(".filter-pill")
+        .forEach((p) => p.classList.remove("active"));
       pill.classList.add("active");
-      
+
       // Update filter
       if (filterType === "all") {
         currentFilter = { type: "all" };
@@ -3453,29 +3884,36 @@
         const days = parseInt(filterType);
         currentFilter = { type: "days", value: days };
       }
-      
+
       renderLogSummary();
       renderLog();
     });
   });
-  
+
   // Date picker handler
   dateFilter.addEventListener("change", () => {
     if (dateFilter.value) {
       currentFilter = { type: "date", value: new Date(dateFilter.value) };
-      
+
       // Update active state
-      document.querySelectorAll(".filter-pill").forEach((p) => p.classList.remove("active"));
-      const customPill = document.querySelector('.filter-pill[data-filter="custom"]');
+      document
+        .querySelectorAll(".filter-pill")
+        .forEach((p) => p.classList.remove("active"));
+      const customPill = document.querySelector(
+        '.filter-pill[data-filter="custom"]',
+      );
       if (customPill) {
         customPill.classList.add("active");
         const label = customPill.querySelector("#customDateLabel");
         if (label) {
           const date = new Date(dateFilter.value);
-          label.textContent = date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+          label.textContent = date.toLocaleDateString(undefined, {
+            month: "short",
+            day: "numeric",
+          });
         }
       }
-      
+
       renderLogSummary();
       renderLog();
     }
@@ -4612,6 +5050,16 @@
     }
   }
 
+  function initDemoNotice() {
+    if (!demoNotice) return;
+    if (!DEMO_MODE) {
+      demoNotice.hidden = true;
+      return;
+    }
+
+    demoNotice.hidden = false;
+  }
+
   // Init
   updateStatus();
   // Prime initial sync on load and when refocusing
@@ -4627,6 +5075,7 @@
     });
   }
   initSettingsUI();
+  initDemoNotice();
 
   // Auto-sync any pending operations on load and when going back online
   if (settings.syncEnabled && settings.webAppUrl) {

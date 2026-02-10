@@ -207,6 +207,10 @@
     </script>
   </head>
   <body>
+    <div class="demo-notice" id="demoNotice" hidden>
+      <span>Demo mode: sample data only.</span>
+      <a class="demo-notice-link" href="/">Start using the app</a>
+    </div>
     <!-- Main Screen -->
     <div class="screen" id="homeScreen">
       <main class="screen-content">
@@ -298,10 +302,18 @@
 
         <!-- Filter Pills -->
         <div class="filter-pills">
-          <button class="filter-pill active" data-filter="all" data-i18n="all">All</button>
-          <button class="filter-pill" data-filter="1" data-i18n="today">Today</button>
-          <button class="filter-pill" data-filter="3"><span data-i18n="last">Last</span> 3d</button>
-          <button class="filter-pill" data-filter="7"><span data-i18n="last">Last</span> 7d</button>
+          <button class="filter-pill active" data-filter="all" data-i18n="all">
+            All
+          </button>
+          <button class="filter-pill" data-filter="1" data-i18n="today">
+            Today
+          </button>
+          <button class="filter-pill" data-filter="3">
+            <span data-i18n="last">Last</span> 3d
+          </button>
+          <button class="filter-pill" data-filter="7">
+            <span data-i18n="last">Last</span> 7d
+          </button>
           <button class="filter-pill filter-pill-calendar" data-filter="custom">
             <span>📅</span>
             <span id="customDateLabel" data-i18n="pickDate">Pick Date</span>
@@ -309,7 +321,12 @@
         </div>
 
         <!-- Hidden date picker -->
-        <input type="date" id="dateFilter" class="date-input" style="display: none;" />
+        <input
+          type="date"
+          id="dateFilter"
+          class="date-input"
+          style="display: none"
+        />
 
         <div class="log-entries" id="logEntries"></div>
       </main>
@@ -730,6 +747,13 @@
             >
               GitHub Repository
             </button>
+            <a
+              class="btn-rounded btn-secondary"
+              style="width: 100%; margin-top: 0.75rem; text-decoration: none; display: inline-flex; justify-content: center;"
+              href="/?demo=1"
+            >
+              Open Demo Mode
+            </a>
           </section>
         </div>
       </main>
