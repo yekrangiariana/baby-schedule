@@ -973,6 +973,23 @@ body {
   justify-content: center;
 }
 
+[dir="rtl"] .screen-indicator,
+[dir="rtl"] .screen-content,
+[dir="rtl"] .settings-section-title,
+[dir="rtl"] .settings-section-description,
+[dir="rtl"] .summary-activities-header,
+[dir="rtl"] .timeline-title {
+  text-align: right;
+}
+
+[dir="rtl"] .filter-pills {
+  justify-content: flex-end;
+}
+
+[dir="rtl"] .filter-pill-calendar {
+  flex-direction: row-reverse;
+}
+
 .screen-content {
   flex: 1;
   overflow-y: auto;

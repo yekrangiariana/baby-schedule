@@ -443,12 +443,17 @@
     return actionType.name;
   }
 
+  function getLocale() {
+    if (typeof getCurrentLanguage !== "function") return "en-US";
+    const lang = getCurrentLanguage();
+    if (lang === "fi") return "fi-FI";
+    if (lang === "fa") return "fa-IR";
+    return "en-US";
+  }
+
   function formatDate(ts) {
     const d = new Date(ts);
-    const locale =
-      typeof getCurrentLanguage === "function" && getCurrentLanguage() === "fi"
-        ? "fi-FI"
-        : "en-US";
+    const locale = getLocale();
     const options = {
       weekday: "short",
       day: "numeric",
@@ -459,7 +464,10 @@
   }
   function formatTime(ts) {
     const d = new Date(ts);
-    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return d.toLocaleTimeString(getLocale(), {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   }
 
   // Format time since timestamp in a friendly way
@@ -563,7 +571,7 @@
 
   // Apply saved language or default to English
   function applyLanguage(lang) {
-    const validLanguages = ["en", "fi"];
+    const validLanguages = ["en", "fi", "fa"];
     const selectedLanguage = validLanguages.includes(lang) ? lang : "en";
 
     // Save the language setting
@@ -626,10 +634,7 @@
   // Render clock
   setInterval(() => {
     const now = new Date();
-    const locale =
-      typeof getCurrentLanguage === "function" && getCurrentLanguage() === "fi"
-        ? "fi-FI"
-        : "en-US";
+    const locale = getLocale();
     const options = {
       weekday: "short",
       day: "numeric",
@@ -1820,10 +1825,7 @@
         if (counts[e.type] !== undefined) counts[e.type]++;
       });
       const locale =
-        typeof getCurrentLanguage === "function" &&
-        getCurrentLanguage() === "fi"
-          ? "fi-FI"
-          : "en";
+        typeof getLocale === "function" ? getLocale() : "en-US";
       dailyData.push({
         day: new Date(dayStart).toLocaleDateString(locale, {
           weekday: "short",
@@ -1982,9 +1984,7 @@
 
     // Get locale for month name
     const locale =
-      typeof getCurrentLanguage === "function" && getCurrentLanguage() === "fi"
-        ? "fi-FI"
-        : "en";
+      typeof getLocale === "function" ? getLocale() : "en-US";
     const monthName = firstDay.toLocaleDateString(locale, {
       month: "long",
       year: "numeric",
@@ -2056,7 +2056,13 @@
     calendarHTML += `
       </div>
       <div class="calendar-legend">
-        <span class="calendar-legend-label">${typeof t === "function" ? (getCurrentLanguage() === "fi" ? "Vähemmän" : "Less") : "Less"}</span>
+        <span class="calendar-legend-label">${(() => {
+          if (typeof getCurrentLanguage !== "function") return "Less";
+          const lang = getCurrentLanguage();
+          if (lang === "fi") return "Vähemmän";
+          if (lang === "fa") return "کمتر";
+          return "Less";
+        })()}</span>
         <div class="calendar-legend-scale">
           <div class="calendar-legend-box level-0"></div>
           <div class="calendar-legend-box level-1"></div>
@@ -2065,7 +2071,13 @@
           <div class="calendar-legend-box level-4"></div>
           <div class="calendar-legend-box level-5"></div>
         </div>
-        <span class="calendar-legend-label">${typeof t === "function" ? (getCurrentLanguage() === "fi" ? "Enemmän" : "More") : "More"}</span>
+        <span class="calendar-legend-label">${(() => {
+          if (typeof getCurrentLanguage !== "function") return "More";
+          const lang = getCurrentLanguage();
+          if (lang === "fi") return "Enemmän";
+          if (lang === "fa") return "بیشتر";
+          return "More";
+        })()}</span>
       </div>
     `;
 
@@ -4146,11 +4158,13 @@
     radio.addEventListener("change", (e) => {
       applyLanguage(e.target.value);
       // Toast notification
-      toast(
-        e.target.value === "fi"
-          ? "Kieli vaihdettu suomeksi"
-          : "Language changed to English",
-      );
+      if (e.target.value === "fi") {
+        toast("Kieli vaihdettu suomeksi");
+      } else if (e.target.value === "fa") {
+        toast("زبان به فارسی تغییر کرد");
+      } else {
+        toast("Language changed to English");
+      }
     });
   });
 
@@ -4943,7 +4957,11 @@
       const lang =
         typeof getCurrentLanguage === "function" ? getCurrentLanguage() : "en";
       const guideFile =
-        lang === "fi" ? "docs/USER_GUIDE_FI.md" : "docs/USER_GUIDE.md";
+        lang === "fi"
+          ? "docs/USER_GUIDE_FI.md"
+          : lang === "fa"
+            ? "docs/USER_GUIDE_FA.md"
+            : "docs/USER_GUIDE.md";
 
       const response = await fetch(guideFile);
       if (!response.ok) throw new Error("Failed to load user guide");
