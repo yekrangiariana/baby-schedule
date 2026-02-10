@@ -28,6 +28,9 @@ const translations = {
     logTitle: "📋 Log",
     filterByDate: "📅 Filter by Date:",
     clearFilter: "Clear Filter",
+    all: "All",
+    last: "Last",
+    pickDate: "Pick Date",
 
     // Insights Screen
     insightsTitle: "📈 Insights",
@@ -324,6 +327,9 @@ const translations = {
     logTitle: "📋 Loki",
     filterByDate: "📅 Suodata Päivämäärän Mukaan:",
     clearFilter: "Tyhjennä Suodatin",
+    all: "Kaikki",
+    last: "Viimeiset",
+    pickDate: "Valitse Päivä",
 
     // Insights Screen
     insightsTitle: "📈 Tilastot",

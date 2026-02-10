@@ -296,30 +296,20 @@
           <!-- Dynamic summary will be rendered here -->
         </div>
 
-        <div class="summary" id="summary"></div>
-
-        <div class="screen-toolbar">
-          <label
-            for="dateFilter"
-            style="
-              font-size: 14px;
-              font-weight: 600;
-              color: var(--text-primary);
-              margin-right: 8px;
-            "
-            data-i18n="filterByDate"
-            >📅 Filter by Date:</label
-          >
-          <input type="date" id="dateFilter" class="date-input" />
-          <button
-            id="clearFilterBtn"
-            class="btn-small"
-            style="display: none"
-            data-i18n="clearFilter"
-          >
-            Clear Filter
+        <!-- Filter Pills -->
+        <div class="filter-pills">
+          <button class="filter-pill active" data-filter="all" data-i18n="all">All</button>
+          <button class="filter-pill" data-filter="1" data-i18n="today">Today</button>
+          <button class="filter-pill" data-filter="3"><span data-i18n="last">Last</span> 3d</button>
+          <button class="filter-pill" data-filter="7"><span data-i18n="last">Last</span> 7d</button>
+          <button class="filter-pill filter-pill-calendar" data-filter="custom">
+            <span>📅</span>
+            <span id="customDateLabel" data-i18n="pickDate">Pick Date</span>
           </button>
         </div>
+
+        <!-- Hidden date picker -->
+        <input type="date" id="dateFilter" class="date-input" style="display: none;" />
 
         <div class="log-entries" id="logEntries"></div>
       </main>

@@ -44,8 +44,7 @@
   const closeLogBtn = $("#closeLogBtn");
   const closeSettingsBtn = $("#closeSettingsBtn");
   const dateFilter = $("#dateFilter");
-  const clearFilterBtn = $("#clearFilterBtn");
-  const summaryEl = $("#summary");
+  let currentFilter = { type: "all" }; // { type: "all" | "days" | "date", value: number | Date }
 
   const openSettingsBtn = $("#openSettingsBtn");
   const appsScriptUrl = $("#appsScriptUrl");
@@ -54,6 +53,24 @@
   const exportCSVBtn = $("#exportCSVBtn");
   const importCSVBtn = $("#importCSVBtn");
   const importCSVInput = $("#importCSVInput");
+
+  // === Helper Functions ===
+  
+  // Get filtered entries based on currentFilter
+  function getFilteredEntries() {
+    const source = entries;
+    let filtered = source;
+    
+    if (currentFilter.type === "days") {
+      const now = Date.now();
+      const cutoff = now - currentFilter.value * 24 * 60 * 60 * 1000;
+      filtered = source.filter((e) => e.timestamp >= cutoff);
+    } else if (currentFilter.type === "date") {
+      filtered = source.filter((e) => isSameDay(e.timestamp, currentFilter.value));
+    }
+    
+    return filtered;
+  }
   const exportJSONBtn = $("#exportJSONBtn");
   const importJSONBtn = $("#importJSONBtn");
   const importJSONInput = $("#importJSONInput");
@@ -145,7 +162,6 @@
     if (isLoading) {
       loadingPercent = 0;
       if (progressWrap) progressWrap.hidden = false;
-      if (summaryEl) summaryEl.classList.add("loading");
       if (logTbody) logTbody.innerHTML = "";
       if (progressBar) progressBar.style.width = "0%";
       if (progressLabel) progressLabel.textContent = `${base}… 0%`;
@@ -168,7 +184,6 @@
         clearInterval(loadingTimer);
         loadingTimer = null;
       }
-      if (summaryEl) summaryEl.classList.remove("loading");
       // Hide after a short delay so users can see completion
       setTimeout(() => {
         if (progressWrap) progressWrap.hidden = true;
@@ -845,15 +860,37 @@
   }
 
   // Render summary overview for log screen
+  function updateLogSummaryWithFilter(filteredList, counts) {
+    if (!logSummaryCard) return;
+    
+    const summaryInfo = logSummaryCard.querySelector(".summary-filter-info");
+    if (!summaryInfo) return;
+    
+    if (filteredList.length > 0) {
+      const countParts = actionTypes
+        .map((type) => `${getActionTypeName(type)} ${counts[type.id] || 0}`)
+        .filter((_, idx) => counts[actionTypes[idx].id] > 0)
+        .join(", ");
+      summaryInfo.innerHTML = `
+        <div class="filter-info-count">${filteredList.length} ${typeof t === "function" ? t("entries") : "entries"}</div>
+        <div class="filter-info-breakdown">${countParts}</div>
+      `;
+    } else {
+      summaryInfo.innerHTML = `<div class="filter-info-empty">${typeof t === "function" ? t("noEntriesYet") : "No entries yet"}</div>`;
+    }
+  }
+
   function renderLogSummary() {
     if (!logSummaryCard) return;
 
-    const src = entries;
+    // Use filtered entries based on current filter
+    const src = getFilteredEntries();
+    const allEntries = entries; // Keep reference for "today" badge
     const today = new Date();
-    const todayEntries = src.filter((e) => isSameDay(e.timestamp, today));
+    const todayEntries = allEntries.filter((e) => isSameDay(e.timestamp, today));
     const todayCounts = countByType(todayEntries);
 
-    // Find most logged activity (all time) - handle ties
+    // Find most logged activity within filtered period - handle ties
     const allCounts = countByType(src);
     let mostLoggedTypes = [];
     if (Object.keys(allCounts).length > 0) {
@@ -866,10 +903,21 @@
         .filter((t) => t);
     }
 
-    // Calculate streak (consecutive days with at least one entry)
+    // Calculate streak (consecutive days with at least one entry within filtered period)
     let streak = 0;
     let checkDate = new Date(today);
+    
+    // For filtered views, calculate streak within the filter range
+    const filterStartDate = currentFilter.type === "date" 
+      ? new Date(currentFilter.value)
+      : currentFilter.type === "days" 
+        ? new Date(Date.now() - currentFilter.value * 24 * 60 * 60 * 1000)
+        : null;
+    
     while (true) {
+      // Stop if we've gone before the filter start date
+      if (filterStartDate && checkDate < filterStartDate) break;
+      
       const hasEntry = src.some((e) => isSameDay(e.timestamp, checkDate));
       if (!hasEntry) break;
       streak++;
@@ -878,20 +926,19 @@
 
     logSummaryCard.innerHTML = `
       <div class="summary-header">
-        <h3>📊 ${typeof t === "function" ? t("overview") : "Overview"}</h3>
-        <div class="summary-header-actions">
+        <div>
+          <h3>📊 ${typeof t === "function" ? t("overview") : "Overview"}</h3>
           <div class="summary-badges">
-            <span class="summary-badge">${src.length} ${typeof t === "function" ? t("total") : "Total"}</span>
-            <span class="summary-badge">${todayEntries.length} ${typeof t === "function" ? t("today") : "Today"}</span>
+            <span class="summary-badge">${todayEntries.length} ${typeof t === "function" ? t("today") : "today"}</span>
           </div>
         </div>
       </div>
       
       <div class="summary-quick-stats">
         <div class="quick-stat">
-          <div class="quick-stat-icon">🔥</div>
-          <div class="quick-stat-value">${streak}</div>
-          <div class="quick-stat-label">${typeof t === "function" ? t("dayStreak") : "Day Streak"}</div>
+          <div class="quick-stat-icon">📝</div>
+          <div class="quick-stat-value">${src.length}</div>
+          <div class="quick-stat-label">${typeof t === "function" ? t("total") : "Total"} ${typeof t === "function" ? t("entries") : "Entries"}</div>
         </div>
         ${
           mostLoggedTypes.length > 0
@@ -916,24 +963,31 @@
       <div class="summary-divider"></div>
       
       <div class="summary-activities">
-        <div class="summary-activities-header">${typeof t === "function" ? t("lastActivityTimes") : "Last Activity Times"}</div>
+        <div class="summary-activities-header">${typeof t === "function" ? t("activities") : "Activities"}</div>
         <div class="summary-activities-grid">
           ${actionTypes
             .map((type) => {
+              // Find last entry within filtered period
               const lastEntry = src
                 .filter((e) => e.type === type.id)
                 .sort((a, b) => b.timestamp - a.timestamp)[0];
               const noDataLabel = typeof t === "function" ? t("noData") : "—";
+              const lastLabel = typeof t === "function" ? t("last") : "Last";
               const lastTime = lastEntry
-                ? `${formatDate(lastEntry.timestamp)} ${formatTime(lastEntry.timestamp)}`
+                ? `${lastLabel} ${formatDate(lastEntry.timestamp)} ${formatTime(lastEntry.timestamp)}`
                 : noDataLabel;
-              const todayCount = todayCounts[type.id] || 0;
+              
+              // Show count within filtered period
+              const filteredCount = src.filter((e) => e.type === type.id).length;
 
               return `
               <div class="activity-row">
                 <div class="activity-row-icon" style="background-color: ${type.color}">${type.emoji}</div>
                 <div class="activity-row-info">
-                  <div class="activity-row-name">${getActionTypeName(type)}${todayCount > 0 ? ` <span class="activity-today-count">+${todayCount}</span>` : ""}</div>
+                  <div class="activity-row-name">
+                    ${getActionTypeName(type)}
+                    ${filteredCount > 0 ? `<span class="activity-today-count">${filteredCount}</span>` : ""}
+                  </div>
                   <div class="activity-row-time">${lastTime}</div>
                 </div>
               </div>
@@ -1901,27 +1955,18 @@
   }
   function renderLog() {
     const source = entries;
-    const filterVal = dateFilter.value ? new Date(dateFilter.value) : null;
-    const list = filterVal
-      ? source.filter((e) => isSameDay(e.timestamp, filterVal))
-      : source;
-    const counts = countByType(list);
-
-    // Update summary text with dynamic types
-    if (summaryEl) {
-      if (list.length) {
-        const countParts = actionTypes
-          .map((type) => `${getActionTypeName(type)} ${counts[type.id] || 0}`)
-          .join(", ");
-        const showingLabel = typeof t === "function" ? t("showing") : "Showing";
-        const entriesLabel = typeof t === "function" ? t("entries") : "entries";
-        summaryEl.textContent = `${showingLabel} ${list.length} ${entriesLabel} — ${countParts}`;
-      } else {
-        const noEntriesLabel =
-          typeof t === "function" ? t("noEntriesYet") : "No entries yet";
-        summaryEl.textContent = noEntriesLabel;
-      }
+    let list = source;
+    
+    // Apply filter based on currentFilter
+    if (currentFilter.type === "days") {
+      const now = Date.now();
+      const cutoff = now - currentFilter.value * 24 * 60 * 60 * 1000;
+      list = source.filter((e) => e.timestamp >= cutoff);
+    } else if (currentFilter.type === "date") {
+      list = source.filter((e) => isSameDay(e.timestamp, currentFilter.value));
     }
+    
+    const counts = countByType(list);
 
     // Render log entries as cards
     logEntries.innerHTML = "";
@@ -2735,7 +2780,6 @@
     viewGraphsBtn,
     viewLogBtn,
     saveSettingsBtn,
-    clearFilterBtn,
     closeGraphsBtn,
     closeLogBtn,
     openSettingsBtn,
@@ -3377,18 +3421,64 @@
     backgroundSync();
     startRemoteAutoRefresh();
   });
+  // Filter pill event handlers
+  document.querySelectorAll(".filter-pill").forEach((pill) => {
+    pill.addEventListener("click", () => {
+      const filterType = pill.getAttribute("data-filter");
+      
+      if (filterType === "custom") {
+        // Open date picker - with mobile-friendly fallback
+        try {
+          if (dateFilter.showPicker) {
+            dateFilter.showPicker();
+          } else {
+            // Fallback for browsers that don't support showPicker()
+            dateFilter.click();
+          }
+        } catch (err) {
+          // Final fallback - just trigger click
+          dateFilter.click();
+        }
+        return;
+      }
+      
+      // Update active state
+      document.querySelectorAll(".filter-pill").forEach((p) => p.classList.remove("active"));
+      pill.classList.add("active");
+      
+      // Update filter
+      if (filterType === "all") {
+        currentFilter = { type: "all" };
+      } else {
+        const days = parseInt(filterType);
+        currentFilter = { type: "days", value: days };
+      }
+      
+      renderLogSummary();
+      renderLog();
+    });
+  });
+  
+  // Date picker handler
   dateFilter.addEventListener("change", () => {
-    renderLog();
-    // Show/hide clear button based on whether a date is selected
-    clearFilterBtn.style.display = dateFilter.value ? "inline-block" : "none";
-  });
-  dateFilter.addEventListener("click", (e) => {
-    e.stopPropagation();
-  });
-  clearFilterBtn.addEventListener("click", () => {
-    dateFilter.value = "";
-    clearFilterBtn.style.display = "none";
-    renderLog();
+    if (dateFilter.value) {
+      currentFilter = { type: "date", value: new Date(dateFilter.value) };
+      
+      // Update active state
+      document.querySelectorAll(".filter-pill").forEach((p) => p.classList.remove("active"));
+      const customPill = document.querySelector('.filter-pill[data-filter="custom"]');
+      if (customPill) {
+        customPill.classList.add("active");
+        const label = customPill.querySelector("#customDateLabel");
+        if (label) {
+          const date = new Date(dateFilter.value);
+          label.textContent = date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+        }
+      }
+      
+      renderLogSummary();
+      renderLog();
+    }
   });
 
   // Wire up log entry actions (event delegation)

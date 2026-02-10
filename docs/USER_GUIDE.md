@@ -26,7 +26,7 @@ This guide shows you how to sync your baby tracking data with Google Sheets so y
 ### Step 2: Add the Apps Script
 
 1. In your Google Sheet, click **Extensions** → **Apps Script**
-2. Copy and paste the code below:
+2. Remove whatever code that is there then copy and paste the code below:
 
 <button class="copy-code-btn" onclick="copyCodeToClipboard(this)">Copy Code</button>
 
