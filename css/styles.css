@@ -973,23 +973,6 @@ body {
   justify-content: center;
 }
 
-[dir="rtl"] .screen-indicator,
-[dir="rtl"] .screen-content,
-[dir="rtl"] .settings-section-title,
-[dir="rtl"] .settings-section-description,
-[dir="rtl"] .summary-activities-header,
-[dir="rtl"] .timeline-title {
-  text-align: right;
-}
-
-[dir="rtl"] .filter-pills {
-  justify-content: flex-end;
-}
-
-[dir="rtl"] .filter-pill-calendar {
-  flex-direction: row-reverse;
-}
-
 .screen-content {
   flex: 1;
   overflow-y: auto;
@@ -1878,9 +1861,10 @@ body {
   color: #8b5a17;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 769px) {
   .demo-notice {
-    position: absolute;
+    max-width: 520px;
+    margin: 12px auto 0;
   }
 }
 
@@ -2354,7 +2338,7 @@ body {
 
 .summary-activities-grid {
   display: grid;
-  gap: 10px;
+  gap: 0px;
 }
 
 .activity-row {
@@ -4630,6 +4614,8 @@ body {
     max-width: 600px;
     margin: 0 auto;
   }
+
+
 }
 
 /* Tutorial Wizard (continued) */

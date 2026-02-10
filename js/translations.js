@@ -30,8 +30,6 @@ const translations = {
     clearFilter: "Clear Filter",
     all: "All",
     last: "Last",
-    last3Days: "Last 3d",
-    last7Days: "Last 7d",
     pickDate: "Pick Date",
 
     // Insights Screen
@@ -97,7 +95,6 @@ const translations = {
     languageDesc: "Choose your preferred language for the app.",
     languageEnglish: "English",
     languageFinnish: "Suomi (Finnish)",
-    languageFarsi: "فارسی (Persian)",
     languageNote:
       "Note: Custom activities keep their creation name. Edit anytime in Activity Types above.",
 
@@ -204,7 +201,6 @@ const translations = {
     overview: "Overview",
     total: "Total",
     today: "Today",
-    timelineTitle: "{count} activities today",
     dayStreak: "Day Streak",
     most: "Most",
     lastActivityTimes: "Last Activity Times",
@@ -333,8 +329,6 @@ const translations = {
     clearFilter: "Tyhjennä Suodatin",
     all: "Kaikki",
     last: "Viimeiset",
-    last3Days: "Viimeiset 3 pv",
-    last7Days: "Viimeiset 7 pv",
     pickDate: "Valitse Päivä",
 
     // Insights Screen
@@ -401,7 +395,6 @@ const translations = {
     languageDesc: "Valitse sovelluksen kieli.",
     languageEnglish: "English (Englanti)",
     languageFinnish: "Suomi",
-    languageFarsi: "فارسی (persia)",
     languageNote:
       "Huom: Mukautetut toiminnot säilyttävät luontihetken nimen. Muokkaa koska tahansa Toimintotyypit-osiossa.",
 
@@ -511,7 +504,6 @@ const translations = {
     overview: "Yleiskatsaus",
     total: "Yhteensä",
     today: "Tänään",
-    timelineTitle: "{count} toimintoa tänään",
     dayStreak: "Päivän Putki",
     most: "Eniten",
     lastActivityTimes: "Viimeisimmät Toiminta-ajat",
@@ -611,309 +603,6 @@ const translations = {
       "💡 Voit muuttaa kaikkia näitä asetuksia milloin tahansa Asetukset-välilehdessä",
     welcomeGetStarted: "🚀 Aloita!",
   },
-
-  fa: {
-    // Meta tags
-    pageTitle: "لیتل اجندا - پیگیری فعالیت های نوزاد",
-    pageDescription:
-      "پیگیر ساده فعالیت های نوزاد. تغذیه، تعویض پوشک و سایر فعالیت ها را ثبت کنید. آفلاین کار می کند و با Google Sheets همگام می شود.",
-    pageKeywords:
-      "پیگیری نوزاد, ثبت نوزاد, پیگیری تغذیه, پوشک, فعالیت های نوزاد, ابزار والدین",
-
-    // Home Screen
-    todaySummary: "خلاصه امروز",
-    recentActivity: "فعالیت های اخیر",
-    logActivity: "ثبت فعالیت",
-    dataStoredLocally: "💡 داده ها فقط به صورت محلی ذخیره می شوند.",
-    connectGoogleSheets: "اتصال به Google Sheets",
-    hideNotice: "پنهان کردن",
-
-    // Navigation
-    navHome: "خانه",
-    navLog: "ثبت",
-    navInsights: "آمار",
-    navSettings: "تنظیمات",
-
-    // Log Screen
-    logTitle: "📋 ثبت",
-    filterByDate: "📅 فیلتر بر اساس تاریخ:",
-    clearFilter: "پاک کردن فیلتر",
-    all: "همه",
-    last: "آخرین",
-    last3Days: "آخرین ۳ روز",
-    last7Days: "آخرین ۷ روز",
-    pickDate: "انتخاب تاریخ",
-
-    // Insights Screen
-    insightsTitle: "📈 آمار",
-    showActivities: "📊 نمایش فعالیت ها",
-    showActivitiesDesc: "فعالیت هایی را برای نمودارها انتخاب کنید",
-    todayActivity: "📅 فعالیت امروز",
-    todayActivityDesc:
-      "نمایش نمای کلی فعالیت های امروز و آنچه تا حالا ثبت شده است",
-    todayActivityTitle: "فعالیت امروز",
-    sevenDayTrend: "📈 روند ۷ روزه",
-    sevenDayTrendDesc:
-      "نمایش الگوهای هفتگی و تغییرات برای پیگیری روند های اخیر",
-    sevenDayTrendTitle: "روند ۷ روزه",
-    last24Hours: "🕑 ۲۴ ساعت اخیر",
-    last24HoursDesc:
-      "نمایش خط زمانی ساعتی برای دیدن زمان دقیق فعالیت ها در طول روز",
-    last24HoursTitle: "خط زمانی ۲۴ ساعته",
-    timeBetweenActivities: "⏱️ فاصله بین فعالیت ها",
-    timeBetweenActivitiesTitle: "فاصله بین فعالیت ها",
-    timeBetweenActivitiesDesc:
-      "نمایش میانگین فاصله زمانی بین فعالیت های مشابه برای پیگیری تغذیه، پوشک و خواب",
-    monthlyHabit: "📅 پیگیری فعالیت ماهانه",
-    monthlyHabitDesc:
-      "یک فعالیت را در طول ماه پیگیری کنید تا الگوها را ببینید و عادت ها را پایدار کنید",
-    selectActivityToTrack: "انتخاب فعالیت برای پیگیری:",
-    noDataYet: "هنوز داده ای نیست",
-    noDataYetDesc: "برای دیدن نمودارها و روندها، شروع به ثبت فعالیت ها کنید.",
-
-    // Settings Screen
-    settingsTitle: "⚙️ تنظیمات",
-    googleSheetsSync: "☁️ همگام سازی Google Sheets",
-    connectedToSheets: "✓ به Google Sheets متصل است",
-    webAppUrl: "آدرس وب اپ",
-    webAppUrlHint: "برای ذخیره محلی خالی بگذارید.",
-    webAppUrlPlaceholder: "آدرس وب اپ Google Sheets را جایگذاری کنید",
-    paste: "چسباندن",
-    connectAndSync: "اتصال و همگام سازی",
-    syncing: "در حال همگام سازی...",
-    setupGuide: "راهنمای راه اندازی",
-    disconnect: "قطع اتصال",
-
-    // Activity Types Section
-    activityTypes: "📝 نوع فعالیت ها",
-    activityTypesDesc:
-      "فعالیت هایی را که می خواهید پیگیری کنید سفارشی کنید. هر فعالیت نام، ایموجی و رنگ دارد.",
-    addNewActivity: "➕ افزودن فعالیت جدید",
-
-    // Theme Section
-    theme: "🎨 تم",
-    themeBlossom: "🌸 شکوفه",
-    themeComet: "☄️ دنباله دار",
-    themeMeadow: "🌿 چمنزار",
-    themeMidnight: "🌙 نیمه شب",
-
-    // Font Section
-    font: "🔤 فونت",
-    fontDesc: "فونت دلخواه برای خوانایی بهتر را انتخاب کنید.",
-
-    // Language Section
-    language: "🌐 زبان",
-    languageDesc: "زبان دلخواه برنامه را انتخاب کنید.",
-    languageEnglish: "English",
-    languageFinnish: "Suomi",
-    languageFarsi: "فارسی",
-    languageNote:
-      "نکته: فعالیت های سفارشی نام زمان ایجاد را حفظ می کنند. هر زمان در بخش نوع فعالیت ها ویرایش کنید.",
-
-    // Data Management Section
-    dataManagement: "💾 مدیریت داده ها",
-    dataManagementDesc: "داده ها و تنظیمات را صادر یا وارد کنید.",
-    exportData: "📥 خروجی گرفتن از داده ها",
-    importData: "📤 وارد کردن داده ها",
-    exportCSV: "📊 خروجی CSV",
-
-    // Tutorial Section
-    tutorial: "🎓 آموزش",
-    tutorialDesc: "با یک راهنمای تعاملی یاد بگیرید.",
-    startTutorial: "🎓 شروع آموزش برنامه",
-    restartWelcome: "🔄 راه اندازی دوباره و حذف داده ها",
-    resetApp: "🔄 بازنشانی برنامه",
-    resetAppDesc:
-      "راه اندازی اولیه را دوباره اجرا و همه داده ها را پاک می کند. این قابل بازگشت نیست.",
-    restartAppConfirm:
-      "این کار همه داده ها را حذف و برنامه را بازنشانی می کند. مطمئن هستید؟",
-    finish: "پایان",
-    undo: "برگشت",
-    undid: "برگشت داده شد",
-
-    // About & Legal Section
-    aboutLegal: "📋 درباره و حقوقی",
-    aboutDesc:
-      "یک هفته باید حرکات روده نوزادم را بررسی می کردم و حوصله پرداخت سه یورو برای خرید یک برنامه را نداشتم. که البته بعدا فهمیدم باید می خریدم. پس وقت زیادی گذاشتم و این را ساختم. اگر شما هم در چنین موقعیتی هستید، می توانید از آن استفاده کنید، فورک کنید یا هر طور دوست دارید به کار بگیرید.",
-    privacyPolicy: "سیاست حریم خصوصی",
-    githubRepo: "مخزن GitHub",
-
-    // Modals
-    addActivity: "افزودن فعالیت",
-    editActivity: "ویرایش فعالیت",
-    activityName: "نام فعالیت",
-    activityNamePlaceholder: "مثلا خواب، حمام، بازی",
-    emoji: "ایموجی",
-    color: "رنگ",
-    cancel: "لغو",
-    save: "ذخیره",
-
-    // Disconnect Modal
-    disconnectTitle: "قطع اتصال از Google Sheets",
-    disconnectQuestion: "با داده های فعالیت چه می خواهید انجام دهید؟",
-    keepDataLocally: "نگه داشتن داده ها به صورت محلی",
-    keepDataLocallyDesc: "فعالیت ها فقط روی این دستگاه می مانند",
-    deleteAllData: "حذف همه داده ها",
-    deleteAllDataDesc: "همه فعالیت ها را حذف و از نو شروع کنید",
-
-    // About Screen
-    aboutAppTitle: "📋 درباره این برنامه",
-    whatIsThis: "این برنامه چیست",
-    whatIsThisDesc:
-      "این یک برنامه کاملا استاتیک برای پیگیری فعالیت های نوزاد است. بدون سرور، بدون پایگاه داده و بدون سرویس ابری — همه چیز در مرورگر شما اجرا می شود.",
-    yourDataPrivacy: "داده های شما و حریم خصوصی",
-    yourDataPrivacyDesc:
-      "داده های شما از دستگاه خارج نمی شوند. همه چیز به صورت محلی در مرورگر ذخیره می شود.",
-    noTracking: "بدون ردیابی، بدون تحلیل، بدون تله متری",
-    noAccounts: "نیازی به حساب کاربری یا ورود نیست",
-    noDataSent:
-      "هیچ داده ای به سرور ارسال نمی شود (مگر اینکه همگام سازی Google Sheets را فعال کنید)",
-    worksOffline: "می توانید کاملا آفلاین از برنامه استفاده کنید",
-    googleSheetsSyncOptional: "همگام سازی Google Sheets (اختیاری)",
-    googleSheetsSyncDesc:
-      "اگر همگام سازی Google Sheets را فعال کنید، داده های شما از طریق Apps Script شما به سرورهای گوگل ارسال می شوند. این کاملا اختیاری و تحت کنترل شماست.",
-    openSource: "متن باز",
-    openSourceDesc:
-      "این برنامه متن باز است. می توانید کد را ببینید، مشارکت کنید یا نسخه خودتان را اجرا کنید.",
-    viewOnGithub: "مشاهده در GitHub →",
-
-    // Setup Guide
-    setupGuideTitle: "📖 راهنمای راه اندازی",
-    loadingDocumentation: "در حال بارگذاری مستندات...",
-
-    // Tutorial Wizard
-    skip: "رد کردن",
-    back: "بازگشت",
-    next: "بعدی",
-    wizardWelcomeTitle: "خوش آمدید! 👶",
-    wizardWelcomeDesc: "تور کوتاه برنامه پیگیری نوزاد.",
-    wizardQuickActionsTitle: "اقدامات سریع",
-    wizardQuickActionsDesc:
-      "برای باز کردن منو و ثبت فعالیت ها، دکمه + را بزنید.",
-    wizardTodaySummaryTitle: "خلاصه امروز",
-    wizardTodaySummaryDesc: "مشاهده مجموع ها و زمان از آخرین فعالیت.",
-    wizardActivityLogTitle: "ثبت فعالیت ها",
-    wizardActivityLogDesc:
-      "همه ورودی ها را ببینید، با تاریخ فیلتر کنید و حذف کنید.",
-    wizardInsightsTitle: "آمار",
-    wizardInsightsDesc: "نمودارهایی که الگوها و روندها را نشان می دهند.",
-    wizardSettingsTitle: "تنظیمات",
-    wizardSettingsDesc: "تم ها، فعالیت های سفارشی، همگام سازی و خروجی.",
-    wizardGoogleSheetsTitle: "همگام سازی Google Sheets",
-    wizardGoogleSheetsDesc:
-      "با Google Sheets بین دستگاه ها همگام کنید. راهنما را برای دستورالعمل ها ببینید.",
-    wizardAllSetTitle: "همه چیز آماده است! 🎉",
-    wizardAllSetDesc:
-      "همین حالا پیگیری را شروع کنید. هر زمان از تنظیمات تکرار کنید.",
-
-    // Toast Messages
-    logged: "ثبت شد",
-    updated: "به روز شد",
-
-    // Log Summary/Overview
-    overview: "خلاصه",
-    total: "مجموع",
-    today: "امروز",
-    timelineTitle: "امروز {count} فعالیت",
-    dayStreak: "رکورد روزانه",
-    most: "بیشترین",
-    lastActivityTimes: "زمان های آخرین فعالیت",
-    noData: "—",
-
-    // Log Entries
-    edit: "ویرایش",
-    editEntry: "ویرایش ورودی",
-    logPastEntry: "ثبت ورودی قبلی",
-    manageActivities: "مدیریت فعالیت ها",
-    logEntry: "ثبت ورودی",
-    activityType: "نوع فعالیت",
-    date: "تاریخ",
-    time: "زمان",
-    note: "یادداشت",
-    notePlaceholder: "یادداشت اختیاری...",
-    delete: "حذف",
-    noEntriesToExport: "ورودی برای خروجی وجود ندارد",
-    noEntriesYet: "هنوز ورودی وجود ندارد",
-    showing: "نمایش",
-    entries: "ورودی",
-    fillAllFields: "همه فیلدهای لازم را پر کنید",
-    entryNotFound: "ورودی پیدا نشد",
-    cannotLogFuture: "نمی توان برای آینده ثبت کرد",
-
-    // Home Screen Today Summary
-    todayLabel: "امروز:",
-    todayNone: "امروز: —",
-    noActivityYet: "هنوز فعالیتی ثبت نشده",
-
-    // Intervals
-    intervals: "فاصله ها",
-    notEnoughData: "داده کافی نیست",
-    needMoreActivities: "برای نمایش فاصله ها فعالیت های بیشتری لازم است",
-
-    // Activity Suggestions
-    sleep: "خواب",
-    bath: "حمام",
-    play: "بازی",
-    tummyTime: "تمرین شکم",
-    medicine: "دارو",
-    walk: "پیاده روی",
-    doctorVisit: "ویزیت پزشک",
-    cry: "گریه",
-    massage: "ماساژ",
-    storyTime: "قصه",
-    music: "موسیقی",
-    carRide: "سواری با ماشین",
-    cuddle: "بغل",
-    weightCheck: "بررسی وزن",
-    temperature: "دما",
-    teeth: "دندان",
-    stroller: "کالسکه",
-    visitor: "مهمان",
-    photo: "عکس",
-    milestone: "نقطه عطف",
-
-    // Help/Setup Guide
-    loadingGuide: "در حال بارگذاری راهنما...",
-    googleSheetsSyncSetup: "📖 راه اندازی همگام سازی Google Sheets",
-    unableToLoadGuide:
-      "امکان بارگذاری راهنما نیست. لطفا فایل USER_GUIDE.md را بررسی کنید.",
-    setupSteps: "برای راه اندازی همگام سازی Google Sheets:",
-    setupStep1: "1. یک Google Sheet با سرستون ها بسازید",
-    setupStep2: "2. Apps Script اضافه کنید (Extensions → Apps Script)",
-    setupStep3: "3. به عنوان Web App انتشار دهید (دسترسی برای همه)",
-    setupStep4: "4. آدرس را در تنظیمات قرار دهید و اتصال را بزنید",
-    appsScriptCopied: "📋 کد Apps Script به کلیپ بورد کپی شد",
-    failedToCopy: "❌ کپی به کلیپ بورد ناموفق بود",
-    copied: "✓ کپی شد!",
-
-    // Default Activity Types
-    feed: "تغذیه",
-    pee: "ادرار",
-    poop: "مدفوع",
-
-    // Welcome/Onboarding
-    welcomeTitle: "خوش آمدید به",
-    welcomeLanguageDesc: "بیایید با انتخاب زبان دلخواه شروع کنیم",
-    welcomeActivitiesTitle: "فعالیت های مورد نظر را انتخاب کنید",
-    welcomeActivitiesDesc: "با این فعالیت های رایج شروع کنید",
-    welcomeActivitiesInfoTitle: "هر چه می خواهید پیگیری کنید!",
-    welcomeActivitiesInfoDesc:
-      "می توانید هر زمان در تنظیمات → نوع فعالیت ها، فعالیت ها را اضافه، حذف یا ویرایش کنید.",
-    welcomeThemeTitle: "تم خود را انتخاب کنید",
-    welcomeThemeDesc: "رنگ بندی مناسب سلیقه تان را انتخاب کنید",
-    welcomeFontTitle: "فونت خود را انتخاب کنید",
-    welcomeFontDesc: "فونتی که برایتان راحت است انتخاب کنید",
-    welcomeTutorialTitle: "آیا آموزش می خواهید؟",
-    welcomeTutorialDesc:
-      "یک تور کوتاه برای آشنایی یا خودتان ادامه دهید. همه تنظیمات در تنظیمات قابل تغییر است.",
-    welcomeTutorialYes: "بله، به من نشان بده",
-    welcomeTutorialYesDesc: "تور کوتاه برای آشنایی با همه ویژگی ها",
-    welcomeTutorialNo: "خودم بررسی می کنم",
-    welcomeTutorialNoDesc: "مستقیما شروع به پیگیری کنید",
-    welcomeSettingsReminder:
-      "💡 همه این تنظیمات را هر زمان در تب تنظیمات می توانید تغییر دهید",
-    welcomeGetStarted: "🚀 شروع کنیم!",
-  },
 };
 
 // Get current language from localStorage or default to English
@@ -963,9 +652,7 @@ function updatePageTranslations() {
   });
 
   // Update HTML lang attribute
-  document.documentElement.lang =
-    lang === "fi" ? "fi" : lang === "fa" ? "fa" : "en";
-  document.documentElement.dir = lang === "fa" ? "rtl" : "ltr";
+  document.documentElement.lang = lang === "fi" ? "fi" : "en";
 }
 
 // Export functions for use in app.js
