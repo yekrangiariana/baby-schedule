@@ -2087,14 +2087,35 @@
             // Swiped right - Edit
             const entryId = entry.getAttribute("data-entry-id");
             openEditModal(entryId);
+            // Reset position and styles
+            entry.style.transition = "transform 0.2s ease-out";
+            if (actionLeft)
+              actionLeft.style.transition = "all 0.2s ease-out";
+            if (actionRight)
+              actionRight.style.transition = "all 0.2s ease-out";
           } else {
-            // Swiped left - Delete
+            // Swiped left - Delete with animation
             const entryId = entry.getAttribute("data-entry-id");
-            deleteEntry(entryId);
+            // Animate card out
+            wrapper.style.transition =
+              "opacity 0.3s ease-out, transform 0.3s ease-out, max-height 0.3s ease-out";
+            wrapper.style.opacity = "0";
+            wrapper.style.transform = "translateX(-100%)";
+            wrapper.style.maxHeight = wrapper.offsetHeight + "px";
+            setTimeout(() => {
+              wrapper.style.maxHeight = "0";
+              wrapper.style.marginBottom = "0";
+            }, 50);
+
+            // Delete after animation
+            setTimeout(() => {
+              deleteEntry(entryId);
+            }, 350);
+            return; // Don't reset position for delete
           }
         }
 
-        // Reset position and styles
+        // Reset position and styles (for swipes that don't trigger action)
         entry.style.transition = "transform 0.2s ease-out";
         if (actionLeft) actionLeft.style.transition = "all 0.2s ease-out";
         if (actionRight) actionRight.style.transition = "all 0.2s ease-out";
@@ -2431,7 +2452,19 @@
     // Update open screens immediately
     if (!logScreen.hidden) {
       renderLogSummary();
-      renderLog();
+      // Remove only the deleted card from DOM instead of rebuilding
+      const cardToRemove = logEntries.querySelector(`[data-entry-id="${id}"]`);
+      if (cardToRemove) {
+        const wrapper = cardToRemove.closest(".log-entry-wrapper");
+        if (wrapper) {
+          wrapper.remove();
+        }
+      }
+      // If no entries left, show empty state
+      const remainingCards = logEntries.querySelectorAll(".log-entry-wrapper");
+      if (remainingCards.length === 0) {
+        logEntries.innerHTML = "";
+      }
     }
     if (!insightsScreen.hidden) renderGraphs();
 
