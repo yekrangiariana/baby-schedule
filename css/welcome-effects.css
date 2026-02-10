@@ -27,7 +27,8 @@
 }
 
 #welcomeOverlay.welcome-overlay-comet {
-  background: linear-gradient(
+  background:
+    linear-gradient(
       180deg,
       rgba(86, 162, 255, 0.5) 0%,
       rgba(86, 162, 255, 0.2) 48%,
@@ -38,7 +39,8 @@
 
 .welcome-theme-effects.theme-comet::before {
   opacity: 1;
-  background: linear-gradient(
+  background:
+    linear-gradient(
       180deg,
       rgba(86, 162, 255, 0.45) 0%,
       rgba(86, 162, 255, 0.2) 45%,
@@ -50,7 +52,6 @@
       transparent 55%
     );
 }
-
 
 .welcome-particle {
   position: absolute;
@@ -160,7 +161,11 @@
     transform: translate3d(var(--float-x), var(--float-y), 0) scale(1);
   }
   100% {
-    transform: translate3d(calc(var(--float-x) * -1), calc(var(--float-y) * -1), 0)
+    transform: translate3d(
+        calc(var(--float-x) * -1),
+        calc(var(--float-y) * -1),
+        0
+      )
       scale(0.95);
     opacity: 0;
   }

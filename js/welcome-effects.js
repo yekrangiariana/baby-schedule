@@ -59,7 +59,10 @@
     span.style.setProperty("--x", rand(-5, 105).toFixed(2));
     const size = themeCfg.type === "star" ? rand(12, 18) : rand(14, 22);
     span.style.setProperty("--size", `${size.toFixed(0)}px`);
-    span.style.setProperty("--drift", `${rand(-themeCfg.drift, themeCfg.drift).toFixed(0)}px`);
+    span.style.setProperty(
+      "--drift",
+      `${rand(-themeCfg.drift, themeCfg.drift).toFixed(0)}px`,
+    );
     span.style.setProperty(
       "--duration",
       `${rand(themeCfg.duration[0], themeCfg.duration[1]).toFixed(0)}ms`,
@@ -84,7 +87,10 @@
       `${rand(themeCfg.duration[0], themeCfg.duration[1]).toFixed(0)}ms`,
     );
     comet.style.setProperty("--delay", `${rand(0, 600).toFixed(0)}ms`);
-    comet.style.setProperty("--arc", `${rand(themeCfg.arc[0], themeCfg.arc[1]).toFixed(0)}`);
+    comet.style.setProperty(
+      "--arc",
+      `${rand(themeCfg.arc[0], themeCfg.arc[1]).toFixed(0)}`,
+    );
     return comet;
   };
 
