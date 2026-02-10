@@ -669,8 +669,7 @@ const translations = {
       "یک فعالیت را در طول ماه پیگیری کنید تا الگوها را ببینید و عادت ها را پایدار کنید",
     selectActivityToTrack: "انتخاب فعالیت برای پیگیری:",
     noDataYet: "هنوز داده ای نیست",
-    noDataYetDesc:
-      "برای دیدن نمودارها و روندها، شروع به ثبت فعالیت ها کنید.",
+    noDataYetDesc: "برای دیدن نمودارها و روندها، شروع به ثبت فعالیت ها کنید.",
 
     // Settings Screen
     settingsTitle: "⚙️ تنظیمات",
@@ -794,7 +793,8 @@ const translations = {
     wizardTodaySummaryTitle: "خلاصه امروز",
     wizardTodaySummaryDesc: "مشاهده مجموع ها و زمان از آخرین فعالیت.",
     wizardActivityLogTitle: "ثبت فعالیت ها",
-    wizardActivityLogDesc: "همه ورودی ها را ببینید، با تاریخ فیلتر کنید و حذف کنید.",
+    wizardActivityLogDesc:
+      "همه ورودی ها را ببینید، با تاریخ فیلتر کنید و حذف کنید.",
     wizardInsightsTitle: "آمار",
     wizardInsightsDesc: "نمودارهایی که الگوها و روندها را نشان می دهند.",
     wizardSettingsTitle: "تنظیمات",
@@ -803,7 +803,8 @@ const translations = {
     wizardGoogleSheetsDesc:
       "با Google Sheets بین دستگاه ها همگام کنید. راهنما را برای دستورالعمل ها ببینید.",
     wizardAllSetTitle: "همه چیز آماده است! 🎉",
-    wizardAllSetDesc: "همین حالا پیگیری را شروع کنید. هر زمان از تنظیمات تکرار کنید.",
+    wizardAllSetDesc:
+      "همین حالا پیگیری را شروع کنید. هر زمان از تنظیمات تکرار کنید.",
 
     // Toast Messages
     logged: "ثبت شد",
@@ -962,7 +963,8 @@ function updatePageTranslations() {
   });
 
   // Update HTML lang attribute
-  document.documentElement.lang = lang === "fi" ? "fi" : lang === "fa" ? "fa" : "en";
+  document.documentElement.lang =
+    lang === "fi" ? "fi" : lang === "fa" ? "fa" : "en";
   document.documentElement.dir = lang === "fa" ? "rtl" : "ltr";
 }
 

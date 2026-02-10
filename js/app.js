@@ -1824,8 +1824,7 @@
       dayEntries.forEach((e) => {
         if (counts[e.type] !== undefined) counts[e.type]++;
       });
-      const locale =
-        typeof getLocale === "function" ? getLocale() : "en-US";
+      const locale = typeof getLocale === "function" ? getLocale() : "en-US";
       dailyData.push({
         day: new Date(dayStart).toLocaleDateString(locale, {
           weekday: "short",
@@ -1983,8 +1982,7 @@
     const daysWithActivity = Object.keys(dayCounts).length;
 
     // Get locale for month name
-    const locale =
-      typeof getLocale === "function" ? getLocale() : "en-US";
+    const locale = typeof getLocale === "function" ? getLocale() : "en-US";
     const monthName = firstDay.toLocaleDateString(locale, {
       month: "long",
       year: "numeric",
