@@ -1,7 +1,6 @@
 // Theme effects for welcome screen
 (function () {
   const effectsEl = document.getElementById("welcomeThemeEffects");
-  const overlayEl = document.getElementById("welcomeOverlay");
   if (!effectsEl) return;
 
   let clearTimer = null;
@@ -44,7 +43,6 @@
   const clearEffects = () => {
     effectsEl.innerHTML = "";
     effectsEl.className = "welcome-theme-effects";
-    if (overlayEl) overlayEl.classList.remove("welcome-overlay-comet");
     if (clearTimer) {
       clearTimeout(clearTimer);
       clearTimer = null;
@@ -101,9 +99,6 @@
 
     clearEffects();
     effectsEl.classList.add(`theme-${theme}`);
-    if (overlayEl && themeCfg.type === "comet") {
-      overlayEl.classList.add("welcome-overlay-comet");
-    }
 
     if (themeCfg.type === "comet") {
       for (let i = 0; i < themeCfg.count; i += 1) {

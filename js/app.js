@@ -1203,11 +1203,17 @@
         const totalMinutes = (endHour - startHour + 1) * 60; // +1 to include 23:00-23:59
 
         // Create timeline entries with positions
-        const timelineItems = sortedEntries.map((entry) => {
+        const timelineItems = sortedEntries
+          .map((entry) => {
           const entryDate = new Date(entry.timestamp);
           const hour = entryDate.getHours();
           const minute = entryDate.getMinutes();
           const activityType = getActionTypeById(entry.type);
+
+          if (!activityType) {
+            // Skip entries that reference a missing activity type.
+            return null;
+          }
 
           // Calculate position percentage within visible range
           const entryMinutes = (hour - startHour) * 60 + minute;
@@ -1221,7 +1227,8 @@
             name: getActionTypeName(activityType),
             timestamp: entry.timestamp,
           };
-        });
+          })
+          .filter(Boolean);
 
         // Group events that are close together (within 5 minutes = collision)
         const collisionThresholdMinutes = 10;

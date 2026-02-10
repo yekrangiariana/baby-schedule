@@ -26,32 +26,6 @@
   transition: opacity 0.4s ease;
 }
 
-#welcomeOverlay.welcome-overlay-comet {
-  background:
-    linear-gradient(
-      180deg,
-      rgba(86, 162, 255, 0.5) 0%,
-      rgba(86, 162, 255, 0.2) 48%,
-      rgba(255, 255, 255, 0) 100%
-    ),
-    var(--bg-primary);
-}
-
-.welcome-theme-effects.theme-comet::before {
-  opacity: 1;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(86, 162, 255, 0.45) 0%,
-      rgba(86, 162, 255, 0.2) 45%,
-      transparent 100%
-    ),
-    radial-gradient(
-      circle at 20% 20%,
-      rgba(255, 255, 255, 0.25),
-      transparent 55%
-    );
-}
 
 .welcome-particle {
   position: absolute;
@@ -86,11 +60,11 @@
   border-radius: 999px;
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 1),
-    rgba(180, 220, 255, 0.6),
+    rgba(74, 156, 255, 1),
+    rgba(120, 190, 255, 0.65),
     transparent
   );
-  filter: drop-shadow(0 0 10px rgba(120, 190, 255, 0.8));
+  filter: drop-shadow(0 0 10px rgba(74, 156, 255, 0.85));
   transform: rotate(-20deg);
   animation: welcomeComet var(--duration) ease-in-out var(--delay) forwards;
 }
@@ -102,7 +76,7 @@
   top: 50%;
   width: 32px;
   height: 3px;
-  background: rgba(200, 230, 255, 0.85);
+  background: rgba(130, 200, 255, 0.9);
   transform: translateY(-50%);
   border-radius: 999px;
 }
