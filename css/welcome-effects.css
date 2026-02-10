@@ -26,6 +26,36 @@
   transition: opacity 0.4s ease;
 }
 
+.welcome-theme-effects::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.welcome-theme-effects.theme-meadow::before {
+  opacity: 0.4;
+  background: repeating-linear-gradient(
+    110deg,
+    rgba(255, 255, 255, 0.2) 0 6px,
+    transparent 6px 20px
+  );
+  animation: welcomeWindSlide 4.6s linear infinite;
+  mix-blend-mode: screen;
+}
+
+.welcome-theme-effects.theme-meadow::after {
+  opacity: 0.3;
+  background: repeating-linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.12) 0 4px,
+    transparent 4px 18px
+  );
+  animation: welcomeWindSlideReverse 6s linear infinite;
+  mix-blend-mode: screen;
+}
+
 .welcome-particle {
   position: absolute;
   top: -10%;
@@ -38,6 +68,13 @@
 
 .welcome-particle.leaf {
   animation-name: welcomeLeafFall;
+}
+
+.welcome-theme-effects.theme-meadow .welcome-particle.leaf {
+  left: -15%;
+  top: calc(var(--y) * 1%);
+  animation-name: welcomeLeafWind;
+  animation-timing-function: linear;
 }
 
 .welcome-particle.star {
@@ -53,7 +90,7 @@
 .welcome-comet {
   position: absolute;
   top: calc(var(--y) * 1%);
-  left: 110%;
+  left: 100%;
   width: 36px;
   height: 10px;
   border-radius: 999px;
@@ -108,6 +145,33 @@
   }
 }
 
+@keyframes welcomeLeafWind {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(var(--spin-start));
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate3d(
+        calc(60vw + var(--wind-x)),
+        calc(var(--wind-y) * 1.1),
+        0
+      )
+      rotate(var(--spin-mid));
+  }
+  100% {
+    transform: translate3d(
+        calc(140vw + var(--wind-x)),
+        calc(var(--wind-y) * -0.6),
+        0
+      )
+      rotate(var(--spin-end));
+    opacity: 0;
+  }
+}
+
 @keyframes welcomeStarFall {
   0% {
     transform: translate3d(0, -10%, 0) scale(0.9);
@@ -149,11 +213,39 @@
     transform: translate3d(0, 0, 0) rotate(-20deg);
     opacity: 0;
   }
-  15% {
+  8% {
     opacity: 1;
   }
   100% {
     transform: translate3d(-130vw, calc(var(--arc) * 1px), 0) rotate(-25deg);
     opacity: 0;
+  }
+}
+
+@keyframes welcomeWindSlide {
+  0% {
+    transform: translateX(-10%);
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateX(10%);
+    opacity: 0.25;
+  }
+}
+
+@keyframes welcomeWindSlideReverse {
+  0% {
+    transform: translateX(12%);
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: translateX(-12%);
+    opacity: 0.2;
   }
 }

@@ -72,6 +72,15 @@
       span.style.setProperty("--float-x", `${rand(-16, 16).toFixed(0)}px`);
       span.style.setProperty("--float-y", `${rand(-18, 18).toFixed(0)}px`);
     }
+
+    if (themeCfg.type === "leaf") {
+      span.style.setProperty("--y", rand(10, 90).toFixed(2));
+      span.style.setProperty("--wind-y", `${rand(-30, 30).toFixed(0)}px`);
+      span.style.setProperty("--wind-x", `${rand(-40, 40).toFixed(0)}px`);
+      span.style.setProperty("--spin-start", `${rand(-40, 60).toFixed(0)}deg`);
+      span.style.setProperty("--spin-mid", `${rand(120, 220).toFixed(0)}deg`);
+      span.style.setProperty("--spin-end", `${rand(260, 420).toFixed(0)}deg`);
+    }
     return span;
   };
 
@@ -84,7 +93,7 @@
       "--duration",
       `${rand(themeCfg.duration[0], themeCfg.duration[1]).toFixed(0)}ms`,
     );
-    comet.style.setProperty("--delay", `${rand(0, 600).toFixed(0)}ms`);
+    comet.style.setProperty("--delay", `${rand(0, 200).toFixed(0)}ms`);
     comet.style.setProperty(
       "--arc",
       `${rand(themeCfg.arc[0], themeCfg.arc[1]).toFixed(0)}`,

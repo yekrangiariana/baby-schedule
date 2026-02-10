@@ -2337,7 +2337,7 @@ body {
 
 .summary-activities-grid {
   display: grid;
-  gap: 0px;
+  gap: 10px;
 }
 
 .activity-row {
