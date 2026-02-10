@@ -2089,10 +2089,8 @@
             openEditModal(entryId);
             // Reset position and styles
             entry.style.transition = "transform 0.2s ease-out";
-            if (actionLeft)
-              actionLeft.style.transition = "all 0.2s ease-out";
-            if (actionRight)
-              actionRight.style.transition = "all 0.2s ease-out";
+            if (actionLeft) actionLeft.style.transition = "all 0.2s ease-out";
+            if (actionRight) actionRight.style.transition = "all 0.2s ease-out";
           } else {
             // Swiped left - Delete with animation
             const entryId = entry.getAttribute("data-entry-id");
