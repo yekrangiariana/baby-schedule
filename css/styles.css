@@ -1861,6 +1861,12 @@ body {
   color: #8b5a17;
 }
 
+@media (min-width: 768px) {
+  .demo-notice {
+    position: absolute;
+  }
+}
+
 .demo-notice[hidden] {
   display: none !important;
 }
@@ -2545,48 +2551,60 @@ body {
 }
 
 @keyframes swipeHintEntry {
-  0%, 20% {
+  0%,
+  20% {
     transform: translateX(0);
   }
-  28%, 40% {
+  28%,
+  40% {
     transform: translateX(48px);
   }
-  48%, 60% {
+  48%,
+  60% {
     transform: translateX(0);
   }
-  68%, 80% {
+  68%,
+  80% {
     transform: translateX(-48px);
   }
-  88%, 100% {
+  88%,
+  100% {
     transform: translateX(0);
   }
 }
 
 @keyframes swipeHintLeft {
-  0%, 24%, 100% {
+  0%,
+  24%,
+  100% {
     width: 0;
     padding: 0;
   }
-  28%, 40% {
+  28%,
+  40% {
     width: 72px;
     padding: 16px;
   }
-  44%, 100% {
+  44%,
+  100% {
     width: 0;
     padding: 0;
   }
 }
 
 @keyframes swipeHintRight {
-  0%, 62% {
+  0%,
+  62% {
     width: 0;
     padding: 0;
   }
-  68%, 80% {
+  68%,
+  80% {
     width: 72px;
     padding: 16px;
   }
-  84%, 100% {
+  84%,
+  100% {
     width: 0;
     padding: 0;
   }
