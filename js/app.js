@@ -1205,28 +1205,28 @@
         // Create timeline entries with positions
         const timelineItems = sortedEntries
           .map((entry) => {
-          const entryDate = new Date(entry.timestamp);
-          const hour = entryDate.getHours();
-          const minute = entryDate.getMinutes();
-          const activityType = getActionTypeById(entry.type);
+            const entryDate = new Date(entry.timestamp);
+            const hour = entryDate.getHours();
+            const minute = entryDate.getMinutes();
+            const activityType = getActionTypeById(entry.type);
 
-          if (!activityType) {
-            // Skip entries that reference a missing activity type.
-            return null;
-          }
+            if (!activityType) {
+              // Skip entries that reference a missing activity type.
+              return null;
+            }
 
-          // Calculate position percentage within visible range
-          const entryMinutes = (hour - startHour) * 60 + minute;
-          const position = (entryMinutes / totalMinutes) * 100;
+            // Calculate position percentage within visible range
+            const entryMinutes = (hour - startHour) * 60 + minute;
+            const position = (entryMinutes / totalMinutes) * 100;
 
-          return {
-            position,
-            emoji: activityType.emoji,
-            color: activityType.color,
-            time: `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`,
-            name: getActionTypeName(activityType),
-            timestamp: entry.timestamp,
-          };
+            return {
+              position,
+              emoji: activityType.emoji,
+              color: activityType.color,
+              time: `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`,
+              name: getActionTypeName(activityType),
+              timestamp: entry.timestamp,
+            };
           })
           .filter(Boolean);
 
