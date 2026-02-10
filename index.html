@@ -123,6 +123,7 @@
     <!-- Styles -->
     <link rel="stylesheet" href="css/styles.css" />
     <link rel="stylesheet" href="css/welcome.css" />
+    <link rel="stylesheet" href="css/welcome-effects.css" />
 
     <!-- Apply config to meta tags -->
     <script>
@@ -209,7 +210,7 @@
   <body>
     <div class="demo-notice" id="demoNotice" hidden>
       <span>Demo mode: sample data only.</span>
-      <a class="demo-notice-link" href="/">Start using the app</a>
+      <a class="demo-notice-link" href="./">Start using the app</a>
     </div>
     <!-- Main Screen -->
     <div class="screen" id="homeScreen">
@@ -756,7 +757,7 @@
                 display: inline-flex;
                 justify-content: center;
               "
-              href="/?demo=1"
+              href="./?demo=1"
             >
               Open Demo Mode
             </a>
@@ -1254,6 +1255,11 @@
           <!-- Slide 3: Theme Selection -->
           <div class="welcome-slide">
             <div class="welcome-slide-content">
+              <div
+                class="welcome-theme-effects"
+                id="welcomeThemeEffects"
+                aria-hidden="true"
+              ></div>
               <div class="welcome-icon">🎨</div>
               <h1 class="welcome-title" data-i18n="welcomeThemeTitle">
                 Choose Your Theme
@@ -1425,6 +1431,7 @@
     </div>
 
     <script src="js/translations.js" defer></script>
+    <script src="js/welcome-effects.js" defer></script>
     <script src="js/welcome.js" defer></script>
     <script src="js/app.js" defer></script>
   </body>

@@ -1,0 +1,181 @@
+/* Theme effects for welcome screen */
+.welcome-slide-content {
+  position: relative;
+}
+
+.welcome-slide-content > :not(.welcome-theme-effects) {
+  position: relative;
+  z-index: 1;
+}
+
+.welcome-theme-effects {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.welcome-theme-effects::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+#welcomeOverlay.welcome-overlay-comet {
+  background: linear-gradient(
+      180deg,
+      rgba(86, 162, 255, 0.5) 0%,
+      rgba(86, 162, 255, 0.2) 48%,
+      rgba(255, 255, 255, 0) 100%
+    ),
+    var(--bg-primary);
+}
+
+.welcome-theme-effects.theme-comet::before {
+  opacity: 1;
+  background: linear-gradient(
+      180deg,
+      rgba(86, 162, 255, 0.45) 0%,
+      rgba(86, 162, 255, 0.2) 45%,
+      transparent 100%
+    ),
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(255, 255, 255, 0.25),
+      transparent 55%
+    );
+}
+
+
+.welcome-particle {
+  position: absolute;
+  top: -10%;
+  left: calc(var(--x) * 1%);
+  font-size: var(--size);
+  opacity: 0.9;
+  animation: welcomeFall var(--duration) linear var(--delay) forwards;
+  transform: translate3d(0, -10%, 0) rotate(0deg);
+}
+
+.welcome-particle.leaf {
+  animation-name: welcomeLeafFall;
+}
+
+.welcome-particle.star {
+  opacity: 0.85;
+  top: calc(var(--y) * 1%);
+}
+
+.welcome-theme-effects.theme-midnight .welcome-particle.star {
+  animation-name: welcomeStarFloat;
+  animation-timing-function: ease-in-out;
+}
+
+.welcome-comet {
+  position: absolute;
+  top: calc(var(--y) * 1%);
+  left: 110%;
+  width: 36px;
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 1),
+    rgba(180, 220, 255, 0.6),
+    transparent
+  );
+  filter: drop-shadow(0 0 10px rgba(120, 190, 255, 0.8));
+  transform: rotate(-20deg);
+  animation: welcomeComet var(--duration) ease-in-out var(--delay) forwards;
+}
+
+.welcome-comet::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 32px;
+  height: 3px;
+  background: rgba(200, 230, 255, 0.85);
+  transform: translateY(-50%);
+  border-radius: 999px;
+}
+
+@keyframes welcomeFall {
+  0% {
+    transform: translate3d(0, -10%, 0) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate3d(var(--drift), 110vh, 0) rotate(160deg);
+    opacity: 0;
+  }
+}
+
+@keyframes welcomeLeafFall {
+  0% {
+    transform: translate3d(0, -10%, 0) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate3d(var(--drift), 110vh, 0) rotate(220deg);
+    opacity: 0;
+  }
+}
+
+@keyframes welcomeStarFall {
+  0% {
+    transform: translate3d(0, -10%, 0) scale(0.9);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate3d(var(--drift), 110vh, 0) scale(1.05);
+    opacity: 0;
+  }
+}
+
+@keyframes welcomeStarFloat {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.9);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.95;
+  }
+  50% {
+    transform: translate3d(var(--float-x), var(--float-y), 0) scale(1);
+  }
+  100% {
+    transform: translate3d(calc(var(--float-x) * -1), calc(var(--float-y) * -1), 0)
+      scale(0.95);
+    opacity: 0;
+  }
+}
+
+@keyframes welcomeComet {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(-20deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(-130vw, calc(var(--arc) * 1px), 0) rotate(-25deg);
+    opacity: 0;
+  }
+}

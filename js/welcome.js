@@ -278,6 +278,22 @@
 
   function initSlide3_Theme() {
     const themeOptions = document.querySelectorAll(".welcome-theme-option");
+    const themeNames = document.querySelectorAll(".welcome-theme-name");
+
+    themeNames.forEach((nameEl) => {
+      const raw = nameEl.textContent || "";
+      const cleaned = raw
+        .replace(/\p{Extended_Pictographic}/gu, "")
+        .replace(/\s{2,}/g, " ")
+        .trim();
+      if (cleaned) nameEl.textContent = cleaned;
+    });
+
+    const triggerThemeEffect = (theme) => {
+      if (typeof window.triggerWelcomeThemeEffect === "function") {
+        window.triggerWelcomeThemeEffect(theme);
+      }
+    };
 
     themeOptions.forEach((option) => {
       option.addEventListener("click", function () {
@@ -289,6 +305,8 @@
         if (document.body) {
           document.body.setAttribute("data-theme", welcomeSettings.theme);
         }
+
+        triggerThemeEffect(welcomeSettings.theme);
 
         if (navigator.vibrate) navigator.vibrate(10);
       });
@@ -304,6 +322,7 @@
     ) {
       defaultTheme.classList.add("selected");
       welcomeSettings.theme = "blossom";
+      triggerThemeEffect("blossom");
     }
   }
 
